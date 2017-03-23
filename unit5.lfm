@@ -1,0 +1,162 @@
+object Form5: TForm5
+  Left = 478
+  Height = 283
+  Top = 293
+  Width = 426
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
+  Caption = 'Jak Używać'
+  ClientHeight = 283
+  ClientWidth = 426
+  LCLVersion = '1.0.1.3'
+  object Label1: TLabel
+    Left = 8
+    Height = 60
+    Top = 40
+    Width = 25
+    Caption = '1'
+    Font.CharSet = EASTEUROPE_CHARSET
+    Font.Height = -48
+    Font.Name = 'Calibri'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label2: TLabel
+    Left = 56
+    Height = 16
+    Top = 72
+    Width = 147
+    Caption = 'Pomiar elektrod na presecie'
+    ParentColor = False
+  end
+  object Label3: TLabel
+    Left = 8
+    Height = 60
+    Top = 104
+    Width = 25
+    Caption = '2'
+    Font.CharSet = EASTEUROPE_CHARSET
+    Font.Height = -48
+    Font.Name = 'Calibri'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label4: TLabel
+    Left = 56
+    Height = 16
+    Top = 112
+    Width = 55
+    Caption = 'Czytaj .dxf'
+    ParentColor = False
+  end
+  object Label5: TLabel
+    Left = 56
+    Height = 16
+    Top = 128
+    Width = 253
+    Caption = 'Jeżeli więcej niż 1 tabela na rysunku, Pokaż dane'
+    ParentColor = False
+  end
+  object Label6: TLabel
+    Left = 56
+    Height = 16
+    Top = 144
+    Width = 364
+    Caption = 'W przypadku gdy została załadowana zła tabela, Szukaj kolejnej tabeli'
+    ParentColor = False
+  end
+  object Label7: TLabel
+    Left = 8
+    Height = 60
+    Top = 160
+    Width = 25
+    Caption = '3'
+    Font.CharSet = EASTEUROPE_CHARSET
+    Font.Height = -48
+    Font.Name = 'Calibri'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label8: TLabel
+    Left = 56
+    Height = 16
+    Top = 168
+    Width = 287
+    Caption = 'Elektrody...   wpisz podwymiary i pozycje w magazynie'
+    ParentColor = False
+  end
+  object Label9: TLabel
+    Left = 56
+    Height = 16
+    Top = 184
+    Width = 302
+    Caption = 'Oraz Fp i materiał elektrody, jeżeli były błędne na rysunku'
+    ParentColor = False
+  end
+  object Label10: TLabel
+    Left = 8
+    Height = 60
+    Top = 216
+    Width = 25
+    Caption = '4'
+    Font.CharSet = EASTEUROPE_CHARSET
+    Font.Height = -48
+    Font.Name = 'Calibri'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label11: TLabel
+    Left = 56
+    Height = 16
+    Top = 232
+    Width = 201
+    Caption = 'Gotowe! Skopiuj program na maszynę'
+    ParentColor = False
+  end
+  object Label12: TLabel
+    Left = 56
+    Height = 16
+    Top = 248
+    Width = 241
+    Caption = 'Na maszynie Wybór technologii -> TECTRON'
+    ParentColor = False
+  end
+  object Label13: TLabel
+    Left = 56
+    Height = 16
+    Top = 200
+    Width = 184
+    Caption = 'Załaduj plik pomiaru elektrod .mes'
+    ParentColor = False
+  end
+  object Label14: TLabel
+    Left = 8
+    Height = 24
+    Top = 8
+    Width = 407
+    Caption = 'Procedura tworzenia programu na drążarke wgłębną'
+    Font.CharSet = EASTEUROPE_CHARSET
+    Font.Height = -19
+    Font.Name = 'Calibri'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label15: TLabel
+    Left = 56
+    Height = 16
+    Top = 55
+    Width = 265
+    Caption = 'Upewnij się że na maszynie nie ma tego programu'
+    ParentColor = False
+  end
+end

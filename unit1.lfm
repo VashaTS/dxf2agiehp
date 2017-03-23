@@ -1,0 +1,319 @@
+object Form1: TForm1
+  Left = 786
+  Height = 306
+  Top = 172
+  Width = 1015
+  BorderStyle = bsSingle
+  Caption = 'DXF to AGIE HP'
+  ClientHeight = 286
+  ClientWidth = 1015
+  Menu = MainMenu1
+  OnCreate = FormCreate
+  LCLVersion = '1.0.1.3'
+  Visible = True
+  object Button1: TButton
+    Left = 296
+    Height = 25
+    Top = 8
+    Width = 112
+    Caption = 'Czytaj plik .DXF'
+    OnClick = Button1Click
+    TabOrder = 0
+  end
+  object Label2: TLabel
+    Left = 12
+    Height = 16
+    Top = 96
+    Width = 92
+    Caption = 'Nazwa programu'
+    ParentColor = False
+  end
+  object SpinEdit1: TSpinEdit
+    Left = 32
+    Height = 23
+    Top = 172
+    Width = 50
+    TabOrder = 1
+    Value = 10
+    Visible = False
+  end
+  object ListBox1: TListBox
+    Left = 224
+    Height = 113
+    Top = 160
+    Width = 147
+    ItemHeight = 0
+    TabOrder = 2
+  end
+  object ListBox2: TListBox
+    Left = 424
+    Height = 224
+    Top = 32
+    Width = 72
+    ItemHeight = 0
+    OnMouseUp = scrollothers
+    TabOrder = 3
+  end
+  object ListBox3: TListBox
+    Left = 496
+    Height = 224
+    Top = 32
+    Width = 72
+    ItemHeight = 0
+    TabOrder = 4
+  end
+  object ListBox4: TListBox
+    Left = 568
+    Height = 224
+    Top = 32
+    Width = 72
+    ItemHeight = 0
+    TabOrder = 5
+  end
+  object ListBox5: TListBox
+    Left = 640
+    Height = 224
+    Top = 32
+    Width = 72
+    ItemHeight = 0
+    TabOrder = 6
+  end
+  object ListBox6: TListBox
+    Left = 712
+    Height = 224
+    Top = 32
+    Width = 72
+    ItemHeight = 0
+    TabOrder = 7
+  end
+  object ListBox7: TListBox
+    Left = 784
+    Height = 224
+    Top = 32
+    Width = 72
+    ItemHeight = 0
+    TabOrder = 8
+  end
+  object ListBox8: TListBox
+    Left = 856
+    Height = 224
+    Top = 32
+    Width = 72
+    ItemHeight = 0
+    TabOrder = 9
+  end
+  object Button2: TButton
+    Left = 304
+    Height = 25
+    Top = 94
+    Width = 75
+    Caption = 'Elektrody...'
+    Enabled = False
+    OnClick = Button2Click
+    TabOrder = 10
+  end
+  object ComboBox1: TComboBox
+    Left = 176
+    Height = 23
+    Top = 8
+    Width = 100
+    ItemHeight = 15
+    ItemIndex = 1
+    Items.Strings = (
+      'Graphite1'
+      'Graphite2'
+      'Copper'
+    )
+    TabOrder = 11
+    Text = 'Graphite2'
+  end
+  object CheckBox1: TCheckBox
+    Left = 16
+    Height = 19
+    Top = 8
+    Width = 153
+    Caption = 'Zastąp materiał elektrody'
+    Checked = True
+    State = cbChecked
+    TabOrder = 12
+  end
+  object ProgressBar1: TProgressBar
+    Left = 12
+    Height = 20
+    Top = 64
+    Width = 276
+    Max = 70
+    TabOrder = 13
+  end
+  object Button3: TButton
+    Left = 304
+    Height = 25
+    Top = 59
+    Width = 96
+    Caption = 'Pokaż dane'
+    Enabled = False
+    OnClick = Button3Click
+    TabOrder = 14
+  end
+  object Edit3: TEdit
+    Left = 112
+    Height = 23
+    Top = 96
+    Width = 80
+    OnKeyUp = nospaces
+    TabOrder = 15
+  end
+  object Label1: TLabel
+    Left = 443
+    Height = 16
+    Top = 11
+    Width = 34
+    Caption = 'nazwa'
+    ParentColor = False
+  end
+  object Label4: TLabel
+    Left = 525
+    Height = 16
+    Top = 11
+    Width = 8
+    Caption = 'X'
+    ParentColor = False
+  end
+  object Label5: TLabel
+    Left = 600
+    Height = 16
+    Top = 11
+    Width = 8
+    Caption = 'Y'
+    ParentColor = False
+  end
+  object Label6: TLabel
+    Left = 672
+    Height = 16
+    Top = 11
+    Width = 9
+    Caption = 'C'
+    ParentColor = False
+  end
+  object Label7: TLabel
+    Left = 743
+    Height = 16
+    Top = 11
+    Width = 8
+    Caption = 'Z'
+    ParentColor = False
+  end
+  object Label8: TLabel
+    Left = 808
+    Height = 16
+    Top = 11
+    Width = 22
+    Caption = 'mat'
+    ParentColor = False
+  end
+  object Label9: TLabel
+    Left = 880
+    Height = 16
+    Top = 11
+    Width = 14
+    Caption = 'Fp'
+    ParentColor = False
+  end
+  object Button4: TButton
+    Left = 424
+    Height = 24
+    Top = 256
+    Width = 120
+    Caption = 'Szukaj innej tabeli'
+    OnClick = Button4Click
+    TabOrder = 16
+  end
+  object CheckBox2: TCheckBox
+    Left = 104
+    Height = 19
+    Top = 176
+    Width = 105
+    Caption = 'Odwr. kolejnosc'
+    TabOrder = 17
+    Visible = False
+  end
+  object CheckBox3: TCheckBox
+    Left = 16
+    Height = 19
+    Top = 32
+    Width = 91
+    Caption = 'Utwórz grupę'
+    TabOrder = 18
+  end
+  object ComboBox2: TComboBox
+    Left = 164
+    Height = 23
+    Top = 32
+    Width = 128
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'VDI 26 Ra 2.0 oxxo'
+      'VDI 24 Ra 1.59 oxxo'
+      'VDI 22 Ra 1.26 oxxo'
+    )
+    TabOrder = 19
+    Text = 'VDI 26 Ra 2.0 oxxo'
+  end
+  object Label3: TLabel
+    Left = 144
+    Height = 16
+    Top = 35
+    Width = 19
+    Caption = 'VDI'
+    ParentColor = False
+  end
+  object ListBox9: TListBox
+    Left = 928
+    Height = 224
+    Top = 32
+    Width = 72
+    ItemHeight = 0
+    TabOrder = 20
+  end
+  object Label10: TLabel
+    Left = 936
+    Height = 16
+    Top = 11
+    Width = 49
+    Caption = 'Direction'
+    ParentColor = False
+  end
+  object OpenDialog1: TOpenDialog
+    Filter = 'Pliki DXF|*.dxf'
+    InitialDir = 'C:\Intel\LazarusPortable\dxf test'
+    left = 88
+    top = 216
+  end
+  object MainMenu1: TMainMenu
+    left = 24
+    top = 216
+    object MenuItem1: TMenuItem
+      Caption = 'Ustawienia'
+      OnClick = MenuItem1Click
+    end
+    object MenuItem2: TMenuItem
+      Caption = 'Pomoc'
+      object MenuItem3: TMenuItem
+        Caption = 'O programie'
+        OnClick = MenuItem3Click
+      end
+      object MenuItem4: TMenuItem
+        Caption = 'Jak używać?'
+        OnClick = MenuItem4Click
+      end
+    end
+  end
+  object Timer1: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = Timer1Timer
+    left = 56
+    top = 216
+  end
+end
