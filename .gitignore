@@ -1,0 +1,9 @@
+
+*.dll
+GeanyPortable/
+lib/
+output/
+*.dxf
+backup/
+program testowy/
+inst/

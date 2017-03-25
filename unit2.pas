@@ -36,6 +36,7 @@ type
     Label11: TLabel;
     Label12: TLabel;
     Label13: TLabel;
+    Label14: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
@@ -51,6 +52,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure chck_l(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure comatodot(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure dbok(Sender: TObject);
     procedure editel(Sender: TObject);
     procedure formclose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -129,10 +131,22 @@ begin
     end;
 end;
 
+function eroding_direction(inp:integer):string;
+begin
+     case inp of
+     0: result:='X-';
+     1: result:='X+';
+     2: result:='Y-';
+     3: result:='Y+';
+     4: result:='Z';
+     end;
+end;
+
 { TForm2 }
 
 procedure TForm2.editel(Sender: TObject);
 var el_values:TArrayOfString;
+  dlet,dsig:string;
 begin
   el_values:=SplitString(';',ListBox1.Items[ChecklistBox1.ItemIndex]); //read hidden listbox of electrode values
   Label1.Caption:=el_values[0]; //electrode name
@@ -151,9 +165,34 @@ begin
   Edit8.Text:=el_values[9]; // poz3
   Edit9.Text:=el_values[10]; // poz4
   Edit10.Text:=el_values[11]; // name for changing in AGIE program
+  Edit11.Text:=el_values[14]; // offset for side eroding
   Label8.Caption:=inttostr(CheckListBox1.ItemIndex); //number of electrode on the listbox
   if el_values[12]='1' then CheckBox1.Checked:=True //multi
   else CheckBox1.Checked:=False;
+ // ShowMessage(inttostr(length(el_values[13]))+' '+el_values[13]);
+  dlet:='Z';
+  dsig:='';
+  if length(el_values[13])=2 then begin
+    case el_values[13][1] of
+      '-': dsig:='-';
+      '+': dsig:='+';
+      'X': dlet:='X';
+      'Y': dlet:='Y';
+    end;
+    case el_values[13][2] of
+      '-': dsig:='-';
+      '+': dsig:='+';
+      'X': dlet:='X';
+      'Y': dlet:='Y';
+    end;
+    end;
+    case trim(dlet+dsig) of
+      'X-': ComboBox1.ItemIndex:=0;
+      'X+': ComboBox1.ItemIndex:=1;
+      'Y-': ComboBox1.ItemIndex:=2;
+      'Y+': ComboBox1.ItemIndex:=3;
+      'Z': ComboBox1.ItemIndex:=4;
+    end;
   if (CheckListBox1.ItemIndex=(CheckListBox1.Count-1)) then Button1.Caption:='Koniec - zapisz program'; //change button to more acurately reflect action taken on pressing it
 
 end;
@@ -187,7 +226,7 @@ end;
 procedure TForm2.Button1Click(Sender: TObject);
 var preset,fut,fur,f0r,f00,tempp:Textfile;
 pval,eval,pval2,tf_val,pe_val,lb1,prefil:TArrayOfString;
-pline,str,elmname,dir,strat,phase,eip,elno,multi_tf,umode,le:string;
+pline,str,elmname,dir,strat,phase,eip,elno,multi_tf,umode,le,f00f,f00_sk:string;
 i,j,ii,iii,amount_of_el:integer;
 ust:TIniFile;
 line_changed:boolean;
@@ -199,8 +238,8 @@ begin
   if CheckBox1.Checked=True then multi_tf:='1'
   else multi_tf:='0';
   ListBox1.Items.Delete(strtoint(Label8.Caption));  //temp delete existing entry, then add a new one (next line)
-  //                          0               1                               2             3                 4             5             6              7             8                9              10              11           12         13
-  ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit10.Text+';'+multi_tf+';'+elmname);
+  //                          0               1                               2             3                 4             5             6              7             8                9              10              11           12                       13                             14            15
+  ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit10.Text+';'+multi_tf+';'+ComboBox1.Items[ComboBox1.ItemIndex]+';'+Edit11.Text+';'+elmname);
   ListBox1.Items.Move((ListBox1.Count-1),strtoint(Label8.Caption)); //move added antry to previous place
   if (((strtofloat(Edit1.Text)>0) and (strtofloat(Edit2.Text)>0)) or (CheckListBox1.Checked[CheckListBox1.ItemIndex]=False)) then begin  //check if fp and u1 are empty
      if CheckListBox1.ItemIndex=(CheckListBox1.Count-1) then begin //when all electrodes done
@@ -267,12 +306,19 @@ begin
                        pe_val:=SplitString(';',ListBox2.Items[j]);
                        if tf_val[11]=pe_val[0] then inc(amount_of_el);
                    end;
-                   AssignFile(fut,dir+'\'+tf_val[13]+'.FUT');
+                   if tf_val[13]<>'Z' then begin
+                      f00f:='6';
+                   end
+                   else begin
+                        f00f:='2';
+                   end;
+
+                   AssignFile(fut,dir+'\'+tf_val[15]+'.FUT');
                    rewrite(fut);                             //   name                            fp
-                   write(fut,'TRON,05.01.0'+AnsiString(#10)+'F,'+tf_val[11]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,1,0,0001,0,2,2,1,1,0,0,1;0;2;0;2;0;4;3;1;$;2;'+matforagie(tf_val[1])+';T;1;'+AnsiString(#10));
-                   AssignFile(f00,dir+'\'+tf_val[13]+'.F00');
+                   write(fut,'TRON,05.01.0'+AnsiString(#10)+'F,'+tf_val[11]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,1,0,0001,0,'+f00f+',2,1,1,0,0,1;0;2;0;2;0;4;3;1;$;2;'+matforagie(tf_val[1])+';T;1;'+AnsiString(#10));
+                   AssignFile(f00,dir+'\'+tf_val[15]+'.F00');
                    rewrite(f00);
-                   write(f00,'_TRON_,AGIEFUT_05.01.0'+AnsiSTring(#10)+'F,1,16678904,'+tf_val[11]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,0,1,0,2,2,1,1,0,0'+AnsiString(#10));
+                   write(f00,'_TRON_,AGIEFUT_05.01.0'+AnsiSTring(#10)+'F,1,16678904,'+tf_val[11]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,0,1,0,'+f00f+',2,1,1,0,0'+AnsiString(#10));
                    if ListBox2.Count>0 then begin // add physical electrodes
                        for j:=0 to ListBox2.Count-1 do begin //for every entry in physical electrode list
                           pe_val:=SplitString(';',ListBox2.Items[j]);
@@ -334,20 +380,26 @@ begin
                               else umode:='1';
                               if tf_val[12]='1' then le:='LE'+pe_val[9]
                               else le:='$';
+                              if tf_val[13]<>'Z' then begin
+                                 f00_sk:=pe_val[4];
+                              end
+                              else begin
+                                   f00_sk:='0.';
+                              end;
                               write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+pe_val[4]+',1,'+umode+',0,1,0,0.,1,'+tf_val[11]+AnsiString(#10));
                               write(fut,'U,R'+elno+',1,2,'+pe_val[9]+',3,'+pe_val[4]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase+','+eip+',1,'+le+',F,0,0,T,0.,1,'+inttostr(strtoint(tf_val[12])+1)+',V'+elno+','+tf_val[11]+AnsiString(#10));
                               write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+pe_val[4]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
-                              write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+pe_val[9]+',3,'+pe_val[4]+','+pe_val[5]+','+pe_val[6]+','+pe_val[7]+','+pe_val[8]+',0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,'+le+',F,0,0,T,0.,1,'+inttostr(strtoint(tf_val[12])+1)+',1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
+                              write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+pe_val[9]+',3,'+pe_val[4]+','+pe_val[5]+','+pe_val[6]+','+pe_val[7]+','+pe_val[8]+',0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,'+le+',F,0,0,T,'+f00_sk+',1,'+inttostr(strtoint(tf_val[12])+1)+',1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
                           end;
                        end;
                    end; //listbox2 - physical electrodes
                    CloseFile(fut);
                    CloseFile(f00);
-                   AssignFile(fur,dir+'\'+tf_val[13]+'.FUR');
+                   AssignFile(fur,dir+'\'+tf_val[15]+'.FUR');
                    rewrite(fur);
-                   write(fur,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME '+tf_val[11]+';'+AnsiString(#10)+'AGIE.USING_1 IMPORT COUNT_0 '+tf_val[13]+'.F00;');
+                   write(fur,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME '+tf_val[11]+';'+AnsiString(#10)+'AGIE.USING_1 IMPORT COUNT_0 '+tf_val[15]+'.F00;');
                    CloseFile(fur);
-                   AssignFile(f0r,dir+'\'+tf_val[13]+'.F0R');
+                   AssignFile(f0r,dir+'\'+tf_val[15]+'.F0R');
                    rewrite(f0r);
                    write(f0r,'AGIE.VERSION 2,05.01.0;'+AnsiSTring(#10)+'.LONGNAME '+tf_val[11]+';');
                    CloseFile(f0r);
@@ -365,11 +417,11 @@ begin
                  strat:=ust.ReadString('settings','electrodeStrategy','1');
                  ust.Free;
                  forcedirectories(dir); //create folders if needed
-                 AssignFile(fur,dir+'\'+tf_val[13]+'.FUR');
+                 AssignFile(fur,dir+'\'+tf_val[15]+'.FUR');
                  rewrite(fur);
                  write(fur,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME '+tf_val[11]+';'+AnsiString(#10)+'AGIE.USING_1 IMPORT COUNT_0 '+tf_val[13]+'.F00;');
                  CloseFile(fur);
-                 AssignFile(f0r,dir+'\'+tf_val[13]+'.F0R');
+                 AssignFile(f0r,dir+'\'+tf_val[15]+'.F0R');
                  rewrite(f0r);
                  write(f0r,'AGIE.VERSION 2,05.01.0;'+AnsiSTring(#10)+'.LONGNAME '+tf_val[11]+';');
                  CloseFile(f0r);
@@ -377,10 +429,10 @@ begin
                  else if tf_val[5]<>'0' then amount_of_el:=3
                  else if tf_val[4]<>'0' then amount_of_el:=2
                  else amount_of_el:=1;
-                 AssignFile(fut,dir+'\'+tf_val[13]+'.FUT');
+                 AssignFile(fut,dir+'\'+tf_val[15]+'.FUT');
                  rewrite(fut);                             //   name                            fp
                  write(fut,'TRON,05.01.0'+AnsiString(#10)+'F,'+tf_val[0]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,1,0,0001,0,2,2,1,1,0,0,1;0;2;0;2;0;4;3;1;$;2;'+matforagie(tf_val[1])+';T;1;'+AnsiString(#10));
-                 AssignFile(f00,dir+'\'+tf_val[13]+'.F00');
+                 AssignFile(f00,dir+'\'+tf_val[15]+'.F00');
                  rewrite(f00);
                  write(f00,'_TRON_,AGIEFUT_05.01.0'+AnsiSTring(#10)+'F,1,16678904,'+tf_val[11]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,0,1,0,2,2,1,1,0,0'+AnsiString(#10));
                  if strat='1' then begin
@@ -514,7 +566,7 @@ end;
 
 procedure TForm2.chck_l(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if length(Edit10.Text)>19 then Edit10.Text:=LeftStr(Edit10.Text,19);
+  if length(Edit10.Text)>19 then Edit10.Text:=LeftStr(Edit10.Text,19);  //max length of electrode in agievision
   Edit10.SelStart:=high(Integer);
 end;
 
@@ -524,6 +576,12 @@ begin
         (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,',','.',[rfReplaceAll]);
         (Sender as TEdit).SelStart:=high(Integer);
      end;
+end;
+
+procedure TForm2.dbok(Sender: TObject);
+begin
+  if ComboBox1.ItemIndex<>4 then Edit11.Enabled:=True
+  else Edit11.Enabled:=False;
 end;
 
 end.

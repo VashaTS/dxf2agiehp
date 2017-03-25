@@ -1,12 +1,13 @@
 object Form3: TForm3
-  Left = 360
+  Left = 309
   Height = 309
-  Top = 141
+  Top = 201
   Width = 399
   Caption = 'Ustawienia'
   ClientHeight = 309
   ClientWidth = 399
   OnCreate = FormCreate
+  Position = poScreenCenter
   LCLVersion = '1.0.1.3'
   object LabeledEdit1: TLabeledEdit
     Left = 16
@@ -224,6 +225,15 @@ object Form3: TForm3
     Caption = '...'
     OnClick = Button5Click
     TabOrder = 12
+  end
+  object Button6: TButton
+    Left = 224
+    Height = 25
+    Top = 168
+    Width = 155
+    Caption = 'rozszerzenie dxf do rejestru'
+    OnClick = Button6Click
+    TabOrder = 13
   end
   object SelectDirectoryDialog1: TSelectDirectoryDialog
     left = 256
