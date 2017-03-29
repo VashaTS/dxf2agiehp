@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, Comctrls, Spin, Menus, strings, Math, Unit2, Unit3, Unit4, Unit5 ,inifiles;
+  ExtCtrls, Comctrls, Spin, Menus, strings, Math, Unit2, Unit3, Unit4, Unit5, Unit6 ,inifiles;
 
 type
   TArrayOfString = array of String;
@@ -21,6 +21,8 @@ type
     Button4: TButton;
     Button5: TButton;
     Button6: TButton;
+    Button7: TButton;
+    Button8: TButton;
     CheckBox1: TCheckBox;
     CheckBox2: TCheckBox;
     CheckBox3: TCheckBox;
@@ -46,7 +48,6 @@ type
     Label9: TLabel;
     ListBox1: TListBox;
     ListBox10: TListBox;
-    ListBox11: TListBox;
     ListBox2: TListBox;
     ListBox3: TListBox;
     ListBox4: TListBox;
@@ -61,6 +62,7 @@ type
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
     OpenDialog1: TOpenDialog;
+    PaintBox1: TPaintBox;
     ProgressBar1: TProgressBar;
     SpinEdit1: TSpinEdit;
     Timer1: TTimer;
@@ -70,6 +72,8 @@ type
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure handleparams(Sender: TObject);
     procedure hp2(Sender: TObject; const FileNames: array of String);
@@ -379,10 +383,10 @@ end;
 procedure TForm1.Button1Click(Sender: TObject);
 var fil:Textfile;
   sl,newsl:TStringList;
-  acceptable_list:Array[1..20] of string;
+  acceptable_list:Array[1..24] of string;
   line,str:string; // single line of a dxf file
-  res:TArrayOfString; //used for SplitString function output
-  new_current_line,norm_line,current_line,start_line,text_per_item,i,j,k,col_id,col_x,col_y,col_c,col_z,col_mat,col_fp,col_dir,min_in_col,si,old_count,start_pos:integer;
+  res,fileext:TArrayOfString; //used for SplitString function output
+  org_cur_line,new_current_line,norm_line,current_line,start_line,text_per_item,i,j,k,col_id,col_x,col_y,col_c,col_z,col_mat,col_fp,col_dir,min_in_col,si,old_count,start_pos:integer;
   start_defined,assign_columns_done,table_done,col_count_found,is_acceptable,alternate_method:boolean;
 begin
     ProgressBar1.Position:=0;
@@ -404,16 +408,17 @@ begin
        end_table_line:=0; //reset starting position
     end;
     if length(OpenDialog1.Filename)>3 then begin  // open file dialog, show error if no file is selected
-
+    fileext:=SplitString('.',OpenDialog1.FileName);
+    //showmessage(inttostr(length(fileext)));
     if CheckBox2.Checked=True then begin // reverse the dxf
        sl:=TStringList.Create;  //oop bullshit
        newsl:=TStringList.Create;  //oop bullshit
        sl.LoadFromFile(OpenDialog1.FileName); //load dxf into stringlist
        for si:=(sl.Count-1) downto 1 do newsl.Add(sl.Strings[si]); //reverse the stringlist
        sl.Destroy;
-       newsl.SaveToFile(Application.Location+'temp.dxf'); //save reversed stringlist to temp file
+       newsl.SaveToFile(Application.Location+'temp.'+fileext[(length(fileext)-1)]); //save reversed stringlist to temp file
        newsl.Destroy;
-       AssignFIle(fil,Application.Location+'temp.dxf'); //use the temp file instead of the original dxf
+       AssignFIle(fil,Application.Location+'temp.'+fileext[(length(fileext)-1)]); //use the temp file instead of the original dxf
     end
     else AssignFile(fil,OpenDialog1.FileName); //dxf file choosen by user
     reset(fil);                 //ensure reading from begining of the file
@@ -424,7 +429,9 @@ begin
     table_done:=False;
     alternate_method:=False;
     col_count_found:=False;  //it is here to allow tables of different column amount in the same dxf
-    text_per_item:=30; // TODO: possibly change this to be readed from dxf file itself, it may vary
+    if LowerCase(fileext[(length(fileext)-1)])='dxf' then text_per_item:=30 // TODO: possibly change this to be readed from dxf file itself, it may vary
+    else if LowerCase(fileext[(length(fileext)-1)])='mi' then text_per_item:=34
+    else ShowMessage('FileType Error!');
     ProgressBar1.Position:=10;
     repeat
       readln(fil,line);  //read 1 line
@@ -464,6 +471,7 @@ begin
                       if length(trim(line))=7 then begin
                          if isNumber(trim(line)) then begin
                             col_count_found:=True;
+                            org_cur_line:=current_line;
                             //ShowMessage(line);
                             SpinEdit1.Value:=(((current_line-start_line) div text_per_item)-1); //save found table width
                             reset(fil);
@@ -498,24 +506,38 @@ begin
                acceptable_list[18]:='Drehwinkel';
                acceptable_list[19]:='Senktiefe';
                acceptable_list[20]:='Elektrodenwerkstoff';
-               if ListBox1.Count<SpinEdit1.Value then for i:=1 to SpinEdit1.Value do begin
+               acceptable_list[21]:='Erodierrichtung';
+               acceptable_list[22]:='Oberflaeche Werkstueck';
+               acceptable_list[23]:='Proj. Flaeche';
+               acceptable_list[24]:='Auslenkmethode';
+               i:=0;
+               if ListBox1.Count<SpinEdit1.Value then repeat
+                 inc(i);
                if current_line=(start_line+(i*text_per_item)+offset) then begin //every read 10 values, every 30 lines
                   is_acceptable:=False;
-                  for j:=1 to 20 do if trim(line)=acceptable_list[j] then is_acceptable:=True;
+                  for j:=1 to 24 do if trim(line)=acceptable_list[j] then is_acceptable:=True;
                   if is_acceptable=False then begin
                      for k:=1 to 6 do begin
                          inc(offset);
                          readln(fil,line);
                      end;
                   end;
+                  //if offset<>0 then SpinEdit1.Value:=((((SpinEdit1.Value*text_per_item)-offset) div text_per_item)-1);
                   //showmessage(inttostr(current_line+offset)+' '+line+' ('+inttostr(offset)+')');
                   is_acceptable:=False;
-                  for j:=1 to 20 do if trim(line)=acceptable_list[j] then is_acceptable:=True;
+                  for j:=1 to 24 do if trim(line)=acceptable_list[j] then is_acceptable:=True;
                   if is_acceptable=True then ListBox1.Items.Add(line); //add those lines to listbox
+                  //break;
+               end;
+               if ((length(trim(line))=7) and (isNumber(trim(line)))) then begin
+                  if offset<>0 then begin
+                     SpinEdit1.Value:=SpinEdit1.Value-1;
+                     ListBox2.Items.Add(trim(line));
+                  end;
                   break;
+
                end;
-               if ((length(trim(line))=7) and (isNumber(trim(line)))) then break;
-               end;
+               until i>SpinEdit1.Value;
                if (assign_columns_done=True and table_done=False) then begin
                //read actual data
                if ((offset=0) and (alternate_method=False)) then begin
@@ -539,14 +561,18 @@ begin
                    end
                    else begin
                         //TODO the strange dxf files vit varrible distances
+                        SpinEdit1.Value:=(((SpinEdit1.Value*text_per_item)-offset) div text_per_item);
                         current_line:=current_line+offset;
                         offset:=0;
                         alternate_method:=True;
+                        //ShowMessage('Nie można odczytać tego pliku - zapisz numer rysunku i zgłos do Szymona.');
+                        //Application.Te
                         //the actual alternathe method below
-
+                        //if (isNumber(trim(line)) and (length(trim(line))=7)) then ListBox2.Items.Add(trim(line))
+                        //else if
                    end;
                end;
-               if ListBox1.Count=SpinEdit1.Value then if assign_columns_done=False then begin //assign columns when all read, if not already done
+               if ListBox1.Count>=SpinEdit1.Value then if assign_columns_done=False then begin //assign columns when all read, if not already done
                   //pre-set varribles to 9999 - means no column present, high value = no common multiplier in low numbers
                   col_id:=9999;
                   col_x:=9999;
@@ -574,6 +600,8 @@ begin
                            'Senktiefe': col_z:=i; //german alt
                            'Elektrodenwerkstoff': col_mat:=i; //german
                            'Eroding direction': col_dir:=i;
+                           'Proj. Flaeche': col_fp:=i;
+                           'Erodierrichtung': col_dir:=i;
                       end;
                   end;
                   //ShowMessage('id '+inttostr(col_id)+', X '+inttostr(col_x)+', Y '+inttostr(col_y)+', Z '+inttostr(col_z)+', C '+inttostr(col_c)+', material '+inttostr(col_mat)+', Fp '+inttostr(col_fp)); //debug message
@@ -589,11 +617,6 @@ begin
     //showmessage('k');
     ProgressBar1.Position:=50;
     //evaluation of data
-    //min_in_col:=min(min(ListBox2.Count,ListBox3.Count),min(ListBox4.Count,ListBox5.Count)); //minimum is the actal data, more is not needed
-    //if ListBox2.Count>min_in_col then ListBox2.Items.Delete(min_in_col); //delete last text that is not electrode name
-    //if ListBox3.Count>min_in_col then ListBox3.Items.Delete(min_in_col);
-    //if ListBox4.Count>min_in_col then ListBox4.Items.Delete(min_in_col);
-    //if ListBox5.Count>min_in_col then ListBox5.Items.Delete(min_in_col);
     ProgressBar1.Position:=60;
     //delete additional things (for reverse order)
     if ListBox2.Count>0 then begin
@@ -633,6 +656,7 @@ begin
     ProgressBar1.Position:=70;
     Button2.Enabled:=True; // elektrody...
     Button3.Enabled:=True; // pokaz dane
+    Button7.Enabled:=True; // graficheck
     if length(Edit3.Text)<2 then ShowMessage('Niepoprawny plik DXF!');
     end //no file selected
     else ShowMessage('Nie wybrano pliku');
@@ -643,16 +667,16 @@ begin
           Button1.Click;
        end
        else if ((ListBox1.Items[0]<>'ID no. for electrode') and (ListBox1.Items[0]<>'ID-NR') and (ListBox1.Items[0]<>'ELEKTR-NUMMER') and (ListBox1.Items[0]<>'Id-Nr Elektrode')) then begin //no valid table found
-           // if CheckBox2.Checked=False then begin
-           //    CheckBox2.Checked:=True; //check button for reversing dxf file
-           //    end_table_line:=0;
-           //    Button1.Click; //run search for table again
-           // end
-           ShowMessage('Koniec pliku, nie znaleziono tabeli!');
+            if CheckBox2.Checked=False then begin
+               CheckBox2.Checked:=True; //check button for reversing dxf file
+               end_table_line:=0;
+               Button1.Click; //run search for table again
+            end
+           else ShowMessage('Koniec pliku, nie znaleziono tabeli!');
        end;
     end
     else if ListBox1.Count=0 then ShowMessage('Nie wykryto tabeli z pozycjami elektrod w pliku '+OpenDialog1.FileName);
-    showmessage(inttostr(offset));
+    //showmessage(inttostr(offset));
 end;
 
 procedure TForm1.Button2Click(Sender: TObject); //elektrody...
@@ -660,7 +684,7 @@ var j,k:integer;
   el_exists:boolean;
 begin
    for j:=0 to (ListBox2.Count-1) do begin //for each position in table
-     el_exists:=False; //mar electrode as not exist
+     el_exists:=False; //mark electrode as not exist
      if Form2.CheckListBox1.Count>0 then begin
         for k:=0 to (Form2.CheckListBox1.Count-1) do begin //for each already known electrode
             if Form2.CheckListBox1.Items[k]=trim(ListBox2.Items[j]) then el_exists:=True; //mark electrode that already exist
@@ -722,13 +746,199 @@ begin
 end;
 
 procedure TForm1.Button6Click(Sender: TObject);
+var ust:TIniFile;
 begin
+    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+    ListBox2.Items.Add(Edit1.Text);
+    ListBox3.Items.Add(Edit2.Text);
+    ListBox4.Items.Add(Edit4.Text);
+    ListBox5.Items.Add(Edit5.Text);
+    ListBox6.Items.Add(Edit6.Text);
+    ListBox7.Items.Add(ust.ReadString('settings','defaultElectrodeMaterial','Graphite2'));
+    ListBox8.Items.Add('0');
+    ListBox9.Items.Add('Z');
+    ust.Free;
+end;
 
+procedure TForm1.Button7Click(Sender: TObject);
+var i,xc,yc,j,factor:integer;
+  maxdim:real;
+  recta:TRect;
+begin
+   Form1.WindowState:=wsMaximized;
+   maxdim:=0;
+   for i:=0 to ListBox3.Count-1 do begin
+         if abs(strtofloat(ListBox3.Items[i]))>maxdim then maxdim:=abs(strtofloat(ListBox3.Items[i]))
+     end;
+    for i:=0 to ListBox4.Count-1 do begin
+         if abs(strtofloat(ListBox4.Items[i]))>maxdim then maxdim:=abs(strtofloat(ListBox4.Items[i]))
+     end;
+    maxdim:=floor(maxdim)+1;
+    Form1.Color:=clNavy;
+   Button7.Left:=20;
+   Button7.Top:=5;
+   Button8.Visible:=True;
+   Button8.Top:=5;
+   Button8.Left:=Button7.Left+Button7.Width+10;
+   Button8.Caption:='Koniec';
+   ListBox2.Visible:=False;
+   ListBox3.Visible:=False;
+   ListBox4.Visible:=False;
+   ListBox5.Visible:=False;
+   ListBox6.Visible:=False;
+   ListBox7.Visible:=False;
+   ListBox8.Visible:=False;
+   ListBox9.Visible:=False;
+   ListBox10.Visible:=False;
+   ListBox1.Visible:=False;
+   CheckBox1.Visible:=False;
+   CheckBox2.Visible:=False;
+   CheckBox3.Visible:=False;
+   Button1.Visible:=False;
+   Button2.Visible:=False;
+   Button3.Visible:=False;
+   Button4.Visible:=False;
+   Button5.Visible:=False;
+   Button6.Visible:=False;
+   ProgressBar1.Visible:=False;
+   SpinEdit1.Visible:=False;
+   Label1.Visible:=False;
+   Label2.Visible:=False;
+   Label3.Visible:=False;
+   Label4.Visible:=False;
+   Label5.Visible:=False;
+   Label6.Visible:=False;
+   Label7.Visible:=False;
+   Label8.Visible:=False;
+   Label9.Visible:=False;
+   Label10.Visible:=False;
+   Label11.Visible:=False;
+   Label12.Visible:=False;
+   ComboBox1.Visible:=False;
+   ComboBox2.Visible:=False;
+   Edit1.Visible:=False;
+   Edit2.Visible:=False;
+   Edit3.Visible:=False;
+   Edit4.Visible:=False;
+   Edit5.Visible:=False;
+   Edit6.Visible:=False;
+   //Button8.Left:=(floor(Panel1.Width/2)-floor(Button8.Width/2));
+   //Button8.Top:=5;
+   PaintBox1.Top:=10+Button7.Height;
+   PaintBox1.Height:=Form1.Height-Button7.Height-50;
+   PaintBox1.Left:=15;
+   PaintBox1.Width:=Form1.Width-30;
+   with PaintBox1.Canvas do
+    begin
+        Refresh;
+        Pen.Style:=psSolid;
+        Brush.Color:=clNavy;
+        Pen.Color:=clNavy;
+        Rectangle(0,0,PaintBox1.Width,PaintBox1.Height);
+        Brush.Color:=clRed;
+        MoveTo(floor(PaintBox1.Width/2),0);
+        Pen.Color:=clRed;
+        LineTo(floor(PaintBox1.Width/2),floor(PaintBox1.Height));
+        //LineTo(floor(PaintBox1.Width/2)+60,floor(PaintBox1.Height/2)-10);
+        MoveTo(0,floor(PaintBox1.Height/2));
+        LineTo(floor(PaintBox1.Width),floor(PaintBox1.Height/2));
+        j:=0;
+        factor:=0;
+        repeat
+        inc(factor);
+        //showmessage(inttostr(factor)+' '+inttostr(TextWidth('-3')*5)+' '+floattostr(((factor*floor(PaintBox1.Height/2))/maxdim)));
+        until (TextWidth('-3')*2)<((factor*floor(PaintBox1.Height/2))/maxdim);
+        //showmessage(inttostr(factor));
+        repeat
+        j:=j+factor;
+        Font.Color:=clRed;
+        MoveTo(floor(PaintBox1.Width/2)+floor((j*factor*(PaintBox1.Height/2))/maxdim),floor(PaintBox1.Height/2)+5);
+        LineTo(floor(PaintBox1.Width/2)+floor((j*factor*(PaintBox1.Height/2))/maxdim),floor(PaintBox1.Height/2)-5);
+        TextOut(floor(PaintBox1.Width/2)+floor((j*factor*(PaintBox1.Height/2))/maxdim)-(TextWidth(inttostr(j))div 2),floor(PaintBox1.Height/2)+15,inttostr(j));
+        MoveTo(floor(PaintBox1.Width/2)-floor((j*factor*(PaintBox1.Height/2))/maxdim),floor(PaintBox1.Height/2)+5);
+        LineTo(floor(PaintBox1.Width/2)-floor((j*factor*(PaintBox1.Height/2))/maxdim),floor(PaintBox1.Height/2)-5);
+        TextOut(floor(PaintBox1.Width/2)-floor((j*factor*(PaintBox1.Height/2))/maxdim)-(TextWidth('-'+inttostr(j))div 2),floor(PaintBox1.Height/2)+15,'-'+inttostr(j));
+        MoveTo(floor(PaintBox1.Width/2)+5,floor(PaintBox1.Height/2)+floor((j*factor*(PaintBox1.Height/2))/maxdim));
+        LineTo(floor(PaintBox1.Width/2)-5,floor(PaintBox1.Height/2)+floor((j*factor*(PaintBox1.Height/2))/maxdim));
+        TextOut(floor(PaintBox1.Width/2)-10-TextWidth('-'+inttostr(j)),floor(PaintBox1.Height/2)+floor((j*factor*(PaintBox1.Height/2))/maxdim)-(TextHeight('-'+inttostr(j))div 2),'-'+inttostr(j));
+        MoveTo(floor(PaintBox1.Width/2)+5,floor(PaintBox1.Height/2)-floor((j*factor*(PaintBox1.Height/2))/maxdim));
+        LineTo(floor(PaintBox1.Width/2)-5,floor(PaintBox1.Height/2)-floor((j*factor*(PaintBox1.Height/2))/maxdim));
+        TextOut(floor(PaintBox1.Width/2)-10-TextWidth(inttostr(j)),floor(PaintBox1.Height/2)-floor((j*factor*(PaintBox1.Height/2))/maxdim)-(TextHeight('-'+inttostr(j))div 2),inttostr(j));
+
+        until j>maxdim;
+        Pen.Color:=clYellow;
+        Brush.Color:=clYellow;
+        Font.Color:=clYellow;
+        Brush.Style:=bsClear;
+        for i:=0 to ListBox2.Count-1 do begin
+            xc:=floor((strtofloat(ListBox3.Items[i])*(PaintBox1.Height/2))/maxdim);
+            yc:=floor((strtofloat(ListBox4.Items[i])*(PaintBox1.Height/2))/maxdim);
+            Ellipse(floor(PaintBox1.Width/2)-5+xc,floor(PaintBox1.Height/2)-5-yc,floor(PaintBox1.Width/2)+5+xc,floor(PaintBox1.Height/2)+5-yc);
+            TextOut(floor(PaintBox1.Width/2)+20+xc,floor(PaintBox1.Height/2)-yc-10,ListBox2.Items[i]);
+
+        end;
+    end;
+end;
+
+procedure TForm1.Button8Click(Sender: TObject);
+begin
+   Form1.Color:=clDefault;
+  Form1.WindowState:=wsNormal;
+   Button7.Left:=304;
+   Button7.Top:=64;
+   Button8.Visible:=False;
+   //Button8.Top:=5;
+   //Button8.Left:=Button7.Left+Button7.Width+10;
+   //Button8.Caption:='Koniec';
+   ListBox2.Visible:=True;
+   ListBox3.Visible:=True;
+   ListBox4.Visible:=True;
+   ListBox5.Visible:=True;
+   ListBox6.Visible:=True;
+   ListBox7.Visible:=True;
+   ListBox8.Visible:=True;
+   ListBox9.Visible:=True;
+   ListBox10.Visible:=True;
+   ListBox1.Visible:=True;
+   CheckBox1.Visible:=True;
+   CheckBox2.Visible:=True;
+   CheckBox3.Visible:=True;
+   Button1.Visible:=True;
+   Button2.Visible:=True;
+   Button3.Visible:=True;
+   Button4.Visible:=True;
+   Button5.Visible:=True;
+   Button6.Visible:=True;
+   ProgressBar1.Visible:=True;
+   SpinEdit1.Visible:=True;
+   Label1.Visible:=True;
+   Label2.Visible:=True;
+   Label4.Visible:=True;
+   Label4.Visible:=True;
+   Label5.Visible:=True;
+   Label6.Visible:=True;
+   Label7.Visible:=True;
+   Label8.Visible:=True;
+   Label9.Visible:=True;
+   Label10.Visible:=True;
+   Label11.Visible:=True;
+   Label12.Visible:=True;
+   ComboBox1.Visible:=True;
+   ComboBox2.Visible:=True;
+   Edit1.Visible:=True;
+   Edit2.Visible:=True;
+   Edit3.Visible:=True;
+   Edit4.Visible:=True;
+   Edit5.Visible:=True;
+   Edit6.Visible:=True;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 var ust:TIniFile;
 begin
+    //Panel1.Width:=1;
+   // Panel1.Height:=1;
+    //Panel1.Caption:='';
     Form1.Width:=415;
     Form1.Height:=159;
     end_table_line:=0;

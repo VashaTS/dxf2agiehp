@@ -231,20 +231,29 @@ object Form3: TForm3
     Height = 25
     Top = 168
     Width = 155
-    Caption = 'rozszerzenie dxf do rejestru'
+    Caption = 'rozszerzenie .dxf do rejestru'
     OnClick = Button6Click
     TabOrder = 13
   end
+  object Button7: TButton
+    Left = 224
+    Height = 25
+    Top = 200
+    Width = 155
+    Caption = 'rozszerzenie .mi do rejestru'
+    OnClick = Button7Click
+    TabOrder = 14
+  end
   object SelectDirectoryDialog1: TSelectDirectoryDialog
-    left = 256
-    top = 176
+    left = 240
+    top = 232
   end
   object SelectDirectoryDialog2: TSelectDirectoryDialog
-    left = 288
-    top = 176
+    left = 280
+    top = 232
   end
   object SelectDirectoryDialog3: TSelectDirectoryDialog
     left = 320
-    top = 176
+    top = 232
   end
 end

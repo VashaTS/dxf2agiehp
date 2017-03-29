@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 673
+  Left = 552
   Height = 340
-  Top = 363
+  Top = 121
   Width = 1015
   BorderStyle = bsSingle
   Caption = 'DXF to AGIE HP'
@@ -41,9 +41,9 @@ object Form1: TForm1
   end
   object ListBox1: TListBox
     Left = 248
-    Height = 113
+    Height = 137
     Top = 160
-    Width = 72
+    Width = 136
     ItemHeight = 0
     TabOrder = 2
   end
@@ -105,7 +105,7 @@ object Form1: TForm1
     TabOrder = 9
   end
   object Button2: TButton
-    Left = 304
+    Left = 302
     Height = 25
     Top = 94
     Width = 75
@@ -150,9 +150,10 @@ object Form1: TForm1
   object Button3: TButton
     Left = 304
     Height = 25
-    Top = 59
+    Top = 40
     Width = 96
     Caption = 'Pokaż dane'
+    Enabled = False
     OnClick = Button3Click
     TabOrder = 14
   end
@@ -289,8 +290,8 @@ object Form1: TForm1
     Left = 424
     Height = 25
     Top = 279
-    Width = 75
-    Caption = 'usuń'
+    Width = 80
+    Caption = 'usuń wiersz'
     OnClick = Button5Click
     TabOrder = 21
   end
@@ -366,17 +367,37 @@ object Form1: TForm1
     Caption = 'pliki iso'
     ParentColor = False
   end
-  object ListBox11: TListBox
-    Left = 320
-    Height = 113
-    Top = 160
-    Width = 76
-    ItemHeight = 0
+  object Button7: TButton
+    Left = 304
+    Height = 25
+    Top = 64
+    Width = 96
+    Caption = 'GrafiCheck'
+    Enabled = False
+    OnClick = Button7Click
     TabOrder = 29
+  end
+  object PaintBox1: TPaintBox
+    Left = 8
+    Height = 105
+    Top = 208
+    Width = 105
+    Color = clNavy
+    ParentColor = False
+  end
+  object Button8: TButton
+    Left = 24
+    Height = 25
+    Top = 128
+    Width = 75
+    Caption = 'Button8'
+    OnClick = Button8Click
+    TabOrder = 30
+    Visible = False
   end
   object OpenDialog1: TOpenDialog
     FileName = 'n'
-    Filter = 'Pliki DXF|*.dxf'
+    Filter = 'Pliki DXF|*.dxf|Pliki MI|*.mi'
     InitialDir = 'C:\Intel\LazarusPortable\dxf test'
     left = 88
     top = 216

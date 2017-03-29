@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  StdCtrls,inifiles;
+  StdCtrls,inifiles, ShlObj, Registry;
 
 type
 
@@ -18,6 +18,8 @@ type
     Button3: TButton;
     Button4: TButton;
     Button5: TButton;
+    Button6: TButton;
+    Button7: TButton;
     LabeledEdit1: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
     LabeledEdit3: TLabeledEdit;
@@ -37,6 +39,8 @@ type
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
     { private declarations }
@@ -89,6 +93,36 @@ end;
 procedure TForm3.Button5Click(Sender: TObject);
 begin
   if SelectDirectoryDialog3.Execute then LabeledEdit6.Text:=SelectDirectoryDialog3.FileName;
+end;
+
+procedure TForm3.Button6Click(Sender: TObject);
+begin
+  with TRegistry.Create do
+    try
+      RootKey:=HKEY_CURRENT_USER;
+      if OpenKey('\Software\Classes\.dxf', true) then WriteString('','Dxf2AgiehpFile');
+      if OpenKey('\Software\Classes\Dxf2AgiehpFile', true) then WriteString('','Dxf File');
+      if OpenKey('\Software\Classes\Dxf2AgiehpFile\DefaultIcon', true) then WriteString('',Application.Location+'icon_file.ico');
+      if OpenKey('\Software\Classes\Dxf2AgiehpFile\shell\open\command', true) then WriteString('',Application.ExeName+' "%1"');
+    finally
+      Free;
+    end;
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil);
+end;
+
+procedure TForm3.Button7Click(Sender: TObject);
+begin
+  with TRegistry.Create do
+    try
+      RootKey:=HKEY_CURRENT_USER;
+      if OpenKey('\Software\Classes\.mi', true) then WriteString('','MI_FILE');
+      if OpenKey('\Software\Classes\MI_FILE', true) then WriteString('','MI File');
+      //if OpenKey('\Software\Classes\Dxf2AgiehpFile\DefaultIcon', true) then WriteString('',Application.Location+'icon_file.ico');
+      if OpenKey('\Software\Classes\MI_FILE\shell\open\command', true) then WriteString('',Application.ExeName+' "%1"');
+    finally
+      Free;
+    end;
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil);
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
