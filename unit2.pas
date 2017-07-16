@@ -19,6 +19,8 @@ type
     CheckBox1: TCheckBox;
     CheckListBox1: TCheckListBox;
     ComboBox1: TComboBox;
+    ComboBox2: TComboBox;
+    ComboBox3: TComboBox;
     ComboEL1: TComboBox;
     Edit1: TEdit;
     Edit10: TEdit;
@@ -112,6 +114,49 @@ begin
  SetLength(result,cnt);
 end;
 
+function vdi_nr_to_ii(inp:string):integer;
+begin
+ case inp of
+   'VDI30': result:=0;
+   'VDI29': result:=1;
+   'VDI28': result:=2;
+   'VDI27': result:=3;
+   'VDI26': result:=4;
+   'VDI25': result:=5;
+   'VDI24': result:=6;
+   'VDI23': result:=7;
+   'VDI22': result:=8;
+   'VDI21': result:=9;
+   'VDI20': result:=10;
+   'VDI19': result:=11;
+   'VDI18': result:=12;
+   'VDI17': result:=13;
+   'VDI16': result:=14;
+   else result:=4;
+ end;
+end;
+
+function vdi_ii_to_nr(inp:integer):string;
+begin
+ case inp of
+   0: result:='VDI30';
+   1: result:='VDI29';
+   2: result:='VDI28';
+   3: result:='VDI27';
+   4: result:='VDI26';
+   5: result:='VDI25';
+   6: result:='VDI24';
+   7: result:='VDI23';
+   8: result:='VDI22';
+   9: result:='VDI21';
+   10: result:='VDI20';
+   11: result:='VDI19';
+   12: result:='VDI18';
+   13: result:='VDI17';
+   14: result:='VDI16';
+ end;
+end;
+
 function matforagie(inp:string):string;
 begin
  case inp of
@@ -151,11 +196,13 @@ begin
   el_values:=SplitString(';',ListBox1.Items[ChecklistBox1.ItemIndex]); //read hidden listbox of electrode values
   Label1.Caption:=el_values[0]; //electrode name
   case el_values[1] of //populate combo box
-  'Graphite1': ComboEL1.ItemIndex:=0;
-  'Graphite2': ComboEL1.ItemIndex:=1;
-  'Copper': ComboEL1.ItemIndex:=2;
+       'Graphite1': ComboEL1.ItemIndex:=0;
+       'Graphite2': ComboEL1.ItemIndex:=1;
+       'Copper': ComboEL1.ItemIndex:=2;
+       else ComboEL1.ItemIndex:=1;  // <- TODO: read settings for default!
   end;
-  Edit1.Text:=el_values[2]; // fp
+  if ((strtofloat(el_values[2])>0.1) or (strtofloat(el_values[2])=0)) then Edit1.Text:=el_values[2] // fp
+  else Edit1.Text:='0.11';
   Edit2.Text:=el_values[3]; // u1
   Edit3.Text:=el_values[4]; // u2
   Edit4.Text:=el_values[5]; // u3
@@ -193,7 +240,12 @@ begin
       'Y+': ComboBox1.ItemIndex:=3;
       'Z': ComboBox1.ItemIndex:=4;
     end;
-  if (CheckListBox1.ItemIndex=(CheckListBox1.Count-1)) then Button1.Caption:='Koniec - zapisz program'; //change button to more acurately reflect action taken on pressing it
+    if trim(dlet+dsig)<>'Z' then Edit11.Enabled:=True
+    else Edit11.Enabled:=False;
+    ComboBox2.ItemIndex:=strtoint(el_values[15]);
+    ComboBox3.ItemIndex:=vdi_nr_to_ii(el_values[16]);
+  if (CheckListBox1.ItemIndex=(CheckListBox1.Count-1)) then Button1.Caption:='Koniec - zapisz program' //change button to more acurately reflect action taken on pressing it
+  else Button1.Caption:='Kolejna elektroda';
 
 end;
 
@@ -238,14 +290,15 @@ begin
   if CheckBox1.Checked=True then multi_tf:='1'
   else multi_tf:='0';
   ListBox1.Items.Delete(strtoint(Label8.Caption));  //temp delete existing entry, then add a new one (next line)
-  //                          0               1                               2             3                 4             5             6              7             8                9              10              11           12                       13                             14            15
-  ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit10.Text+';'+multi_tf+';'+ComboBox1.Items[ComboBox1.ItemIndex]+';'+Edit11.Text+';'+elmname);
+  //                          0               1                               2             3                 4             5             6              7             8                9              10              11           12                       13                             14                        15                              16                      17
+  ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit10.Text+';'+multi_tf+';'+ComboBox1.Items[ComboBox1.ItemIndex]+';'+Edit11.Text+';'+inttostr(ComboBox2.ItemIndex)+';'+vdi_ii_to_nr(ComboBox3.ItemIndex)+';'+elmname);
   ListBox1.Items.Move((ListBox1.Count-1),strtoint(Label8.Caption)); //move added antry to previous place
   if (((strtofloat(Edit1.Text)>0) and (strtofloat(Edit2.Text)>0)) or (CheckListBox1.Checked[CheckListBox1.ItemIndex]=False)) then begin  //check if fp and u1 are empty
+     if ((((CheckBox1.Checked=True) and (Edit2.Text=Edit3.Text)) and ((Edit4.Text=Edit5.Text) and (Edit6.Text=Edit7.Text) and (Edit8.Text=Edit9.Text))) or CheckBox1.Checked=False) then begin
      if CheckListBox1.ItemIndex=(CheckListBox1.Count-1) then begin //when all electrodes done
         if OpenDialog1.Execute then begin
            AssignFile(preset,OpenDialog1.FileName);
-           AssignFile(tempp,'temp.mes');
+           AssignFile(tempp,Application.Location+'temp.mes');
            reset(preset);
            rewrite(tempp);
            repeat
@@ -271,7 +324,7 @@ begin
            until eof(preset);
            CloseFile(preset);
            CloseFile(tempp);
-           AssignFile(preset,'temp.mes');
+           AssignFile(preset,Application.Location+'temp.mes');
            reset(preset);
            repeat
               readln(preset,pline);
@@ -313,10 +366,10 @@ begin
                         f00f:='2';
                    end;
 
-                   AssignFile(fut,dir+'\'+tf_val[15]+'.FUT');
+                   AssignFile(fut,dir+'\'+tf_val[17]+'.FUT');
                    rewrite(fut);                             //   name                            fp
                    write(fut,'TRON,05.01.0'+AnsiString(#10)+'F,'+tf_val[11]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,1,0,0001,0,'+f00f+',2,1,1,0,0,1;0;2;0;2;0;4;3;1;$;2;'+matforagie(tf_val[1])+';T;1;'+AnsiString(#10));
-                   AssignFile(f00,dir+'\'+tf_val[15]+'.F00');
+                   AssignFile(f00,dir+'\'+tf_val[17]+'.F00');
                    rewrite(f00);
                    write(f00,'_TRON_,AGIEFUT_05.01.0'+AnsiSTring(#10)+'F,1,16678904,'+tf_val[11]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,0,1,0,'+f00f+',2,1,1,0,0'+AnsiString(#10));
                    if ListBox2.Count>0 then begin // add physical electrodes
@@ -395,11 +448,11 @@ begin
                    end; //listbox2 - physical electrodes
                    CloseFile(fut);
                    CloseFile(f00);
-                   AssignFile(fur,dir+'\'+tf_val[15]+'.FUR');
+                   AssignFile(fur,dir+'\'+tf_val[17]+'.FUR');
                    rewrite(fur);
-                   write(fur,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME '+tf_val[11]+';'+AnsiString(#10)+'AGIE.USING_1 IMPORT COUNT_0 '+tf_val[15]+'.F00;');
+                   write(fur,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME '+tf_val[11]+';'+AnsiString(#10)+'AGIE.USING_1 IMPORT COUNT_0 '+tf_val[17]+'.F00;');
                    CloseFile(fur);
-                   AssignFile(f0r,dir+'\'+tf_val[15]+'.F0R');
+                   AssignFile(f0r,dir+'\'+tf_val[17]+'.F0R');
                    rewrite(f0r);
                    write(f0r,'AGIE.VERSION 2,05.01.0;'+AnsiSTring(#10)+'.LONGNAME '+tf_val[11]+';');
                    CloseFile(f0r);
@@ -417,11 +470,11 @@ begin
                  strat:=ust.ReadString('settings','electrodeStrategy','1');
                  ust.Free;
                  forcedirectories(dir); //create folders if needed
-                 AssignFile(fur,dir+'\'+tf_val[15]+'.FUR');
+                 AssignFile(fur,dir+'\'+tf_val[17]+'.FUR');
                  rewrite(fur);
-                 write(fur,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME '+tf_val[11]+';'+AnsiString(#10)+'AGIE.USING_1 IMPORT COUNT_0 '+tf_val[13]+'.F00;');
+                 write(fur,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME '+tf_val[11]+';'+AnsiString(#10)+'AGIE.USING_1 IMPORT COUNT_0 '+tf_val[17]+'.F00;');
                  CloseFile(fur);
-                 AssignFile(f0r,dir+'\'+tf_val[15]+'.F0R');
+                 AssignFile(f0r,dir+'\'+tf_val[17]+'.F0R');
                  rewrite(f0r);
                  write(f0r,'AGIE.VERSION 2,05.01.0;'+AnsiSTring(#10)+'.LONGNAME '+tf_val[11]+';');
                  CloseFile(f0r);
@@ -429,12 +482,20 @@ begin
                  else if tf_val[5]<>'0' then amount_of_el:=3
                  else if tf_val[4]<>'0' then amount_of_el:=2
                  else amount_of_el:=1;
-                 AssignFile(fut,dir+'\'+tf_val[15]+'.FUT');
+                 AssignFile(fut,dir+'\'+tf_val[17]+'.FUT');
                  rewrite(fut);                             //   name                            fp
                  write(fut,'TRON,05.01.0'+AnsiString(#10)+'F,'+tf_val[0]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,1,0,0001,0,2,2,1,1,0,0,1;0;2;0;2;0;4;3;1;$;2;'+matforagie(tf_val[1])+';T;1;'+AnsiString(#10));
-                 AssignFile(f00,dir+'\'+tf_val[15]+'.F00');
+                 AssignFile(f00,dir+'\'+tf_val[17]+'.F00');
                  rewrite(f00);
-                 write(f00,'_TRON_,AGIEFUT_05.01.0'+AnsiSTring(#10)+'F,1,16678904,'+tf_val[11]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,0,1,0,2,2,1,1,0,0'+AnsiString(#10));
+                 if tf_val[13]<>'Z' then begin
+                      f00f:='6';
+                      f00_sk:=pe_val[4];
+                   end
+                   else begin
+                        f00f:='2';
+                        f00_sk:='0.';
+                   end;
+                 write(f00,'_TRON_,AGIEFUT_05.01.0'+AnsiSTring(#10)+'F,1,16678904,'+tf_val[11]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,0,1,0,'+f00f+',2,1,1,0,0'+AnsiString(#10));
                  if strat='1' then begin
                     elno:='1';
                     phase:='1';
@@ -444,7 +505,7 @@ begin
                     write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[3]+',1,'+umode+',0,1,0,0.,1,'+tf_val[11]+AnsiString(#10));
                      write(fut,'U,R'+elno+',1,2,'+tf_val[7]+',3,'+tf_val[3]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase+','+eip+',1,$,F,0,0,T,0.,1,1,V'+elno+','+tf_val[11]+AnsiString(#10));
                      write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[3]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
-                     write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[7]+',3,'+tf_val[3]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,T,0,0,T,0.,1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
+                     write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[7]+',3,'+tf_val[3]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,F,0,0,T,'+f00_sk+',1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
                      if amount_of_el>=2 then begin
                         elno:='2';
                         phase:='2';
@@ -454,7 +515,7 @@ begin
                         write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[4]+',1,'+umode+',0,1,0,0.,1,'+tf_val[11]+AnsiString(#10));
                         write(fut,'U,R'+elno+',1,2,'+tf_val[8]+',3,'+tf_val[4]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase+','+eip+',1,$,F,0,0,T,0.,1,1,V'+elno+','+tf_val[11]+AnsiString(#10));
                         write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[4]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
-                        write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[8]+',3,'+tf_val[4]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,T,0,0,T,0.,1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
+                        write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[8]+',3,'+tf_val[4]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,F,0,0,T,'+f00_sk+',1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
                         if amount_of_el>=3 then begin
                            elno:='3';
                            phase:='2';
@@ -464,7 +525,7 @@ begin
                            write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[5]+',1,'+umode+',0,1,0,0.,1,'+tf_val[11]+AnsiString(#10));
                            write(fut,'U,R'+elno+',1,2,'+tf_val[9]+',3,'+tf_val[5]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase+','+eip+',1,$,F,0,0,T,0.,1,1,V'+elno+','+tf_val[11]+AnsiString(#10));
                            write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[5]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
-                           write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[9]+',3,'+tf_val[5]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,T,0,0,T,0.,1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
+                           write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[9]+',3,'+tf_val[5]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,F,0,0,T,'+f00_sk+',1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
                            if amount_of_el=4 then begin
                               elno:='4';
                               phase:='2';
@@ -474,7 +535,7 @@ begin
                               write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[6]+',1,'+umode+',0,1,0,0.,1,'+tf_val[11]+AnsiString(#10));
                               write(fut,'U,R'+elno+',1,2,'+tf_val[10]+',3,'+tf_val[6]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase+','+eip+',1,$,F,0,0,T,0.,1,1,V'+elno+','+tf_val[11]+AnsiString(#10));
                               write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[6]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
-                              write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[10]+',3,'+tf_val[6]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,T,0,0,T,0.,1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
+                              write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[10]+',3,'+tf_val[6]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,F,0,0,T,'+f00_sk+',1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
                            end;
                         end;
                      end;
@@ -488,7 +549,7 @@ begin
                      write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[3]+',1,'+umode+',0,1,0,0.,1,'+tf_val[11]+AnsiString(#10));
                      write(fut,'U,R'+elno+',1,2,'+tf_val[7]+',3,'+tf_val[3]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase+','+eip+',1,$,F,0,0,T,0.,1,1,V'+elno+','+tf_val[11]+AnsiString(#10));
                      write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[3]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
-                     write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[7]+',3,'+tf_val[3]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,T,0,0,T,0.,1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
+                     write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[7]+',3,'+tf_val[3]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,F,0,0,T,'+f00_sk+',1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
                      if amount_of_el>=2 then begin
                         if amount_of_el<4 then begin
                              elno:='2';
@@ -505,7 +566,7 @@ begin
                         write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[4]+',1,'+umode+',0,1,0,0.,1,'+tf_val[11]+AnsiString(#10));
                         write(fut,'U,R'+elno+',1,2,'+tf_val[8]+',3,'+tf_val[4]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase+','+eip+',1,$,F,0,0,T,0.,1,1,V'+elno+','+tf_val[11]+AnsiString(#10));
                         write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[4]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
-                        write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[8]+',3,'+tf_val[4]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,T,0,0,T,0.,1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
+                        write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[8]+',3,'+tf_val[4]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,F,0,0,T,'+f00_sk+',1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
                         if amount_of_el>=3 then begin
                            if amount_of_el=4 then begin
                               elno:='3';
@@ -522,7 +583,7 @@ begin
                            write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[5]+',1,'+umode+',0,1,0,0.,1,'+tf_val[11]+AnsiString(#10));
                            write(fut,'U,R'+elno+',1,2,'+tf_val[9]+',3,'+tf_val[5]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase+','+eip+',1,$,F,0,0,T,0.,1,1,V'+elno+','+tf_val[11]+AnsiString(#10));
                            write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[5]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
-                           write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[9]+',3,'+tf_val[5]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,T,0,0,T,0.,1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
+                           write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[9]+',3,'+tf_val[5]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,F,0,0,T,'+f00_sk+',1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
                            if amount_of_el=4 then begin
                                elno:='4';
                              phase:='2';
@@ -532,7 +593,7 @@ begin
                               write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[6]+',1,'+umode+',0,1,0,0.,1,'+tf_val[11]+AnsiString(#10));
                               write(fut,'U,R'+elno+',1,2,'+tf_val[10]+',3,'+tf_val[6]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase+','+eip+',1,$,F,0,0,T,0.,1,1,V'+elno+','+tf_val[11]+AnsiString(#10));
                               write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase+','+eip+','+tf_val[6]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
-                              write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[10]+',3,'+tf_val[6]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,T,0,0,T,0.,1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
+                              write(f00,'U,'+inttostr((strtoint(elno)*2)+1)+',4246470654+7,R'+elno+',1,2,'+tf_val[10]+',3,'+tf_val[6]+',0,0,0,0,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,0,1,$,F,0,0,T,'+f00_sk+',1,1,1,'+inttostr((strtoint(elno)*2))+AnsiString(#10));
                              end;
                         end;
                      end;
@@ -554,6 +615,8 @@ begin
           Form2.editel(Form2);
           Edit1.SetFocus; //set focus to Fp field
      end;
+     end
+     else ShowMessage('Błędne dany Multi elektrody');
   end
   else ShowMessage('Wpisz dane w pola: U1 i Fp');
 

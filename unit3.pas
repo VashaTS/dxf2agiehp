@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  StdCtrls,inifiles, ShlObj, Registry;
+  StdCtrls,inifiles, ShlObj, Registry, DateUtils;
 
 type
 
@@ -27,6 +27,7 @@ type
     LabeledEdit5: TLabeledEdit;
     LabeledEdit6: TLabeledEdit;
     LabeledEdit7: TLabeledEdit;
+    LabeledEdit8: TLabeledEdit;
     RadioButton1: TRadioButton;
     RadioButton2: TRadioButton;
     RadioButton3: TRadioButton;
@@ -55,6 +56,21 @@ implementation
 
 {$R *.lfm}
 
+procedure logToFile(inp:string);
+var lf:TextFile;
+  fd:string;
+begin
+   DateTimeToString(fd,'yyyy-mm-dd hh:nn:ss',Now);
+   AssignFile(lf,Application.Location+'\logfile'+inttostr(YearOf(Now))+'.log');
+   if (fileexists(Application.Location+'\logfile'+inttostr(YearOf(Now))+'.log')=false) then begin
+     rewrite(lf);
+     writeln(lf,fd+' Log started');
+     end
+   else Append(lf);
+   writeln(lf,fd+' '+inp);
+   CloseFile(lf);
+end;
+
 { TForm3 }
 
 procedure TForm3.Button1Click(Sender: TObject);
@@ -68,10 +84,12 @@ begin
    ust.WriteString('settings','pathMES',LabeledEdit5.Text);
    ust.WriteString('settings','pathOutput',LabeledEdit6.Text);
    ust.WriteString('settings','maxPositionInMagazine',LabeledEdit7.Text);
+   ust.WriteString('settings','defaultSideOffset',LabeledEdit8.Text);
    if RadioButton1.Checked=True then ust.WriteString('settings','electrodeStrategy','1')
    else if RadioButton2.Checked=True then ust.WriteString('settings','electrodeStrategy','2')
    else if RadioButton3.Checked=True then ust.WriteString('settings','electrodeStrategy','3');
    ust.Free;
+   logToFile('settings saved');
    Form3.Close;
 end;
 
@@ -104,6 +122,8 @@ begin
       if OpenKey('\Software\Classes\Dxf2AgiehpFile', true) then WriteString('','Dxf File');
       if OpenKey('\Software\Classes\Dxf2AgiehpFile\DefaultIcon', true) then WriteString('',Application.Location+'icon_file.ico');
       if OpenKey('\Software\Classes\Dxf2AgiehpFile\shell\open\command', true) then WriteString('',Application.ExeName+' "%1"');
+      RootKey:=HKEY_CLASSES_ROOT;
+      if OpenKey('\Applications\dxf2agiehp.exe\shell\open', true) then WriteString('FriendlyAppName','DXF 2 AGIE HP');
     finally
       Free;
     end;
@@ -137,6 +157,7 @@ begin
    LabeledEdit5.Text:=ust.ReadString('settings','pathMES','C:\korekty\AGIEVISION_2');
    LabeledEdit6.Text:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');
    LabeledEdit7.Text:=ust.ReadString('settings','maxPositionInMagazine','50');
+   LabeledEdit8.Text:=ust.ReadString('settings','defaultSideOffset','5');
    rad:=ust.ReadString('settings','electrodeStrategy','1');
    if rad='1' then RadioButton1.Checked:=True
    else if rad='2' then RadioButton2.CHecked:=True

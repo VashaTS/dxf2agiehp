@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, Comctrls, Spin, Menus, strings, Math, Unit2, Unit3, Unit4, Unit5, Unit6 ,inifiles;
+  ExtCtrls, Comctrls, Spin, Menus, strings, Math, Unit2, Unit3, Unit4, Unit5,
+  Unit6, DCPsha256, inifiles, StrUtils, DateUtils;
 
 type
   TArrayOfString = array of String;
@@ -16,6 +17,8 @@ type
 
   TForm1 = class(TForm)
     Button1: TButton;
+    Button10: TButton;
+    Button11: TButton;
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
@@ -23,23 +26,34 @@ type
     Button6: TButton;
     Button7: TButton;
     Button8: TButton;
+    Button9: TButton;
     CheckBox1: TCheckBox;
     CheckBox2: TCheckBox;
     CheckBox3: TCheckBox;
+    CheckBox4: TCheckBox;
     ComboBox1: TComboBox;
     ComboBox2: TComboBox;
+    ComboBox3: TComboBox;
     Edit1: TEdit;
+    Edit10: TEdit;
     Edit2: TEdit;
     Edit3: TEdit;
     Edit4: TEdit;
     Edit5: TEdit;
     Edit6: TEdit;
+    Edit7: TEdit;
+    Edit8: TEdit;
+    Edit9: TEdit;
     Label1: TLabel;
     Label10: TLabel;
     Label11: TLabel;
     Label12: TLabel;
+    Label13: TLabel;
+    Label14: TLabel;
+    Label15: TLabel;
+    Label16: TLabel;
+    Label17: TLabel;
     Label2: TLabel;
-    Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
@@ -48,6 +62,8 @@ type
     Label9: TLabel;
     ListBox1: TListBox;
     ListBox10: TListBox;
+    ListBox11: TListBox;
+    ListBox12: TListBox;
     ListBox2: TListBox;
     ListBox3: TListBox;
     ListBox4: TListBox;
@@ -61,11 +77,15 @@ type
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
+    MenuItem5: TMenuItem;
+    MenuItem6: TMenuItem;
     OpenDialog1: TOpenDialog;
     PaintBox1: TPaintBox;
     ProgressBar1: TProgressBar;
     SpinEdit1: TSpinEdit;
     Timer1: TTimer;
+    procedure Button10Click(Sender: TObject);
+    procedure Button11Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -74,15 +94,23 @@ type
     procedure Button6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
+    procedure Button9Click(Sender: TObject);
+    procedure chkeckTypedDir(Sender: TObject; var Key: Word; Shift: TShiftState
+      );
+    procedure comatodot(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure ComboBox3Change(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure handleparams(Sender: TObject);
     procedure hp2(Sender: TObject; const FileNames: array of String);
+    procedure loadpos(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure nospaces(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure scrollothers(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure shlogf(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
     { private declarations }
@@ -92,7 +120,8 @@ type
 
 var
   Form1: TForm1;
-  end_table_line,offset:integer;
+  end_table_line,offset,tableno,errorlevel,gel:integer;
+  plsr12sc:boolean;
 
 implementation
 
@@ -145,8 +174,102 @@ function isNumber(s:string):boolean;
 var i:integer;
 begin
      i:=1;
-     while (i<=length(s)) and (s[i] in ['0'..'9','.']) do inc(i);
+     while (i<=length(s)) and (s[i] in ['0'..'9','.','E']) do inc(i);
      result:=i>length(s);
+end;
+
+function isSignedFloat(s:string):boolean;
+var i:integer;
+begin
+     i:=1;
+     while (i<=length(s)) and (s[i] in ['0'..'9','.','-']) do inc(i);
+     result:=i>length(s);
+end;
+
+function vdi_nr_to_ii(inp:string):integer;
+begin
+ case inp of
+   'VDI30': result:=0;
+   'VDI29': result:=1;
+   'VDI28': result:=2;
+   'VDI27': result:=3;
+   'VDI26': result:=4;
+   'VDI25': result:=5;
+   'VDI24': result:=6;
+   'VDI23': result:=7;
+   'VDI22': result:=8;
+   'VDI21': result:=9;
+   'VDI20': result:=10;
+   'VDI19': result:=11;
+   'VDI18': result:=12;
+   'VDI17': result:=13;
+   'VDI16': result:=14;
+   else result:=4; //in case of bad table input, choose default
+ end;
+end;
+
+function vdi_ii_to_nr(inp:integer):string;
+begin
+ case inp of
+   0: result:='VDI30';
+   1: result:='VDI29';
+   2: result:='VDI28';
+   3: result:='VDI27';
+   4: result:='VDI26';
+   5: result:='VDI25';
+   6: result:='VDI24';
+   7: result:='VDI23';
+   8: result:='VDI22';
+   9: result:='VDI21';
+   10: result:='VDI20';
+   11: result:='VDI19';
+   12: result:='VDI18';
+   13: result:='VDI17';
+   14: result:='VDI16';
+ end;
+end;
+
+
+
+procedure logToFile(inp,typ:string);
+var lf:TextFile;
+  fd:string;
+begin
+   DateTimeToString(fd,'yyyy-mm-dd hh:nn:ss',Now);
+   AssignFile(lf,Application.Location+'\logfile'+inttostr(YearOf(Now))+'.log');
+   if (fileexists(Application.Location+'\logfile'+inttostr(YearOf(Now))+'.log')=false) then begin
+     rewrite(lf);
+     writeln(lf,fd+' Log started');
+     end
+   else Append(lf);
+   writeln(lf,fd+' '+typ+' '+inp);
+   CloseFile(lf);
+end;
+
+function vdi_num_to_agie(inp:string):string;
+begin
+ case inp of //write the choosen surface quality
+          'VDI30': result:='VDI_30Ra3.17oxxo,1,$,  3.170000';
+          'VDI29': result:='VDI_29Ra2.82oxxo,1,$,  2.820000';
+          'VDI28': result:='VDI_28Ra2.51oxxo,1,$,  2.510000';
+          'VDI27': result:='VDI_27Ra2.24oxxo,1,$,  2.240000';
+          'VDI26': result:='VDI_26Ra2.0oxxo,1,$,  2.000000';
+          'VDI25': result:='VDI_25Ra1.78oxxo,1,$,  1.780000';
+          'VDI24': result:='VDI_24Ra1.59oxxo,1,$,  1.590000';
+          'VDI23': result:='VDI_23Ra1.41oxxo,1,$,  1.410000';
+          'VDI22': result:='VDI_22Ra1.26oxxo,1,$,  1.260000';
+          'VDI21': result:='VDI_21Ra1.12oxxo,1,$,  1.120000';
+          'VDI20': result:='VDI_20Ra1.0oxxo,1,$,  1.000000';
+          'VDI19': result:='VDI_19Ra0.89oxxo,1,$,  0.890000';
+          'VDI18': result:='VDI_18Ra0.79oxxo,1,$,  0.790000';
+          'VDI17': result:='VDI_17Ra0.71oxxo,1,$,  0.710000';
+          'VDI16': result:='VDI_16Ra0.65oxxo,1,$,  0.650000';
+          else begin
+              result:='VDI_26Ra2.0oxxo,1,$,  2.000000'; //to prevent program crashing the machine on bad table input
+              logToFile('wrong VDI number, usinng default','ERR');
+              end;
+     end;
+
 end;
 
 { TForm1 }
@@ -157,10 +280,15 @@ begin
 
 end;
 
+procedure TForm1.shlogf(Sender: TObject);
+begin
+  Form6.ShowModal;
+end;
+
 procedure TForm1.Timer1Timer(Sender: TObject);
-var rnumber,rname,str,dir,strat,gnam,z_in_mach,mach_add,z_in_geo,geo_add,geo_add2,iname,iusing,sp_coords:string;
+var rnumber,rname,str,dir,strat,gnam,z_in_mach,mach_add,z_in_geo,geo_add,geo_add2,iname,iusing,sp_coords,drbok:string;
   i,j,k,using_nr,amount_of_el,kapiel,last_using:integer;
-  job,jor,tek,ter:TextFile;
+  job,jor,tek,ter,iso,isr:TextFile;
   ust:TIniFile;
   p_elval,p_elam,isoval:TArrayOfString;
   min_z:real;
@@ -189,35 +317,39 @@ begin
      CloseFile(tek);
      AssignFile(ter,dir+'\'+rname+'.TER');
      rewrite(ter);
-     write(ter,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME detal:'+rnumber+';'); //another useless random number
+     write(ter,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME detal:'+rnumber+';'); //another useless random number required by the AGIEVISION
      CloseFile(ter);
      ProgressBar1.Position:=20;
      AssignFile(jor,dir+'\'+rname+'.JOR');
      rewrite(jor);
      write(jor,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME '+Edit3.Text+';'+AnsiString(#10)+'AGIE.USING_1 IMPORT COUNT_0 '+rname+'.TEK;'+AnsiString(#10)); //import empty technology file
-     for i:=0 to Form2.ListBox1.Count-1 do begin
+     for i:=0 to Form2.ListBox1.Count-1 do begin //for every electrode in form2
          p_elval:=SplitString(';',Form2.ListBox1.Items[i]);
-         if Form2.CheckListBox1.Checked[i]=True then begin
-            write(jor,'AGIE.USING_'+inttostr(i+2)+' IMPORT COUNT_1 '+p_elval[15]+'.FUT;'+AnsiString(#10)); //import every electrode for use in .JOB file
+         if Form2.CheckListBox1.Checked[i]=True then begin //only when checked
+            write(jor,'AGIE.USING_'+inttostr(i+2)+' IMPORT COUNT_1 '+p_elval[17]+'.FUT;'+AnsiString(#10)); //import every electrode for use in .JOB file
             last_using:=i+2;
          end;
      end;
-     for i:=0 to Form2.ListBox1.Count-1 do begin
+      // new iso gen - per machining
+      for i:=0 to Form1.ListBox9.Count-1 do begin
+          if Form1.ListBox9.Items[i]<>'Z' then begin
+            iname:='ISO';
+            sleep(random(50*i)); //because otherwise random gives the same numbers for all iso files
+            for j:=1 to 5 do iname:=iname + str[random(length(str))+1];
+            inc(last_using);
+            // num in listbox ; direction ; odsuniecie ; isoname ; using_nr
+            ListBox10.Items.Add(inttostr(i)+';'+Form1.ListBox9.Items[i]+';'+Form1.ListBox11.Items[i]+';'+iname+';'+inttostr(last_using));
+            write(jor,'AGIE.USING_'+inttostr(last_using)+' IMPORT COUNT_0 '+iname+'.ISO;'+AnsiString(#10)); //iso file for side eroding
+          end;
+      end;
+                   //new VDI - per electrode TODO: move definitions to ini file
+       for i:=0 to Form2.ListBox1.Count-1 do begin //for every electrode in form2
          p_elval:=SplitString(';',Form2.ListBox1.Items[i]);
-         if p_elval[13]<>'Z' then begin
-             iname:='ISO';
-             randomize;
-             for j:=1 to 5 do iname:=iname + str[random(length(str))+1];
-             inc(last_using);
-             ListBox10.Items.Add(p_elval[0]+';'+p_elval[13]+';'+p_elval[14]+';'+iname+';'+inttostr(last_using));
-             write(jor,'AGIE.USING_'+inttostr(last_using)+' IMPORT COUNT_0 '+iname+'.ISO;'+AnsiString(#10)); //iso file for side eroding
+         if Form2.CheckListBox1.Checked[i]=True then begin //only when checked
+            write(jor,'AGIE.BEA_'+inttostr(i+2)+' IMPORT COUNT_2 '+vdi_num_to_agie(p_elval[16])+',F,T,T,F,F;'+AnsiString(#10)); //add vdi for every electrode
          end;
      end;
-     case ComboBox2.ItemIndex of //write the choosen surface quality
-          0: write(jor,'AGIE.BEA_1 IMPORT COUNT_2 VDI_26Ra2.0oxxo,1,$,  2.000000,F,T,T,F,F;');
-          1: write(jor,'AGIE.BEA_1 IMPORT COUNT_2 VDI_24_Ra1.59g oxxo,1,$,  1.590000,F,T,T,F,F;');
-          2: write(jor,'AGIE.BEA_1 IMPORT COUNT_2 VDI_22Ra1.26oxxo,1,$,  1.260000,F,T,T,F,F;');
-     end;
+
      CloseFile(jor);
      ProgressBar1.Position:=30;
      AssignFile(job,dir+'\'+rname+'.JOB');
@@ -225,8 +357,8 @@ begin
      if CheckBox3.Checked=True then gnam:='Group' //only create 1 group, to be copied on machine
      else gnam:='$';
      write(job,'TRON,05.01.0'+AnsiString(#10)+'J,$,x123,000,CNNPx,CNNPy,CNNCx,CNNCy,ZOOMPx,ZOOMPy,ZOOMCx,ZOOMCy,L,MinMax,Optmize'+AnsiString(#10)); //header
-     write(job,'W,'+Edit3.Text+',4,000,0001,AGIE.BEA_1,,1,2,30,1,0,F,0,T,2,40,0.0000,0.0000,0.0000,0.0,0.0,0.0000,0.0,0.0,0.0,0.0,0.0,100,100,50,-50,-50,-50,30,1,0,KW,0,F,0,F,0,F,0,0,F,1.3,T,0.8,F,$,$,1,$,$,$,$,2,TipoEdit2,TipoGraph,65536,0,0,0,65536,0,5000,5000,1,TipoGraph,65536,0,0,0,65536,0,10000,10000,1');
-     if CheckBox3.Checked= True then write(job,AnsiString(#10)+'G,'+gnam+','+inttostr(ListBox2.Count)+',+0.0000,+0.0000,0.0,0,0,0.0,0,0,0,0,0,1,1,1,1,0,F,0,T,2,40,AGIE.BEA_1,,0,1,0,0,F,0,F,0,0,F,1.3,0001,0,F,'+Edit3.Text+',$,2,1.0000,1.0000,2,65536,0,0,0,65536,0,10000,10000,1,TipoGraph,65536,0,0,0,65536,0,10000,10000,1');
+     write(job,'W,'+Edit3.Text+',4,000,0001,AGIE.BEA_2,,1,2,30,1,0,F,0,T,2,40,0.0000,0.0000,0.0000,0.0,0.0,0.0000,0.0,0.0,0.0,0.0,0.0,100,100,50,-50,-50,-50,30,1,0,KW,0,F,0,F,0,F,0,0,F,1.3,T,0.8,F,$,$,1,$,$,$,$,2,TipoEdit2,TipoGraph,65536,0,0,0,65536,0,5000,5000,1,TipoGraph,65536,0,0,0,65536,0,10000,10000,1');
+     if CheckBox3.Checked= True then write(job,AnsiString(#10)+'G,'+gnam+','+inttostr(ListBox2.Count)+',+0.0000,+0.0000,0.0,0,0,0.0,0,0,0,0,0,1,1,1,1,0,F,0,T,2,40,AGIE.BEA_2,,0,1,0,0,F,0,F,0,0,F,1.3,0001,0,F,'+Edit3.Text+',$,2,1.0000,1.0000,2,65536,0,0,0,65536,0,10000,10000,1,TipoGraph,65536,0,0,0,65536,0,10000,10000,1');
      for i:=0 to ListBox2.Count-1 do begin //for every entry in table
          min_z:=200;
          for j:=0 to Form2.ListBox1.Count-1 do begin
@@ -241,44 +373,7 @@ begin
          kapiel:=40;
          if min_z<(strtofloat(ListBox6.Items[i])-20) then kapiel:=20; //TODO: test the exact value on machine
          if do_this_el=True then begin
-            for j:=0 to Form2.ListBox1.Count-1 do begin  //find out el properties for eroding direction
-                p_elam:=SplitString(';',Form2.ListBox1.Items[j]);
-                if p_elam[0]=ListBox2.Items[i] then begin
-                      if p_elam[13]<>'Z' then begin
-                           iusing:='error';
-                           for k:=0 to ListBox10.Count-1 do begin
-                               isoval:=SplitString(';',ListBox10.Items[k]);
-                               if isoval[0]=p_elam[0] then iusing:=isoval[4];
-                           end;          //  v- this = Y-, C180
-                           case p_elam[13] of
-                                'X+': sp_coords:=p_elam[14]+', 0.0, 0';
-                                'X-': sp_coords:='-'+p_elam[14]+', 0.0, 0';
-                                'Y+': sp_coords:='0.0, '+p_elam[14]+', 0';
-                                'Y-': sp_coords:='0.0, -'+p_elam[14]+', 0';
-                           end;
-                           //sp_coords:='0.0, 5.5, 0'; // TODO: x+/x-/y+/y-
-                           z_in_mach:=ListBox6.Items[i];
-                           mach_add:=' 8, 3; 0; '+p_elam[14]+'; 0; 0; 0';
-                           z_in_geo:='0';
-                           if iusing='error' then ShowMessage('Wrong using number for iso file!');
-                           geo_add:='2,2,1,1,0.0,2,1,1,AGIE.USING_'+iusing;
-                           geo_add2:='0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,45,0,1,3,0,0,0,0,1,F,F,1,0,1,0,0,0,0,0,0,0,T,1,1,2,3,4,0,0,0,0,0,0,F,2,0,0,-1,2,1,1,0,0,0,0,0,0';
-                      end
-                      else begin
-                           sp_coords:='0.0000,0.0000,3.0000';
-                           z_in_mach:='0.0';
-                           mach_add:='0,0';
-                           z_in_geo:=ListBox6.Items[i];
-                           geo_add:='2,1,1,1,0.0,0,1,2,';
-                           geo_add2:='0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,5,0,0,0,0,0,45,1,1,3,0,0,0,0,1,F,T,1,0,1,0,0,0,0,0,0,0,F,1,1,2,3,4,0,0,0,0,0,0,F,1,0,0,0,1,1,1,0,0,0,0,0,0';
-                      end;
-                  end;
-            end;                                                                                                                                                                                                                                                                                                                                                  // v bok zmienia tu
-            if CheckBox3.Checked=True then write(job,AnsiString(#10)+'R,Mach'+inttostr(i)+','+ListBox3.Items[i]+','+ListBox4.Items[i]+','+z_in_mach+',0,0,'+ListBox5.Items[i]+',0,0,0,0,0,F,F,1,1,0,F,0,T,2,'+inttostr(kapiel)+',AGIE.USING_'+inttostr(using_nr)+',0,Geo_Mach'+inttostr(i)+',1,0001,AGIE.BEA_1,F,,StartPoint,6,,-1,1,0,0,0,0,T,5,F,T,T,T,F,0,0,0,1,0,'+mach_add+',0,0,0,0,1,0,0,0,134,'+gnam+','+Edit3.Text+',$,1.0000,1.0000,1,65536,0,0,0,65536,0,10000,10000,1'+AnsiString(#10))
-            else                           write(job,AnsiString(#10)+'A,Mach'+inttostr(i)+','+ListBox3.Items[i]+','+ListBox4.Items[i]+','+z_in_mach+',0,0,'+ListBox5.Items[i]+',0,0,0,0,0,F,F,1,1,0,F,0,T,2,'+inttostr(kapiel)+',AGIE.USING_'+inttostr(using_nr)+',0,Geo_Mach'+inttostr(i)+',1,0001,AGIE.BEA_1,F,,StartPoint,5,,-1,1,0,0,0,0,T,5,F,T,T,T,F,0,0,0,1,0,'+mach_add+',0,0,0,0,1,0,0,0,138,'+Edit3.Text+',$,1.0000,1.0000,1,64420,11397,0,-11397,64420,0,11000,11000,1'+AnsiString(#10));
-            write(job,'E,Geo_Mach'+inttostr(i)+',T,T,F,1,T,'+geo_add+',0,0,'+z_in_geo+',0,0,0,T,0,0.0,0.0,F,1,0,0,0,0,0,0,0,360,0,F,'+geo_add2+',Mach'+inttostr(i)+','+gnam+','+Edit3.Text+',$');
-            //next lines for every physical electrode of this family (copy of .FUT information basically, but in slightly different format, cannot be copied)
-            amount_of_el:=0;
+           amount_of_el:=0;
             if Form2.ListBox2.Count>0 then begin //if there is data from preset
                for j:=0 to Form2.ListBox2.Count-1 do begin
                    p_elam:=SplitString(';',Form2.ListBox2.Items[j]);
@@ -296,6 +391,46 @@ begin
                     end;
                 end;
             end;
+            // todo: change this! --v
+            //for j:=0 to Form2.ListBox1.Count-1 do begin  //find out el properties for eroding direction
+                //p_elam:=SplitString(';',Form2.ListBox1.Items[j]);
+                //if p_elam[0]=ListBox2.Items[i] then begin
+                      if ListBox9.Items[i]<>'Z' then begin
+                           iusing:='error';
+                           for k:=0 to ListBox10.Count-1 do begin
+                               isoval:=SplitString(';',ListBox10.Items[k]);
+                               if isoval[0]=inttostr(i) then iusing:=isoval[4];
+                           end;
+                           case ListBox9.Items[i] of
+                                'X+': sp_coords:='-'+ListBox11.Items[i]+', 0.0, 0';
+                                'X-': sp_coords:=ListBox11.Items[i]+', 0.0, 0';
+                                'Y+': sp_coords:='0.0, -'+ListBox11.Items[i]+', 0';
+                                'Y-': sp_coords:='0.0, '+ListBox11.Items[i]+', 0';
+                           end;
+                           z_in_mach:=ListBox6.Items[i];
+                           mach_add:=' 8, '+inttostr(amount_of_el)+'; 0; '+ListBox11.Items[i]+'; 0; 0; 0';
+                           z_in_geo:='0';
+                           if iusing='error' then ShowMessage('Wrong using number for iso file!');
+                           geo_add:='2,2,1,1,0.0,2,1,1,AGIE.USING_'+iusing;
+                           geo_add2:='0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,45,0,1,3,0,0,0,0,1,F,F,1,0,1,0,0,0,0,0,0,0,T,1,1,2,3,4,0,0,0,0,0,0,F,2,0,0,-1,2,1,1,0,0,0,0,0,0';
+                      end
+                      else begin
+                           sp_coords:='0.0000,0.0000,3.0000';
+                           z_in_mach:='0.0';
+                           mach_add:='0,0';
+                           z_in_geo:=ListBox6.Items[i];
+                           geo_add:='2,1,1,1,0.0,0,1,2,';
+                           geo_add2:='0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,5,0,0,0,0,0,45,1,1,3,0,0,0,0,1,F,T,1,0,1,0,0,0,0,0,0,0,F,1,1,2,3,4,0,0,0,0,0,0,F,1,0,0,0,1,1,1,0,0,0,0,0,0';
+                      end;
+                  //end;
+            //end;
+            // end of eroding direction things
+
+            if CheckBox3.Checked=True then write(job,AnsiString(#10)+'R,Mach'+inttostr(i)+','+ListBox3.Items[i]+','+ListBox4.Items[i]+','+z_in_mach+',0,0,'+ListBox5.Items[i]+',0,0,0,0,0,F,F,1,1,0,F,0,T,2,'+inttostr(kapiel)+',AGIE.USING_'+inttostr(using_nr)+',0,Geo_Mach'+inttostr(i)+',1,0001,AGIE.BEA_'+inttostr(using_nr)+',F,,StartPoint,6,,-1,1,0,0,0,0,T,5,F,T,T,T,F,0,0,0,1,0,'+mach_add+',0,0,0,0,1,0,0,0,134,'+gnam+','+Edit3.Text+',$,1.0000,1.0000,1,65536,0,0,0,65536,0,10000,10000,1'+AnsiString(#10))
+            else                           write(job,AnsiString(#10)+'A,Mach'+inttostr(i)+','+ListBox3.Items[i]+','+ListBox4.Items[i]+','+z_in_mach+',0,0,'+ListBox5.Items[i]+',0,0,0,0,0,F,F,1,1,0,F,0,T,2,'+inttostr(kapiel)+',AGIE.USING_'+inttostr(using_nr)+',0,Geo_Mach'+inttostr(i)+',1,0001,AGIE.BEA_'+inttostr(using_nr)+',F,,StartPoint,5,,-1,1,0,0,0,0,T,5,F,T,T,T,F,0,0,0,1,0,'+mach_add+',0,0,0,0,1,0,0,0,138,'+Edit3.Text+',$,1.0000,1.0000,1,64420,11397,0,-11397,64420,0,11000,11000,1'+AnsiString(#10));
+            write(job,'E,Geo_Mach'+inttostr(i)+',T,T,F,1,T,'+geo_add+',0,0,'+z_in_geo+',0,0,0,T,0,0.0,0.0,F,1,0,0,0,0,0,0,0,360,0,F,'+geo_add2+',Mach'+inttostr(i)+','+gnam+','+Edit3.Text+',$');
+            //next lines for every physical electrode of this family (copy of .FUT information basically, but in slightly different format, cannot be copied)
+
             for j:=1 to 4 do begin
                 phase[j]:=0;
                 eip[j]:=0;
@@ -363,19 +498,42 @@ begin
                      end;
                  end;
              end;
-             for j:=1 to amount_of_el do write(job,AnsiSTring(#10)+'p,0,'+inttostr(j)+',0,'+inttostr(phase[j])+','+inttostr(eip[j])+',0,3,32,127,0,1,0,1,10,35,35,1,5,0,20,50,50,1,0,0,0,0');
+             for j:=1 to amount_of_el do write(job,AnsiString(#10)+'p,0,'+inttostr(j)+',0,'+inttostr(phase[j])+','+inttostr(eip[j])+',0,3,32,127,0,1,0,1,10,35,35,1,5,0,20,50,50,1,0,0,0,0');
              for j:=1 to amount_of_el do write(job,AnsiString(#10)+'l,1,'+inttostr(j)+',0,'+inttostr(phase[j])+','+inttostr(eip[j])+',0,0,0,0,0,0,0');
-             for j:=1 to amount_of_el do write(job,ANsiString(#10)+'a,2,'+inttostr(j)+',0,'+inttostr(phase[j])+','+inttostr(eip[j])+',0,0,1.000,1.000,2,0,5,0.020,0.008,0');
+             for j:=1 to amount_of_el do write(job,AnsiString(#10)+'a,2,'+inttostr(j)+',0,'+inttostr(phase[j])+','+inttostr(eip[j])+',0,0,1.000,1.000,2,0,5,0.020,0.008,0');
              write(job,AnsiString(#10)+'I,StartPoint,'+sp_coords+',0,3.0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,T,F,F,Mach'+inttostr(i)+','+gnam+','+Edit3.Text+',$');
          end; //do_this_el
      end;
      CloseFile(job);
      if ListBox10.Count>0 then begin //create iso files
+        for i:=0 to ListBox10.Count-1 do begin
+            isoval:=SplitString(';',ListBox10.Items[i]);
+            AssignFile(iso,dir+'\'+isoval[3]+'.ISO');
+            rewrite(iso);
+            case isoval[1] of
+                 'X+': sp_coords:='X -'+isoval[2]+'Y0.0';
+                 'X-': sp_coords:='X '+isoval[2]+'Y0.0';
+                 'Y+': sp_coords:='X0.0Y -'+isoval[2];
+                 'Y-': sp_coords:='X0.0Y '+isoval[2];
+            end;
+            case isoval[1] of
+                 'X+': drbok:='X '+isoval[2];
+                 'X-': drbok:='X -'+isoval[2];
+                 'Y+': drbok:='Y '+isoval[2];
+                 'Y-': drbok:='Y -'+isoval[2];
+            end;
 
-
+            write(iso,'N0G00'+sp_coords+'Z 0.;'+AnsiString(#10)+'N1G91;'+AnsiString(#10)+'N2G01'+drbok+';'+AnsiString(#10)+'N3M02;');
+            CloseFile(iso);
+            AssignFile(isr,dir+'\'+isoval[3]+'.ISR');
+            rewrite(isr);
+            write(isr,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME Machiso'+isoval[4]+';');
+            CloseFile(isr);
+        end;
      end;
      ProgressBar1.Position:=40;
-     ShowMessage('Program '+Edit3.Text+' zapisany!'); //debug
+     logToFile('saved program '+Edit3.Text,'OK');
+     ShowMessage('Program '+Edit3.Text+' zapisany!'); // TODO: custom form with "open folder" button
      Application.Terminate;
    end;
 end;
@@ -383,11 +541,12 @@ end;
 procedure TForm1.Button1Click(Sender: TObject);
 var fil:Textfile;
   sl,newsl:TStringList;
-  acceptable_list:Array[1..24] of string;
-  line,str:string; // single line of a dxf file
+  acceptable_list:Array[1..37] of string;
+  line,savedline,str,path:string; // single line of a dxf file
   res,fileext:TArrayOfString; //used for SplitString function output
-  org_cur_line,new_current_line,norm_line,current_line,start_line,text_per_item,i,j,k,col_id,col_x,col_y,col_c,col_z,col_mat,col_fp,col_dir,min_in_col,si,old_count,start_pos:integer;
-  start_defined,assign_columns_done,table_done,col_count_found,is_acceptable,alternate_method:boolean;
+  org_cur_line,new_current_line,norm_line,current_line,start_line,text_per_item,i,j,k,col_id,col_x,col_y,col_c,col_z,col_mat,col_fp,col_dir,col_diro,col_vdi,min_in_col,si,old_count,start_pos,maxtables,maxline:integer;
+  start_defined,assign_columns_done,table_done,col_count_found,is_acceptable,alternate_method,nextlineid,plkp20z:boolean;
+  ust:TIniFile;
 begin
     ProgressBar1.Position:=0;
     offset:=0;
@@ -400,16 +559,30 @@ begin
     ListBox7.Clear;
     ListBox8.Clear;
     ListBox9.Clear;
+    ListBox11.Clear;
     Button3.Enabled:=True;
     Form2.CheckListBox1.Clear;
     Form2.ListBox1.Clear;
-    if OpenDialog1.FileName='n' then begin //for seeking another table without opening new file
-       OpenDialog1.Execute;
-       end_table_line:=0; //reset starting position
-    end;
+    //if OpenDialog1.FileName='n' then begin //for seeking another table without opening new file
+    //   OpenDialog1.Execute;
+    //   end_table_line:=0; //reset starting position
+    //end;
     if length(OpenDialog1.Filename)>3 then begin  // open file dialog, show error if no file is selected
+     maxtables:=0;
+     maxline:=0;
+     AssignFile(fil,OpenDialog1.FileName); //dxf file choosen by user
+    reset(fil);
+    repeat
+    readln(fil,line);
+    if AnsiContainsStr(line,'Electrodes are used for the following parts') then inc(maxtables);
+    if AnsiContainsStr(line,'Elektroden werden fuer folgende Teile verwendet') then inc(maxtables);
+    if AnsiContainsStr(line,'Elektroden werden für folgende Teile verwendet') then inc(maxtables);
+    if AnsiContainsStr(line,'Elektroden werden fur folgende Teile verwendet') then inc(maxtables);
+    inc(maxline);
+    until eof(fil);
+    CloseFile(fil);
+    Label15.Caption:='/ '+inttostr(maxtables);
     fileext:=SplitString('.',OpenDialog1.FileName);
-    //showmessage(inttostr(length(fileext)));
     if CheckBox2.Checked=True then begin // reverse the dxf
        sl:=TStringList.Create;  //oop bullshit
        newsl:=TStringList.Create;  //oop bullshit
@@ -424,43 +597,34 @@ begin
     reset(fil);                 //ensure reading from begining of the file
     current_line:=0;            //pre-set all varribles
     start_line:=0;
-    start_defined:=False;
-    assign_columns_done:=False;
-    table_done:=False;
+    start_defined:=False;       //dxf reading stage for "electrodes used for..."
+    assign_columns_done:=False;  //dxf reading stage for first row of table
+    table_done:=False;            //dxf reading stage for end table
     alternate_method:=False;
+    nextlineid:=False;
+    plkp20z:=False;           // special case indicator for certain kind of dxf made by 1 person with bad configuration
     col_count_found:=False;  //it is here to allow tables of different column amount in the same dxf
     if LowerCase(fileext[(length(fileext)-1)])='dxf' then text_per_item:=30 // TODO: possibly change this to be readed from dxf file itself, it may vary
     else if LowerCase(fileext[(length(fileext)-1)])='mi' then text_per_item:=34
     else ShowMessage('FileType Error!');
     ProgressBar1.Position:=10;
     repeat
+      if length(line)=7 then savedline:=line;
       readln(fil,line);  //read 1 line
       //showmessage(line);
       inc(current_line);  //increase counter for line number
       if current_line>=end_table_line then begin // discarrd line numbers lower than start position, for second table
          if start_defined=False then res:=SplitString(':',line);
          if length(line)>=1 then begin //to avoid crashing on empty lines
-            if start_defined=False then if ((res[0]='Electrodes are used for the following parts') or (res[0]='Elektroden werden fuer folgende Teile verwendet')) then begin //find start of position table
+            if start_defined=False then if (((trim(res[0])='Electrodes are used for the following parts') or (trim(res[0])='Elektroden werden fuer folgende Teile verwendet') or (trim(res[0])='Elektroden werden für folgende Teile verwendet') or (trim(res[0])='Elektroden werden f\U+00fcr folgende Teile verwendet') or (trim(res[0])='Elektroden werden fur folgende Teile verwendet')) and (length(res[1])>=6)) then begin //find start of position table
+
+               //if (length(res[1])<=6) then begin
+               //   res[1]:=trim(savedline);
+               //   nextlineid:=True;
+               //end;
                Edit3.Text:=LeftStr(trim(res[1]),7); //save part number (turncate to prevent rare cases of long texi in this line)
                start_line:=current_line; //define starting point of position table
-               //ShowMessage(inttostr(start_line));
-               //for i:=1 to 50 do begin
-               //       readln(fil,line);
-                      //showmessage(line+' '+inttostr(i)+' '+inttostr(current_line));
-               //       if ((trim(line)='ID no. for electrode') or (trim(line)='ID-NR') or (trim(line)='ELEKTR-NUMMER') or (trim(line)='Id-Nr Elektrode')) then begin
-               //          start_line:=current_line+i-30;
-               //          Showmessage(line+' '+inttostr(i));
-               //       end;
-
-               //end;
-               //reset(fil);
-               //new_current_line:=0;
-               //for j:=1 to (current_line+2) do begin //go back to the line of table start
-               //           inc(new_current_line);
-               //           readln(fil,line);
-               //       end;
-               //       current_line:=new_current_line;
-               //showmessage(inttostr(start_line));
+               if plsr12sc=True then start_line:=start_line+6;
                start_defined:=True;
                ProgressBar1.Position:=20;
             end;
@@ -468,12 +632,14 @@ begin
                if col_count_found=False then begin //try to find first electrode name, in order to determine no of columns
                   //str:='0123456789';
                   for i:=1 to 15 do if current_line=(start_line+(i*text_per_item)) then begin
-                      if length(trim(line))=7 then begin
-                         if isNumber(trim(line)) then begin
+                      if trim(line)='Z' then plkp20z:=True;
+                      if (((length(trim(line))=7) and (isNumber(trim(line)))) or (AnsiContainsStr(trim(line),'EL-FR'))) then begin
+                         //if  then begin
                             col_count_found:=True;
                             org_cur_line:=current_line;
                             //ShowMessage(line);
                             SpinEdit1.Value:=(((current_line-start_line) div text_per_item)-1); //save found table width
+                            if plkp20z=True then SpinEdit1.Value:=SpinEdit1.Value-1;
                             reset(fil);
                             new_current_line:=0;
                             for j:=1 to (current_line-(text_per_item*SpinEdit1.Value)) do begin //go back to the line of table start
@@ -481,7 +647,7 @@ begin
                                 readln(fil,line);
                             end;
                             current_line:=new_current_line;
-                         end;
+                         //end;
                       end;
                    end;
                end;
@@ -510,26 +676,49 @@ begin
                acceptable_list[22]:='Oberflaeche Werkstueck';
                acceptable_list[23]:='Proj. Flaeche';
                acceptable_list[24]:='Auslenkmethode';
+               acceptable_list[25]:='Z';  //special case for some of plkp20 drawings
+               acceptable_list[26]:='Excursion method';
+               acceptable_list[27]:='Auslenkmethode';
+               acceptable_list[28]:='Oberfläche Werkstück';  //vdi
+               acceptable_list[29]:='Proj. Fläche';
+               acceptable_list[30]:='Length'; //plgd special case
+               acceptable_list[31]:='Width'; //not seen on real drawings, just in case
+               acceptable_list[32]:='Positioning path';  //Creo option, not seen in real drawings
+               acceptable_list[33]:='Erodierr.';
+               acceptable_list[34]:='Id-Nr El.';
+               acceptable_list[35]:='Obfl. Werkst.';  //vdi
+               acceptable_list[36]:='El.-Werkst.';
+               acceptable_list[37]:='bugfix_nonsense';
+
                i:=0;
                if ListBox1.Count<SpinEdit1.Value then repeat
                  inc(i);
-               if current_line=(start_line+(i*text_per_item)+offset) then begin //every read 10 values, every 30 lines
+               if (current_line=(start_line+(i*text_per_item)+offset)) then begin //every read 10 values, every 30 lines
                   is_acceptable:=False;
-                  for j:=1 to 24 do if trim(line)=acceptable_list[j] then is_acceptable:=True;
-                  if is_acceptable=False then begin
+                  for j:=1 to length(acceptable_list) do if trim(line)=acceptable_list[j] then is_acceptable:=True;
+                  //showmessage(line);
+                  if is_acceptable=False then begin  //special case for some of plkk44 drawings
                      for k:=1 to 6 do begin
                          inc(offset);
                          readln(fil,line);
-                     end;
+                     end
                   end;
+
                   //if offset<>0 then SpinEdit1.Value:=((((SpinEdit1.Value*text_per_item)-offset) div text_per_item)-1);
                   //showmessage(inttostr(current_line+offset)+' '+line+' ('+inttostr(offset)+')');
                   is_acceptable:=False;
-                  for j:=1 to 24 do if trim(line)=acceptable_list[j] then is_acceptable:=True;
-                  if is_acceptable=True then ListBox1.Items.Add(line); //add those lines to listbox
+                  for j:=1 to length(acceptable_list) do begin
+                           if trim(line)=acceptable_list[j] then begin
+                   is_acceptable:=True;
+                  end
+                  else begin
+                      //showmessage(trim(line)+AnsiString(#13#10)+acceptable_list[j]);
+                      end;
+                  end;
+                  if is_acceptable=True then if trim(line)<>'Z' then ListBox1.Items.Add(line); //add those lines to listbox
                   //break;
                end;
-               if ((length(trim(line))=7) and (isNumber(trim(line)))) then begin
+               if ((((length(trim(line))=7) and (isNumber(trim(line))))) or (AnsiContainsStr(trim(line),'EL-FR'))) then begin
                   if offset<>0 then begin
                      SpinEdit1.Value:=SpinEdit1.Value-1;
                      ListBox2.Items.Add(trim(line));
@@ -551,20 +740,23 @@ begin
                       if ((norm_line-1) mod (SpinEdit1.Value))=col_mat then ListBox7.Items.Add(trim(line));
                       if ((norm_line-1) mod (SpinEdit1.Value))=col_fp then ListBox8.Items.Add(trim(line));
                       if ((norm_line-1) mod (SpinEdit1.Value))=col_dir then ListBox9.Items.Add(trim(line));
+                      if ((norm_line-1) mod (SpinEdit1.Value))=col_vdi then ListBox12.Items.Add(trim(line));
 
                    end;
-                   if line='ENDBLK' then begin
+                   if (((line='ENDBLK')or (line='LIN')) and (current_line>(start_line+200))) then begin  // magic number 200 :( its to be sure to not exceen length of table
+                      //showmessage('current_line: '+inttostr(current_line)+', start_line: '+inttostr(start_line)+', line: '+line);  //debug message
                       table_done:=True;  //do not continue after this
                       end_table_line:=(current_line+1); //start line to search for next table
                       ProgressBar1.Position:=40;
                    end;
                    end
                    else begin
-                        //TODO the strange dxf files vit varrible distances
+                        //TODO the strange dxf files with varrible distances between important lines
                         SpinEdit1.Value:=(((SpinEdit1.Value*text_per_item)-offset) div text_per_item);
                         current_line:=current_line+offset;
                         offset:=0;
                         alternate_method:=True;
+                        //logToFile('error - file uses varrible string distance');
                         //ShowMessage('Nie można odczytać tego pliku - zapisz numer rysunku i zgłos do Szymona.');
                         //Application.Te
                         //the actual alternathe method below
@@ -582,6 +774,8 @@ begin
                   col_mat:=9999;
                   col_fp:=9999;
                   col_dir:=9999;
+                  col_diro:=9999;
+                  col_vdi:=9999;
                   for i:=0 to (SpinEdit1.Value-1) do begin //read every item
                       case ListBox1.Items[i] of  //and check for every needed column name
                            'ID no. for electrode': col_id:=i;
@@ -594,14 +788,22 @@ begin
                            'ID-NR': col_id:=i; //german
                            'ELEKTR-NUMMER': col_id:=i; //german alt
                            'Id-Nr Elektrode': col_id:=i; //german alt
+                           'Id-Nr El.': col_id:=i;
                            'TIEFE': col_z:=i; //german
                            'WINKEL': col_c:=i; //german
                            'Drehwinkel': col_c:=i; //german alt
                            'Senktiefe': col_z:=i; //german alt
                            'Elektrodenwerkstoff': col_mat:=i; //german
+                           'El.-Werkst.': col_mat:=i;
                            'Eroding direction': col_dir:=i;
                            'Proj. Flaeche': col_fp:=i;
+                           'Proj. Fläche': col_fp:=i;
                            'Erodierrichtung': col_dir:=i;
+                           'Erodierr.': col_dir:=i;
+                           'Workpiece surface': col_vdi:=i;
+                           'Oberflaeche Werkstueck': col_vdi:=i;
+                           'Oberfläche Werkstück': col_vdi:=i;
+                           'Obfl. Werkst.': col_vdi:=i;
                       end;
                   end;
                   //ShowMessage('id '+inttostr(col_id)+', X '+inttostr(col_x)+', Y '+inttostr(col_y)+', Z '+inttostr(col_z)+', C '+inttostr(col_c)+', material '+inttostr(col_mat)+', Fp '+inttostr(col_fp)); //debug message
@@ -624,7 +826,7 @@ begin
        i:=0;
        repeat
          //showmessage(inttostr(length(ListBox2.Items[i])));
-       if length(ListBox2.Items[i])<>7 then start_pos:=i;
+       if ((length(ListBox2.Items[i])<>7) and (not (AnsiContainsStr(ListBox2.Items[i],'EL-FR')))) then start_pos:=i;  // 28-06-17 bugfix (added 'not')
        //showmessage(inttostr(i));
        inc(i);
        until ((start_pos>0) or (i>=ListBox2.Count));
@@ -643,6 +845,8 @@ begin
     if ((ListBox8.Count=0) and (col_fp=9999)) then for i:=0 to (ListBox2.Count-1) do ListBox8.Items.Add('0'); // in case fp was not in dxf table
     if ((ListBox5.Count=0) and (col_c=9999)) then for i:=0 to (ListBox2.Count-1) do ListBox5.Items.Add('0');  // in case C was not in dxf table
     if ((ListBox9.Count=0) and (col_dir=9999)) then for i:=0 to (ListBox2.Count-1) do ListBox9.Items.Add('Z'); // in case eroding direction was not in dxf table
+    if ((ListBox11.Count=0) and (col_diro=9999)) then for i:=0 to (ListBox2.Count-1) do ListBox11.Items.Add('5'); // in case eroding direction was not in dxf table
+    if ((ListBox12.Count=0) and (col_vdi=9999)) then for i:=0 to (ListBox2.COunt-1) do ListBox12.Items.Add('VDI26'); //change this to respect user choice
     if ListBox2.Count>0 then begin
        old_count:=ListBox5.Count-1;
        if (ListBox5.Count)>start_pos then for j:=old_count downto (start_pos) do ListBox5.Items.Delete(j);
@@ -652,31 +856,97 @@ begin
        if (ListBox8.Count)>start_pos then for j:=old_count downto (start_pos) do ListBox8.Items.Delete(j);
        old_count:=ListBox9.Count-1;
        if (ListBox9.Count)>start_pos then for j:=old_count downto (start_pos) do ListBox9.Items.Delete(j);
+       old_count:=ListBox12.Count-1;
+       if (ListBox12.Count)>start_pos then for j:=old_count downto (start_pos) do ListBox12.Items.Delete(j);
     end;
     ProgressBar1.Position:=70;
     Button2.Enabled:=True; // elektrody...
     Button3.Enabled:=True; // pokaz dane
     Button7.Enabled:=True; // graficheck
-    if length(Edit3.Text)<2 then ShowMessage('Niepoprawny plik DXF!');
+    logToFile('loaded file '+OpenDialog1.FileName,'INF');
+    if length(Edit3.Text)<2 then begin
+       inc(errorlevel);
+       logToFile('wrong file - no table header found. errorlevel='+inttostr(errorlevel),'ERR');
+    end
+    else begin
+         if ((ListBox2.Count>0) and (ListBox2.Count=ListBox3.Count)) then begin
+         inc(tableno);
+         Label14.Caption:=inttostr(tableno);
+        end;
+    end;
     end //no file selected
-    else ShowMessage('Nie wybrano pliku');
-    if (CheckBox2.Checked=False) then begin
-       if ListBox1.Count=0 then begin
+    else if ((plsr12sc=True) and (CheckBox2.Checked=True)) then begin
+         logToFile('no file selected','ERR');
+         ShowMessage('Nie wybrano pliku');
+    end;
+    if alternate_method=true then logToFile('error - file uses varrible string distance','ERR');
+    if ListBox1.Count=0 then begin
+       if plsr12sc=False then begin
+        plsr12sc:=True;
+        end_table_line:=0;
+        Button1.Click;
+        end
+        else if (CheckBox2.Checked=False) then begin
           CheckBox2.Checked:=True;
           end_table_line:=0;
+          plsr12sc:=False;
           Button1.Click;
-       end
-       else if ((ListBox1.Items[0]<>'ID no. for electrode') and (ListBox1.Items[0]<>'ID-NR') and (ListBox1.Items[0]<>'ELEKTR-NUMMER') and (ListBox1.Items[0]<>'Id-Nr Elektrode')) then begin //no valid table found
-            if CheckBox2.Checked=False then begin
-               CheckBox2.Checked:=True; //check button for reversing dxf file
-               end_table_line:=0;
-               Button1.Click; //run search for table again
-            end
-           else ShowMessage('Koniec pliku, nie znaleziono tabeli!');
-       end;
+        end;
     end
-    else if ListBox1.Count=0 then ShowMessage('Nie wykryto tabeli z pozycjami elektrod w pliku '+OpenDialog1.FileName);
+    else if ((ListBox1.Items[0]<>'ID no. for electrode') and (ListBox1.Items[0]<>'ID-NR') and (ListBox1.Items[0]<>'ELEKTR-NUMMER') and (ListBox1.Items[0]<>'Id-Nr Elektrode') and (ListBox1.Items[0]<>'Id-Nr El.')) then begin //no valid table found
+         if CheckBox2.Checked=False then begin
+            CheckBox2.Checked:=True; //check button for reversing dxf file
+            end_table_line:=0;
+            Button1.Click; //run search for table again
+         end
+         else begin
+             logToFile('EOF, no table','ERR');
+             ShowMessage('Koniec pliku, nie znaleziono tabeli!');
+         end;
+    end
+    else if ListBox1.Count=0 then begin
+       logToFile('error - no table detected','ERR');
+     ShowMessage('Nie wykryto tabeli z pozycjami elektrod w pliku '+OpenDialog1.FileName);
+     end;
+     if errorlevel>3 then begin
+      inc(gel); //global error level
+      errorlevel:=0;
+     end;
+     if gel>3 then ShowMessage('Niepoprawny plik DXF! '+inttostr(errorlevel));
+
+    // check if such program already exists.
+    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+   path:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');
+   Label17.Visible:=directoryExists(path+'\'+Edit3.Text);
+   ust.Free;
     //showmessage(inttostr(offset));
+end;
+
+procedure TForm1.Button10Click(Sender: TObject);
+begin
+  if length(Edit3.Text)>0 then begin
+      Button2.Enabled:=True;
+      Button3.Enabled:=True;
+      Button7.Enabled:=True;
+      logToFile('new empty program '+Edit3.Text,'OK');
+      Button3.Click;
+  end
+  else ShowMessage('Wpisz nazwę programu!');
+end;
+
+procedure TForm1.Button11Click(Sender: TObject);
+begin
+  logToFile('changed line (id: '+ListBox2.Items[ListBox2.ItemIndex]+' -> '+Edit1.Text+', X: '+ListBox3.Items[ListBox2.ItemIndex]+' -> '+Edit2.Text+', Y: '+ListBox4.Items[ListBox2.ItemIndex]+' -> '+Edit4.Text+', C: '+ListBox5.Items[ListBox2.ItemIndex]+' -> '+Edit5.Text+', Z: '+ListBox6.Items[ListBox2.ItemIndex]+' -> '+Edit6.Text+' )','INF');
+   ListBox2.Items[ListBox2.ItemIndex]:=Edit1.Text;
+   ListBox3.Items[ListBox2.ItemIndex]:=Edit2.Text;
+   ListBox4.Items[ListBox2.ItemIndex]:=Edit4.Text;
+   ListBox5.Items[ListBox2.ItemIndex]:=Edit5.Text;
+   ListBox6.Items[ListBox2.ItemIndex]:=Edit6.Text;
+   ListBox7.Items[ListBox2.ItemIndex]:=Edit7.Text;
+   ListBox8.Items[ListBox2.ItemIndex]:=Edit8.Text;
+   ListBox9.Items[ListBox2.ItemIndex]:=Edit9.Text;
+   ListBox11.Items[ListBox2.ItemIndex]:=Edit10.Text;
+   ListBox12.Items[ListBox2.ItemIndex]:=vdi_ii_to_nr(ComboBox3.ItemIndex);
 end;
 
 procedure TForm1.Button2Click(Sender: TObject); //elektrody...
@@ -693,8 +963,14 @@ begin
      if el_exists=False then begin //if electrode is marked not existing
         Form2.CheckListBox1.Items.Add(trim(ListBox2.Items[j])); //add to visible list
         Form2.CheckListBox1.Checked[(Form2.CheckListBox1.Count-1)]:=True;
-        if CheckBox1.Checked=False then Form2.ListBox1.Items.Add(trim(ListBox2.Items[j])+';'+ListBox7.Items[j]+';'+ListBox8.Items[j]+';0;0;0;0;0;0;0;0;'+trim(ListBox2.Items[j])+';0;'+ListBox9.Items[j]+';5') //add parameters to invisible list
-        else Form2.ListBox1.Items.Add(trim(ListBox2.Items[j])+';'+ComboBox1.Items[ComboBox1.ItemIndex]+';'+ListBox8.Items[j]+';0;0;0;0;0;0;0;0;'+trim(ListBox2.Items[j])+';0;'+ListBox9.Items[j]+';5');  // replace material if choosen so
+        if CheckBox1.Checked=False then begin
+           if CheckBox4.Checked=False then Form2.ListBox1.Items.Add(trim(ListBox2.Items[j])+';'+ListBox7.Items[j]+';'+ListBox8.Items[j]+';0;0;0;0;0;0;0;0;'+trim(ListBox2.Items[j])+';0;'+ListBox9.Items[j]+';5;0;'+ListBox12.Items[j]) //add parameters to invisible list
+           else Form2.ListBox1.Items.Add(trim(ListBox2.Items[j])+';'+ListBox7.Items[j]+';'+ListBox8.Items[j]+';0;0;0;0;0;0;0;0;'+trim(ListBox2.Items[j])+';0;'+ListBox9.Items[j]+';5;0;'+vdi_ii_to_nr(ComboBox2.ItemIndex)); // replace vdi
+        end
+        else begin
+            if CheckBox4.Checked=False then Form2.ListBox1.Items.Add(trim(ListBox2.Items[j])+';'+ComboBox1.Items[ComboBox1.ItemIndex]+';'+ListBox8.Items[j]+';0;0;0;0;0;0;0;0;'+trim(ListBox2.Items[j])+';0;'+ListBox9.Items[j]+';5;0;'+ListBox12.Items[j])  // replace material if choosen so
+            else Form2.ListBox1.Items.Add(trim(ListBox2.Items[j])+';'+ComboBox1.Items[ComboBox1.ItemIndex]+';'+ListBox8.Items[j]+';0;0;0;0;0;0;0;0;'+trim(ListBox2.Items[j])+';0;'+ListBox9.Items[j]+';5;0;'+vdi_ii_to_nr(ComboBox2.ItemIndex));  // replace material if choosen so + replace vdi
+        end;
      end;
    end;
    Form2.CheckListBox1.ItemIndex:=0; //set position to first electrode
@@ -711,13 +987,13 @@ end;
 
 procedure TForm1.Button3Click(Sender: TObject);
 begin
-  If Form1.Width=1015 then begin
-     Form1.Width:=415;
+  If Form1.Width=992 then begin
+     Form1.Width:=387;
      Form1.Height:=159;
      Button3.Caption:='Pokaż dane';
   end
   else begin
-    Form1.Width:=1015;
+    Form1.Width:=992;
     Form1.Height:=340;
     Button3.Caption:='Ukryj dane';
   end;
@@ -725,6 +1001,7 @@ end;
 
 procedure TForm1.Button4Click(Sender: TObject);
 begin
+  logToFile('searched for next table in same drawing','INF');
   Button1.Click;
 end;
 
@@ -741,6 +1018,7 @@ begin
       ListBox7.Items.Delete(di);
       ListBox8.Items.Delete(di);
       ListBox9.Items.Delete(di);
+      ListBox11.Items.Delete(di);
       ListBox2.ItemIndex:=-1;
    end;
 end;
@@ -748,15 +1026,18 @@ end;
 procedure TForm1.Button6Click(Sender: TObject);
 var ust:TIniFile;
 begin
+     logToFile('line added manually to the table (el:'+Edit1.Text+', X:'+Edit2.Text+', Y:'+Edit4.Text+', C:'+Edit5.Text+', Z:'+Edit6.Text+', mat: '+Edit7.Text+', Fp: '+Edit8.Text+', dir: '+Edit9.Text+', ods: '+Edit10.Text+')','INF');
     ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
     ListBox2.Items.Add(Edit1.Text);
     ListBox3.Items.Add(Edit2.Text);
     ListBox4.Items.Add(Edit4.Text);
     ListBox5.Items.Add(Edit5.Text);
     ListBox6.Items.Add(Edit6.Text);
-    ListBox7.Items.Add(ust.ReadString('settings','defaultElectrodeMaterial','Graphite2'));
-    ListBox8.Items.Add('0');
-    ListBox9.Items.Add('Z');
+    ListBox7.Items.Add(Edit7.Text);
+    ListBox8.Items.Add(Edit8.Text);
+    ListBox9.Items.Add(Edit9.Text);
+    ListBox11.Items.Add(Edit10.Text);
+    ListBox12.Items.Add(vdi_ii_to_nr(ComboBox3.ItemIndex));
     ust.Free;
 end;
 
@@ -765,6 +1046,7 @@ var i,xc,yc,j,factor:integer;
   maxdim:real;
   recta:TRect;
 begin
+   logToFile('Grafickeck clicked','INF');
    Form1.WindowState:=wsMaximized;
    maxdim:=0;
    for i:=0 to ListBox3.Count-1 do begin
@@ -773,7 +1055,7 @@ begin
     for i:=0 to ListBox4.Count-1 do begin
          if abs(strtofloat(ListBox4.Items[i]))>maxdim then maxdim:=abs(strtofloat(ListBox4.Items[i]))
      end;
-    maxdim:=floor(maxdim)+1;
+    maxdim:=floor(maxdim)+5;
     Form1.Color:=clNavy;
    Button7.Left:=20;
    Button7.Top:=5;
@@ -791,20 +1073,24 @@ begin
    ListBox9.Visible:=False;
    ListBox10.Visible:=False;
    ListBox1.Visible:=False;
+   ListBox11.Visible:=False;
+   ListBox12.Visible:=False;
    CheckBox1.Visible:=False;
-   CheckBox2.Visible:=False;
+   //CheckBox2.Visible:=False;  // reversed checkbox - now done automatically
    CheckBox3.Visible:=False;
-   Button1.Visible:=False;
+   CheckBox4.Visible:=False;
+   Button9.Visible:=False;
    Button2.Visible:=False;
    Button3.Visible:=False;
    Button4.Visible:=False;
    Button5.Visible:=False;
    Button6.Visible:=False;
+   Button10.Visible:=False;
+   Button11.Visible:=False;
    ProgressBar1.Visible:=False;
    SpinEdit1.Visible:=False;
    Label1.Visible:=False;
    Label2.Visible:=False;
-   Label3.Visible:=False;
    Label4.Visible:=False;
    Label5.Visible:=False;
    Label6.Visible:=False;
@@ -814,14 +1100,23 @@ begin
    Label10.Visible:=False;
    Label11.Visible:=False;
    Label12.Visible:=False;
+   Label14.Visible:=False;
+   Label15.Visible:=False;
+   Label16.Visible:=False;
+   Label17.Visible:=False;
    ComboBox1.Visible:=False;
    ComboBox2.Visible:=False;
+   ComboBox3.Visible:=False;
    Edit1.Visible:=False;
    Edit2.Visible:=False;
    Edit3.Visible:=False;
    Edit4.Visible:=False;
    Edit5.Visible:=False;
    Edit6.Visible:=False;
+   Edit7.Visible:=False;
+   Edit8.Visible:=False;
+   Edit9.Visible:=False;
+   Edit10.Visible:=False;
    //Button8.Left:=(floor(Panel1.Width/2)-floor(Button8.Width/2));
    //Button8.Top:=5;
    PaintBox1.Top:=10+Button7.Height;
@@ -844,13 +1139,14 @@ begin
         LineTo(floor(PaintBox1.Width),floor(PaintBox1.Height/2));
         j:=0;
         factor:=0;
+        Font.Height:=16;
         repeat
         inc(factor);
-        //showmessage(inttostr(factor)+' '+inttostr(TextWidth('-3')*5)+' '+floattostr(((factor*floor(PaintBox1.Height/2))/maxdim)));
-        until (TextWidth('-3')*2)<((factor*floor(PaintBox1.Height/2))/maxdim);
-        //showmessage(inttostr(factor));
+        until (TextWidth('-3')*2)<((factor*floor(PaintBox1.Height/2))/maxdim); //fit dimensions to the screen
+        maxdim:=maxdim*factor;
         repeat
         j:=j+factor;
+
         Font.Color:=clRed;
         MoveTo(floor(PaintBox1.Width/2)+floor((j*factor*(PaintBox1.Height/2))/maxdim),floor(PaintBox1.Height/2)+5);
         LineTo(floor(PaintBox1.Width/2)+floor((j*factor*(PaintBox1.Height/2))/maxdim),floor(PaintBox1.Height/2)-5);
@@ -864,24 +1160,44 @@ begin
         MoveTo(floor(PaintBox1.Width/2)+5,floor(PaintBox1.Height/2)-floor((j*factor*(PaintBox1.Height/2))/maxdim));
         LineTo(floor(PaintBox1.Width/2)-5,floor(PaintBox1.Height/2)-floor((j*factor*(PaintBox1.Height/2))/maxdim));
         TextOut(floor(PaintBox1.Width/2)-10-TextWidth(inttostr(j)),floor(PaintBox1.Height/2)-floor((j*factor*(PaintBox1.Height/2))/maxdim)-(TextHeight('-'+inttostr(j))div 2),inttostr(j));
-
+        Font.Height:=48;
+        TextOut(PaintBox1.Width-50,(floor(PaintBox1.Height/2))-50,'X');
+        TextOut(floor(PaintBox1.Width/2)+20,10,'Y');
+        FOnt.Height:=16;
         until j>maxdim;
         Pen.Color:=clYellow;
         Brush.Color:=clYellow;
         Font.Color:=clYellow;
         Brush.Style:=bsClear;
+
         for i:=0 to ListBox2.Count-1 do begin
-            xc:=floor((strtofloat(ListBox3.Items[i])*(PaintBox1.Height/2))/maxdim);
-            yc:=floor((strtofloat(ListBox4.Items[i])*(PaintBox1.Height/2))/maxdim);
+            xc:=floor((strtofloat(ListBox3.Items[i])*(PaintBox1.Height/2))/maxdim)*factor;
+            yc:=floor((strtofloat(ListBox4.Items[i])*(PaintBox1.Height/2))/maxdim)*factor;
             Ellipse(floor(PaintBox1.Width/2)-5+xc,floor(PaintBox1.Height/2)-5-yc,floor(PaintBox1.Width/2)+5+xc,floor(PaintBox1.Height/2)+5-yc);
-            TextOut(floor(PaintBox1.Width/2)+20+xc,floor(PaintBox1.Height/2)-yc-10,ListBox2.Items[i]);
+            MoveTo(floor(PaintBox1.Width/2)+xc,floor(PaintBox1.Height/2)-yc);
+            LineTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*20),floor(PaintBox1.Height/2)-yc+round(cos(DegToRad(strtofloat(ListBox5.Items[i])))*20));
+
+            //litletriangle
+            //MoveTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*6),floor(PaintBox1.Height/2)-yc+round((-1)*cos(DegToRad(strtofloat(ListBox5.Items[i])))*6));
+            //below line is wrong
+            //LineTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*6),floor(PaintBox1.Height/2)-yc+round((-1)*cos(DegToRad(strtofloat(ListBox5.Items[i])))*6));
+
+
+            TextOut(floor(PaintBox1.Width/2)+10+xc,floor(PaintBox1.Height/2)-yc-10,ListBox2.Items[i]);
 
         end;
     end;
+   //if Sender.ClassName='TButton' then begin
+   // Sleep(200);
+   // Button7Click(Form1);
+   // end;
 end;
 
 procedure TForm1.Button8Click(Sender: TObject);
+var ust:TIniFile;
+  path:string;
 begin
+ ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
    Form1.Color:=clDefault;
   Form1.WindowState:=wsNormal;
    Button7.Left:=304;
@@ -900,15 +1216,20 @@ begin
    ListBox9.Visible:=True;
    ListBox10.Visible:=True;
    ListBox1.Visible:=True;
+   ListBox11.Visible:=True;
+   ListBox12.Visible:=True;
    CheckBox1.Visible:=True;
-   CheckBox2.Visible:=True;
+   //CheckBox2.Visible:=True;   //reversed checkbox - now done automatiaclly
    CheckBox3.Visible:=True;
-   Button1.Visible:=True;
+   CheckBox4.Visible:=True;
+   Button9.Visible:=True;
    Button2.Visible:=True;
    Button3.Visible:=True;
    Button4.Visible:=True;
    Button5.Visible:=True;
    Button6.Visible:=True;
+   Button10.Visible:=True;
+   Button11.Visible:=True;
    ProgressBar1.Visible:=True;
    SpinEdit1.Visible:=True;
    Label1.Visible:=True;
@@ -923,31 +1244,124 @@ begin
    Label10.Visible:=True;
    Label11.Visible:=True;
    Label12.Visible:=True;
+   Label14.Visible:=True;
+   Label15.Visible:=True;
+   Label16.Visible:=True;
+   path:=ust.readstring('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');
+   Label17.Visible:=directoryExists(path+'\'+Edit3.Text);
    ComboBox1.Visible:=True;
    ComboBox2.Visible:=True;
+   COmboBox3.Visible:=True;
    Edit1.Visible:=True;
    Edit2.Visible:=True;
    Edit3.Visible:=True;
    Edit4.Visible:=True;
    Edit5.Visible:=True;
    Edit6.Visible:=True;
+   Edit7.Visible:=True;
+   Edit8.Visible:=True;
+   Edit9.Visible:=True;
+   Edit10.Visible:=True;
+   ust.Free;
+end;
+
+procedure TForm1.Button9Click(Sender: TObject);
+begin
+  logToFile('clicked open file button manually','INF');
+  OpenDialog1.Execute;
+  end_table_line:=0;
+  CheckBox2.Checked:=False;
+  Button1.Click;
+end;
+
+procedure TForm1.chkeckTypedDir(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var is_ok:boolean;
+begin
+  is_ok:=false;
+  case (Sender as TEdit).Text of
+       'Z': is_ok:=True;
+       'X+': is_ok:=True;
+       'X-': is_ok:=True;
+       'Y+': is_ok:=True;
+       'Y-': is_ok:=True;
+       '+X': is_ok:=True;
+       '-X': is_ok:=True;
+       '+Y': is_ok:=True;
+       '-Y': is_ok:=True;
+  end;
+  if is_ok=false then (Sender as TEdit).Color:=clRed
+   else (Sender as TEdit).Color:=clDefault;
+  is_ok:=false;
+  case (Sender as TEdit).Text of
+       'X+': is_ok:=True;
+       'X-': is_ok:=True;
+       'Y+': is_ok:=True;
+       'Y-': is_ok:=True;
+       '+X': is_ok:=True;
+       '-X': is_ok:=True;
+       '+Y': is_ok:=True;
+       '-Y': is_ok:=True;
+  end;
+  Edit10.Enabled:=is_ok;
+
+end;
+
+procedure TForm1.comatodot(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if AnsiContainsStr((Sender as TEdit).Text,',') then begin
+        (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,',','.',[rfReplaceAll]);
+        (Sender as TEdit).SelStart:=high(Integer);
+     end;
+  if isSignedFloat((Sender as TEdit).Text) then (Sender as TEdit).color:=clDefault
+  else (Sender as TEdit).color:=clRed;
+end;
+
+procedure TForm1.ComboBox3Change(Sender: TObject);
+begin
+
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 var ust:TIniFile;
+  i:integer;
+  dms,mcouts,mpouts:string;
+  mcurrent,mprev:TDCP_sha256;
+  mcout,mpout:array[0..31] of byte;
 begin
-    //Panel1.Width:=1;
-   // Panel1.Height:=1;
-    //Panel1.Caption:='';
-    Form1.Width:=415;
+    Form1.Width:=387;
     Form1.Height:=159;
     end_table_line:=0;
+    plsr12sc:=False;
+    tableno:=0;
+    errorlevel:=0;
     ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
     SpinEdit1.Value:=strtoint(ust.ReadString('settings','defaultNoOfRows','10'));
     OpenDialog1.InitialDir:=ust.ReadString('settings','pathDXF','C:\Intel\LazarusPortable\dxf test');
+    Edit7.Text:=ust.ReadString('settings','defaultElectrodeMaterial','Graphite2');
+    Edit10.Text:=ust.ReadString('settings','defaultSideOffset','5');
+    dms:=ust.ReadString('dms','dms','error');
+    mcurrent:=TDCP_sha256.Create(Form1);
+    mcurrent.Init;
+    mcurrent.UpdateStr(inttostr(YearOf(Now))+inttostr(MonthOfTheYear(Now)));
+    mcurrent.Final(mcout);
+    mprev:=TDCP_sha256.Create(Form1);
+    mprev.Init;
+    if MonthOfTheYear(Now)>1 then mprev.UpdateStr(inttostr(YearOf(Now))+inttostr(MonthOfTheYear(Now)-1))
+    else mprev.UpdateStr(inttostr(YearOf(Now)-1)+inttostr(12));
+    mprev.Final(mpout);
+    mcouts:='';
+    mpouts:='';
+    for i:=0 to 31 do mcouts:=mcouts+inttostr(mcout[i]);
+    for i:=0 to 31 do mpouts:=mpouts+inttostr(mpout[i]);
+    if ((mcouts<>dms) and (mpouts<>dms)) then begin
+       logToFile('bad license','ERR');
+       //showmessage('bad license');
+       Application.Terminate;
+    end;
+    if mcouts<>dms then Label13.Visible:=True;
     ust.Free;
-    //ShowMessage(Application.ExeName);
-
+    logToFile('program opened','OK');
 end;
 
 procedure TForm1.handleparams(Sender: TObject);
@@ -964,28 +1378,84 @@ begin
    Button1.Click;
 end;
 
+
+procedure TForm1.loadpos(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var is_ok:boolean;
+begin
+  if (Sender as TListBox).ItemIndex>=0 then begin
+  ListBox2.ItemIndex:=(Sender as TListBox).ItemIndex;
+  ListBox3.ItemIndex:=(Sender as TListBox).ItemIndex;
+  ListBox4.ItemIndex:=(Sender as TListBox).ItemIndex;
+  ListBox5.ItemIndex:=(Sender as TListBox).ItemIndex;
+  ListBox6.ItemIndex:=(Sender as TListBox).ItemIndex;
+  ListBox7.ItemIndex:=(Sender as TListBox).ItemIndex;
+  ListBox8.ItemIndex:=(Sender as TListBox).ItemIndex;
+  ListBox9.ItemIndex:=(Sender as TListBox).ItemIndex;
+  ListBox11.ItemIndex:=(Sender as TListBox).ItemIndex;
+  ListBox12.ItemIndex:=(Sender as TListBox).ItemIndex;
+
+   Edit1.Text:=ListBox2.Items[(Sender as TListBox).ItemIndex];
+   Edit2.Text:=ListBox3.Items[(Sender as TListBox).ItemIndex];
+   Edit4.Text:=ListBox4.Items[(Sender as TListBox).ItemIndex];
+   Edit5.Text:=ListBox5.Items[(Sender as TListBox).ItemIndex];
+   Edit6.Text:=ListBox6.Items[(Sender as TListBox).ItemIndex];
+   Edit7.Text:=ListBox7.Items[(Sender as TListBox).ItemIndex];
+   Edit8.Text:=ListBox8.Items[(Sender as TListBox).ItemIndex];
+   Edit9.Text:=ListBox9.Items[(Sender as TListBox).ItemIndex];
+   Edit10.Text:=ListBox11.Items[(Sender as TListBox).ItemIndex];
+   ComboBox3.ItemIndex:=vdi_nr_to_ii(ListBox12.Items[(Sender as TListBox).ItemIndex]);
+   is_ok:=false;
+  case Edit9.Text of
+       'X+': is_ok:=True;
+       'X-': is_ok:=True;
+       'Y+': is_ok:=True;
+       'Y-': is_ok:=True;
+       '+X': is_ok:=True;
+       '-X': is_ok:=True;
+       '+Y': is_ok:=True;
+       '-Y': is_ok:=True;
+  end;
+  Edit10.Enabled:=is_ok;
+   //
+  end;
+end;
+
+
+
 procedure TForm1.MenuItem1Click(Sender: TObject);
 begin
+  logToFile('opened settings','OK');
    // open new form with settings
    Form3.ShowModal;
 end;
 
 procedure TForm1.MenuItem3Click(Sender: TObject);
 begin
+  logToFile('About Form shown','OK');
   Form4.ShowModal; //about
 end;
 
 procedure TForm1.MenuItem4Click(Sender: TObject);
 begin
+  logToFile('Help Form shown','OK');
    //modal form - user manual
   Form5.ShowModal;
 end;
 
 procedure TForm1.nospaces(Sender: TObject; var Key: Word; Shift: TShiftState);
+var ust:TIniFile;
+  path:string;
 begin
    (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,' ','_',[rfReplaceAll]);
    (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,'-','_',[rfReplaceAll]);
    (Sender as TEdit).SelStart:=high(Integer);
+   if length((Sender as TEdit).Text)>1 then begin
+   ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+   path:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');
+   Label17.Visible:=directoryExists(path+'\'+Edit3.Text);
+   ust.Free;
+   end;
 end;
 
 

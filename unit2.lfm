@@ -1,11 +1,11 @@
 object Form2: TForm2
   Left = 1161
-  Height = 374
+  Height = 375
   Top = 127
   Width = 391
   BorderStyle = bsSingle
   Caption = 'Lista Elektrod'
-  ClientHeight = 374
+  ClientHeight = 375
   ClientWidth = 391
   OnClose = formclose
   OnCreate = FormCreate
@@ -219,7 +219,7 @@ object Form2: TForm2
     Left = 331
     Height = 23
     Top = 208
-    Width = 36
+    Width = 40
     OnKeyUp = magpos
     TabOrder = 9
     Text = 'Edit9'
@@ -276,9 +276,9 @@ object Form2: TForm2
     ParentColor = False
   end
   object ComboBox1: TComboBox
-    Left = 263
+    Left = 0
     Height = 23
-    Top = 280
+    Top = 143
     Width = 43
     ItemHeight = 15
     ItemIndex = 4
@@ -292,23 +292,69 @@ object Form2: TForm2
     OnChange = dbok
     TabOrder = 17
     Text = 'Z'
+    Visible = False
   end
   object Edit11: TEdit
-    Left = 314
+    Left = 0
     Height = 23
-    Top = 280
-    Width = 53
+    Top = 167
+    Width = 37
     Enabled = False
     OnKeyUp = comatodot
     TabOrder = 18
     Text = '5'
+    Visible = False
+  end
+  object ComboBox2: TComboBox
+    Left = 264
+    Height = 23
+    Top = 288
+    Width = 100
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'Equimode 3D'
+      'Vector (napis)'
+      'Cylinder '
+      'Prostokąt'
+    )
+    TabOrder = 19
+    Text = 'Equimode 3D'
+    Visible = False
+  end
+  object ComboBox3: TComboBox
+    Left = 315
+    Height = 23
+    Top = 256
+    Width = 48
+    ItemHeight = 15
+    ItemIndex = 4
+    Items.Strings = (
+      '30'
+      '29'
+      '28'
+      '27'
+      '26'
+      '25'
+      '24'
+      '23'
+      '22'
+      '21'
+      '20'
+      '19'
+      '18'
+      '17'
+      '16'
+    )
+    TabOrder = 20
+    Text = '26'
   end
   object Label14: TLabel
-    Left = 263
+    Left = 284
     Height = 16
-    Top = 264
-    Width = 93
-    Caption = 'kierunek drążenia'
+    Top = 263
+    Width = 19
+    Caption = 'VDI'
     ParentColor = False
   end
   object OpenDialog1: TOpenDialog

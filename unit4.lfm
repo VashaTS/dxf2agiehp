@@ -113,7 +113,7 @@ object Form4: TForm4
     Height = 16
     Top = 48
     Width = 112
-    Caption = 'wersja 1 (2017-03-16)'
+    Caption = 'wersja 9 (2017-07-10)'
     ParentColor = False
   end
   object Label2: TLabel

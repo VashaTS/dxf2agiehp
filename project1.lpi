@@ -19,7 +19,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <RevisionNr Value="3"/>
-      <BuildNr Value="363"/>
+      <BuildNr Value="592"/>
       <Language Value="0415"/>
       <StringTable InternalName="dxf2agiehp" ProductVersion=""/>
     </VersionInfo>
@@ -36,10 +36,13 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="1">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="dcpcrypt"/>
       </Item1>
+      <Item2>
+        <PackageName Value="LCL"/>
+      </Item2>
     </RequiredPackages>
     <Units Count="7">
       <Unit0>

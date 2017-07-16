@@ -1,10 +1,11 @@
 object Form3: TForm3
   Left = 309
-  Height = 309
-  Top = 201
+  Height = 361
+  Top = 198
   Width = 399
+  BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Ustawienia'
-  ClientHeight = 309
+  ClientHeight = 361
   ClientWidth = 399
   OnCreate = FormCreate
   Position = poScreenCenter
@@ -73,7 +74,7 @@ object Form3: TForm3
   object Button1: TButton
     Left = 317
     Height = 25
-    Top = 278
+    Top = 328
     Width = 75
     Caption = 'Zapisz'
     Default = True
@@ -192,7 +193,7 @@ object Form3: TForm3
   object Button2: TButton
     Left = 232
     Height = 25
-    Top = 279
+    Top = 329
     Width = 75
     Caption = 'Anuluj'
     ModalResult = 2
@@ -243,6 +244,24 @@ object Form3: TForm3
     Caption = 'rozszerzenie .mi do rejestru'
     OnClick = Button7Click
     TabOrder = 14
+  end
+  object LabeledEdit8: TLabeledEdit
+    Left = 16
+    Height = 23
+    Top = 328
+    Width = 200
+    EditLabel.AnchorSideLeft.Control = LabeledEdit8
+    EditLabel.AnchorSideRight.Control = LabeledEdit8
+    EditLabel.AnchorSideRight.Side = asrBottom
+    EditLabel.AnchorSideBottom.Control = LabeledEdit8
+    EditLabel.Left = 16
+    EditLabel.Height = 16
+    EditLabel.Top = 309
+    EditLabel.Width = 200
+    EditLabel.Caption = 'domyślna odległość drążenia bokiem'
+    EditLabel.ParentColor = False
+    TabOrder = 15
+    Text = '5'
   end
   object SelectDirectoryDialog1: TSelectDirectoryDialog
     left = 240
