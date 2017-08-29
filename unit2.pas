@@ -281,7 +281,7 @@ pval,eval,pval2,tf_val,pe_val,lb1,prefil:TArrayOfString;
 pline,str,elmname,dir,strat,phase,eip,elno,multi_tf,umode,le,f00f,f00_sk:string;
 i,j,ii,iii,amount_of_el:integer;
 ust:TIniFile;
-line_changed:boolean;
+line_changed,ok_for_multi:boolean;
 begin
   randomize;
   str:='0123456789ABCDEFGHIJKLMNOPQRSTUVYZ';
@@ -294,7 +294,13 @@ begin
   ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit10.Text+';'+multi_tf+';'+ComboBox1.Items[ComboBox1.ItemIndex]+';'+Edit11.Text+';'+inttostr(ComboBox2.ItemIndex)+';'+vdi_ii_to_nr(ComboBox3.ItemIndex)+';'+elmname);
   ListBox1.Items.Move((ListBox1.Count-1),strtoint(Label8.Caption)); //move added antry to previous place
   if (((strtofloat(Edit1.Text)>0) and (strtofloat(Edit2.Text)>0)) or (CheckListBox1.Checked[CheckListBox1.ItemIndex]=False)) then begin  //check if fp and u1 are empty
-     if ((((CheckBox1.Checked=True) and (Edit2.Text=Edit3.Text)) and ((Edit4.Text=Edit5.Text) and (Edit6.Text=Edit7.Text) and (Edit8.Text=Edit9.Text))) or CheckBox1.Checked=False) then begin
+     ok_for_multi:=true;
+     if Edit2.Text<>Edit3.Text then ok_for_multi:=false;
+     if Edit4.Text<>Edit5.Text then ok_for_multi:=false;
+     if Edit6.Text<>Edit7.Text then ok_for_multi:=false;
+     if Edit8.Text<>Edit9.Text then ok_for_multi:=false;
+     //if ok_for_multi=true then showmessage('true');
+     if (CheckBox1.Checked and ok_for_multi) or (not CheckBox1.Checked) then begin
      if CheckListBox1.ItemIndex=(CheckListBox1.Count-1) then begin //when all electrodes done
         if OpenDialog1.Execute then begin
            AssignFile(preset,OpenDialog1.FileName);
@@ -614,9 +620,9 @@ begin
 
           Form2.editel(Form2);
           Edit1.SetFocus; //set focus to Fp field
-     end;
+          end;
      end
-     else ShowMessage('Błędne dany Multi elektrody');
+     else ShowMessage('Błędne dane Multi elektrody');
   end
   else ShowMessage('Wpisz dane w pola: U1 i Fp');
 
@@ -629,8 +635,10 @@ end;
 
 procedure TForm2.chck_l(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if length(Edit10.Text)>19 then Edit10.Text:=LeftStr(Edit10.Text,19);  //max length of electrode in agievision
-  Edit10.SelStart:=high(Integer);
+  if length(Edit10.Text)>19 then begin
+    Edit10.Text:=LeftStr(Edit10.Text,19);  //max length of electrode in agievision
+    Edit10.SelStart:=high(Integer);
+  end;
 end;
 
 procedure TForm2.comatodot(Sender: TObject; var Key: Word; Shift: TShiftState);

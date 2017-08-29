@@ -1,13 +1,13 @@
 object Form1: TForm1
   Left = 528
-  Height = 332
+  Height = 335
   Top = 242
-  Width = 992
+  Width = 1000
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'DXF to AGIE HP'
-  ClientHeight = 312
-  ClientWidth = 992
+  ClientHeight = 315
+  ClientWidth = 1000
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDropFiles = hp2
@@ -15,9 +15,9 @@ object Form1: TForm1
   LCLVersion = '1.0.1.3'
   Visible = True
   object Button1: TButton
-    Left = 201
+    Left = 672
     Height = 25
-    Top = 120
+    Top = 290
     Width = 112
     Caption = 'old czytaj'
     OnClick = Button1Click
@@ -33,18 +33,19 @@ object Form1: TForm1
     ParentColor = False
   end
   object SpinEdit1: TSpinEdit
-    Left = 32
+    Left = 480
     Height = 23
-    Top = 172
+    Top = 280
     Width = 50
     Enabled = False
     TabOrder = 1
     Value = 10
+    Visible = False
   end
   object ListBox1: TListBox
     Left = 248
-    Height = 137
-    Top = 160
+    Height = 81
+    Top = 225
     Width = 136
     ItemHeight = 0
     TabOrder = 2
@@ -53,14 +54,14 @@ object Form1: TForm1
     Left = 392
     Height = 224
     Top = 56
-    Width = 60
+    Width = 72
     ItemHeight = 0
     OnMouseDown = loadpos
     OnMouseUp = scrollothers
     TabOrder = 3
   end
   object ListBox3: TListBox
-    Left = 452
+    Left = 464
     Height = 224
     Top = 56
     Width = 60
@@ -69,7 +70,7 @@ object Form1: TForm1
     TabOrder = 4
   end
   object ListBox4: TListBox
-    Left = 512
+    Left = 524
     Height = 224
     Top = 56
     Width = 60
@@ -78,7 +79,7 @@ object Form1: TForm1
     TabOrder = 5
   end
   object ListBox5: TListBox
-    Left = 572
+    Left = 584
     Height = 224
     Top = 56
     Width = 60
@@ -87,7 +88,7 @@ object Form1: TForm1
     TabOrder = 6
   end
   object ListBox6: TListBox
-    Left = 632
+    Left = 644
     Height = 224
     Top = 56
     Width = 60
@@ -96,7 +97,7 @@ object Form1: TForm1
     TabOrder = 7
   end
   object ListBox7: TListBox
-    Left = 692
+    Left = 704
     Height = 224
     Top = 56
     Width = 60
@@ -105,7 +106,7 @@ object Form1: TForm1
     TabOrder = 8
   end
   object ListBox8: TListBox
-    Left = 752
+    Left = 764
     Height = 224
     Top = 56
     Width = 60
@@ -183,7 +184,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object Label4: TLabel
-    Left = 480
+    Left = 492
     Height = 16
     Top = 35
     Width = 8
@@ -191,7 +192,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object Label5: TLabel
-    Left = 544
+    Left = 556
     Height = 16
     Top = 35
     Width = 8
@@ -199,7 +200,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object Label6: TLabel
-    Left = 592
+    Left = 604
     Height = 16
     Top = 33
     Width = 9
@@ -207,7 +208,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object Label7: TLabel
-    Left = 656
+    Left = 668
     Height = 16
     Top = 35
     Width = 8
@@ -215,7 +216,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object Label8: TLabel
-    Left = 712
+    Left = 724
     Height = 16
     Top = 33
     Width = 22
@@ -223,7 +224,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object Label9: TLabel
-    Left = 776
+    Left = 788
     Height = 16
     Top = 33
     Width = 14
@@ -240,9 +241,9 @@ object Form1: TForm1
     TabOrder = 16
   end
   object CheckBox2: TCheckBox
-    Left = 18
+    Left = 960
     Height = 19
-    Top = 160
+    Top = 225
     Width = 64
     Caption = 'reversed'
     Enabled = False
@@ -285,7 +286,7 @@ object Form1: TForm1
     Text = 'VDI 26 Ra 2.0'
   end
   object ListBox9: TListBox
-    Left = 812
+    Left = 824
     Height = 224
     Top = 56
     Width = 40
@@ -294,7 +295,7 @@ object Form1: TForm1
     TabOrder = 20
   end
   object Label10: TLabel
-    Left = 840
+    Left = 852
     Height = 16
     Top = 35
     Width = 15
@@ -318,7 +319,7 @@ object Form1: TForm1
     TabOrder = 22
   end
   object Edit2: TEdit
-    Left = 452
+    Left = 464
     Height = 23
     Top = 8
     Width = 60
@@ -327,7 +328,7 @@ object Form1: TForm1
     Text = '0'
   end
   object Edit4: TEdit
-    Left = 512
+    Left = 524
     Height = 23
     Top = 8
     Width = 60
@@ -336,7 +337,7 @@ object Form1: TForm1
     Text = '0'
   end
   object Edit5: TEdit
-    Left = 572
+    Left = 584
     Height = 23
     Top = 8
     Width = 60
@@ -345,7 +346,7 @@ object Form1: TForm1
     Text = '0'
   end
   object Edit6: TEdit
-    Left = 632
+    Left = 644
     Height = 23
     Top = 8
     Width = 60
@@ -354,34 +355,34 @@ object Form1: TForm1
     Text = '0'
   end
   object Button6: TButton
-    Left = 936
+    Left = 948
     Height = 27
     Top = 0
-    Width = 56
+    Width = 52
     Caption = 'dodaj'
     OnClick = Button6Click
     TabOrder = 31
   end
   object ListBox10: TListBox
-    Left = 96
-    Height = 137
-    Top = 160
-    Width = 144
+    Left = 120
+    Height = 80
+    Top = 225
+    Width = 120
     ItemHeight = 0
     TabOrder = 32
   end
   object Label11: TLabel
     Left = 264
     Height = 16
-    Top = 144
+    Top = 208
     Width = 113
     Caption = 'pierwszy wiersz tabeli'
     ParentColor = False
   end
   object Label12: TLabel
-    Left = 136
+    Left = 168
     Height = 16
-    Top = 143
+    Top = 208
     Width = 41
     Caption = 'pliki iso'
     ParentColor = False
@@ -405,9 +406,9 @@ object Form1: TForm1
     ParentColor = False
   end
   object Button8: TButton
-    Left = 18
+    Left = 644
     Height = 25
-    Top = 136
+    Top = 281
     Width = 75
     Caption = 'Button8'
     OnClick = Button8Click
@@ -415,7 +416,7 @@ object Form1: TForm1
     Visible = False
   end
   object Edit7: TEdit
-    Left = 692
+    Left = 704
     Height = 23
     Top = 8
     Width = 60
@@ -423,7 +424,7 @@ object Form1: TForm1
     Text = 'Edit7'
   end
   object Edit8: TEdit
-    Left = 752
+    Left = 764
     Height = 23
     Top = 8
     Width = 60
@@ -432,7 +433,7 @@ object Form1: TForm1
     Text = '0'
   end
   object Edit9: TEdit
-    Left = 812
+    Left = 824
     Height = 23
     Top = 8
     Width = 40
@@ -443,7 +444,7 @@ object Form1: TForm1
   object Button9: TButton
     Left = 302
     Height = 25
-    Top = 8
+    Top = 6
     Width = 82
     Caption = 'Czytaj DXF/MI'
     OnClick = Button9Click
@@ -484,16 +485,16 @@ object Form1: TForm1
     ParentColor = False
   end
   object Button11: TButton
-    Left = 936
+    Left = 948
     Height = 27
     Top = 26
-    Width = 56
+    Width = 52
     Caption = 'zmień'
     OnClick = Button11Click
     TabOrder = 37
   end
   object Edit10: TEdit
-    Left = 852
+    Left = 864
     Height = 23
     Top = 8
     Width = 40
@@ -503,7 +504,7 @@ object Form1: TForm1
     Text = '0'
   end
   object ListBox11: TListBox
-    Left = 852
+    Left = 864
     Height = 224
     Top = 56
     Width = 40
@@ -512,7 +513,7 @@ object Form1: TForm1
     TabOrder = 38
   end
   object ListBox12: TListBox
-    Left = 892
+    Left = 904
     Height = 224
     Top = 56
     Width = 44
@@ -521,7 +522,7 @@ object Form1: TForm1
     TabOrder = 39
   end
   object Label16: TLabel
-    Left = 904
+    Left = 916
     Height = 16
     Top = 33
     Width = 19
@@ -529,7 +530,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object ComboBox3: TComboBox
-    Left = 892
+    Left = 904
     Height = 23
     Top = 8
     Width = 44
@@ -575,6 +576,110 @@ object Form1: TForm1
     Width = 158
     Caption = 'Zastąp jakość powierzchni'
     TabOrder = 41
+  end
+  object ListBox13: TListBox
+    Left = 24
+    Height = 80
+    Top = 225
+    Width = 93
+    ItemHeight = 0
+    TabOrder = 42
+  end
+  object Label3: TLabel
+    Left = 40
+    Height = 16
+    Top = 208
+    Width = 50
+    Caption = 'użyte VDI'
+    ParentColor = False
+  end
+  object Button12: TButton
+    Left = 568
+    Height = 25
+    Top = 281
+    Width = 75
+    Caption = 'Button12'
+    OnClick = Button12Click
+    TabOrder = 43
+    Visible = False
+  end
+  object GroupBox1: TGroupBox
+    Left = 16
+    Height = 57
+    Top = 144
+    Width = 352
+    Caption = 'Odległość Referencje detalu -> Punkt pomiarowy'
+    ClientHeight = 39
+    ClientWidth = 348
+    TabOrder = 44
+    object Label18: TLabel
+      Left = 6
+      Height = 16
+      Top = 10
+      Width = 8
+      Caption = 'X'
+      ParentColor = False
+    end
+    object Edit11: TEdit
+      Left = 22
+      Height = 23
+      Top = 8
+      Width = 56
+      OnKeyUp = comatodot
+      TabOrder = 0
+      Text = '-0.00'
+    end
+    object Label19: TLabel
+      Left = 86
+      Height = 16
+      Top = 10
+      Width = 8
+      Caption = 'Y'
+      ParentColor = False
+    end
+    object Edit12: TEdit
+      Left = 102
+      Height = 23
+      Top = 8
+      Width = 56
+      OnKeyUp = comatodot
+      TabOrder = 1
+      Text = '-0.00'
+    end
+    object Label20: TLabel
+      Left = 166
+      Height = 16
+      Top = 10
+      Width = 8
+      Caption = 'Z'
+      ParentColor = False
+    end
+    object Edit13: TEdit
+      Left = 182
+      Height = 23
+      Top = 8
+      Width = 56
+      OnKeyUp = comatodot
+      TabOrder = 2
+      Text = '-0.00'
+    end
+    object Label21: TLabel
+      Left = 254
+      Height = 16
+      Top = 10
+      Width = 9
+      Caption = 'C'
+      ParentColor = False
+    end
+    object Edit14: TEdit
+      Left = 270
+      Height = 23
+      Top = 8
+      Width = 56
+      OnKeyUp = comatodot
+      TabOrder = 3
+      Text = '0.00'
+    end
   end
   object OpenDialog1: TOpenDialog
     Filter = 'Pliki DXF|*.dxf|Pliki MI|*.mi'

@@ -1,7 +1,7 @@
 object Form6: TForm6
-  Left = 429
+  Left = 445
   Height = 582
-  Top = 203
+  Top = 299
   Width = 900
   BorderStyle = bsSingle
   Caption = 'Log'

@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ExtCtrls, Comctrls, Spin, Menus, strings, Math, Unit2, Unit3, Unit4, Unit5,
-  Unit6, DCPsha256, inifiles, StrUtils, DateUtils;
+  Unit6, DCPsha256, inifiles, StrUtils, DateUtils, ShellAPI, Windows;
 
 type
   TArrayOfString = array of String;
@@ -19,6 +19,7 @@ type
     Button1: TButton;
     Button10: TButton;
     Button11: TButton;
+    Button12: TButton;
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
@@ -36,6 +37,10 @@ type
     ComboBox3: TComboBox;
     Edit1: TEdit;
     Edit10: TEdit;
+    Edit11: TEdit;
+    Edit12: TEdit;
+    Edit13: TEdit;
+    Edit14: TEdit;
     Edit2: TEdit;
     Edit3: TEdit;
     Edit4: TEdit;
@@ -44,6 +49,7 @@ type
     Edit7: TEdit;
     Edit8: TEdit;
     Edit9: TEdit;
+    GroupBox1: TGroupBox;
     Label1: TLabel;
     Label10: TLabel;
     Label11: TLabel;
@@ -53,7 +59,12 @@ type
     Label15: TLabel;
     Label16: TLabel;
     Label17: TLabel;
+    Label18: TLabel;
+    Label19: TLabel;
     Label2: TLabel;
+    Label20: TLabel;
+    Label21: TLabel;
+    Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
@@ -64,6 +75,7 @@ type
     ListBox10: TListBox;
     ListBox11: TListBox;
     ListBox12: TListBox;
+    ListBox13: TListBox;
     ListBox2: TListBox;
     ListBox3: TListBox;
     ListBox4: TListBox;
@@ -86,6 +98,7 @@ type
     Timer1: TTimer;
     procedure Button10Click(Sender: TObject);
     procedure Button11Click(Sender: TObject);
+    procedure Button12Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -286,14 +299,14 @@ begin
 end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
-var rnumber,rname,str,dir,strat,gnam,z_in_mach,mach_add,z_in_geo,geo_add,geo_add2,iname,iusing,sp_coords,drbok:string;
-  i,j,k,using_nr,amount_of_el,kapiel,last_using:integer;
+var rnumber,rname,str,dir,strat,gnam,z_in_mach,mach_add,z_in_geo,geo_add,geo_add2,iname,iusing,sp_coords,drbok,mtd,only_ret,only_vector,pozp:string;
+  min_z,i,j,k,using_nr,amount_of_el,kapiel,last_using,bea_nr:integer;
   job,jor,tek,ter,iso,isr:TextFile;
   ust:TIniFile;
   p_elval,p_elam,isoval:TArrayOfString;
-  min_z:real;
+  //min_z:real;
   phase,eip:Array[1..4] of integer;
-  do_this_el:boolean;
+  do_this_el,exists_in_list:boolean;
 begin
     ProgressBar1.Position:=(length(Form2.Label12.Caption)-1)*10;
    if Form2.Label13.Caption='done' then begin // save JOB
@@ -310,6 +323,7 @@ begin
      ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
      dir:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output')+'\'+Edit3.Text;
      strat:=ust.ReadString('settings','electrodeStrategy','1');
+     pozp:=ust.ReadString('settings','pp','30');
      ust.Free;
      ProgressBar1.Position:=10;
      AssignFile(tek,dir+'\'+rname+'.TEK');
@@ -342,13 +356,23 @@ begin
             write(jor,'AGIE.USING_'+inttostr(last_using)+' IMPORT COUNT_0 '+iname+'.ISO;'+AnsiString(#10)); //iso file for side eroding
           end;
       end;
-                   //new VDI - per electrode TODO: move definitions to ini file
-       for i:=0 to Form2.ListBox1.Count-1 do begin //for every electrode in form2
-         p_elval:=SplitString(';',Form2.ListBox1.Items[i]);
-         if Form2.CheckListBox1.Checked[i]=True then begin //only when checked
-            write(jor,'AGIE.BEA_'+inttostr(i+2)+' IMPORT COUNT_2 '+vdi_num_to_agie(p_elval[16])+',F,T,T,F,F;'+AnsiString(#10)); //add vdi for every electrode
-         end;
-     end;
+
+      //make list of vdi names and bea numbers  (ItemIndex = bea_nr)
+      for i:=0 to Form2.ListBox1.Count-1 do begin
+          p_elval:=SplitString(';',Form2.ListBox1.Items[i]);
+          if ListBox13.Count>0 then begin
+              exists_in_list:=false;
+              for j:=0 to ListBox13.Count-1 do begin
+                  if p_elval[16]=ListBox13.Items[j] then exists_in_list:=True;
+              end;
+              if exists_in_list=false then ListBox13.Items.Add(p_elval[16]);
+          end
+          else ListBox13.Items.Add(p_elval[16]);
+      end;
+      //add each vdi once  TODO: move definitions to ini file
+      for i:=0 to ListBox13.Count-1 do begin
+          write(jor,'AGIE.BEA_'+inttostr(i+1)+' IMPORT COUNT_2 '+vdi_num_to_agie(ListBox13.Items[i])+',F,T,T,F,F;'+AnsiString(#10));
+      end;
 
      CloseFile(jor);
      ProgressBar1.Position:=30;
@@ -357,13 +381,14 @@ begin
      if CheckBox3.Checked=True then gnam:='Group' //only create 1 group, to be copied on machine
      else gnam:='$';
      write(job,'TRON,05.01.0'+AnsiString(#10)+'J,$,x123,000,CNNPx,CNNPy,CNNCx,CNNCy,ZOOMPx,ZOOMPy,ZOOMCx,ZOOMCy,L,MinMax,Optmize'+AnsiString(#10)); //header
-     write(job,'W,'+Edit3.Text+',4,000,0001,AGIE.BEA_2,,1,2,30,1,0,F,0,T,2,40,0.0000,0.0000,0.0000,0.0,0.0,0.0000,0.0,0.0,0.0,0.0,0.0,100,100,50,-50,-50,-50,30,1,0,KW,0,F,0,F,0,F,0,0,F,1.3,T,0.8,F,$,$,1,$,$,$,$,2,TipoEdit2,TipoGraph,65536,0,0,0,65536,0,5000,5000,1,TipoGraph,65536,0,0,0,65536,0,10000,10000,1');
-     if CheckBox3.Checked= True then write(job,AnsiString(#10)+'G,'+gnam+','+inttostr(ListBox2.Count)+',+0.0000,+0.0000,0.0,0,0,0.0,0,0,0,0,0,1,1,1,1,0,F,0,T,2,40,AGIE.BEA_2,,0,1,0,0,F,0,F,0,0,F,1.3,0001,0,F,'+Edit3.Text+',$,2,1.0000,1.0000,2,65536,0,0,0,65536,0,10000,10000,1,TipoGraph,65536,0,0,0,65536,0,10000,10000,1');
+
+     write(job,'W,'+Edit3.Text+',4,000,0001,AGIE.BEA_1,,1,2,'+pozp+',1,0,F,0,T,2,40,'+floattostr(strtofloat(Edit11.Text)*(-1))+','+floattostr(strtofloat(Edit12.Text)*(-1))+','+floattostr(strtofloat(Edit13.Text)*(-1))+',0.0,0.0,'+Edit14.Text+',0.0,0.0,0.0,0.0,0.0,100,100,50,-50,-50,-50,30,1,0,KW,0,F,0,F,0,F,0,0,F,1.3,T,0.8,F,$,$,1,$,$,$,$,2,TipoEdit2,TipoGraph,65536,0,0,0,65536,0,5000,5000,1,TipoGraph,65536,0,0,0,65536,0,10000,10000,1');
+     if CheckBox3.Checked= True then write(job,AnsiString(#10)+'G,'+gnam+','+inttostr(ListBox2.Count)+',+0.0000,+0.0000,0.0,0,0,0.0,0,0,0,0,0,1,1,1,1,0,F,0,T,2,40,AGIE.BEA_1,,0,1,0,0,F,0,F,0,0,F,1.3,0001,0,F,'+Edit3.Text+',$,2,1.0000,1.0000,2,65536,0,0,0,65536,0,10000,10000,1,TipoGraph,65536,0,0,0,65536,0,10000,10000,1');
      for i:=0 to ListBox2.Count-1 do begin //for every entry in table
          min_z:=200;
          for j:=0 to Form2.ListBox1.Count-1 do begin
              p_elval:=SplitString(';',Form2.ListBox1.Items[j]);
-             min_z:=min(min_z,strtofloat(p_elval[7]));
+             min_z:=min(min_z,round(strtofloat(p_elval[7])));
              if trim(ListBox2.Items[i])=p_elval[0] then begin
                using_nr:=(j+2);
                if Form2.CheckListBox1.Checked[j]=True then do_this_el:=True
@@ -391,10 +416,18 @@ begin
                     end;
                 end;
             end;
-            // todo: change this! --v
-            //for j:=0 to Form2.ListBox1.Count-1 do begin  //find out el properties for eroding direction
-                //p_elam:=SplitString(';',Form2.ListBox1.Items[j]);
-                //if p_elam[0]=ListBox2.Items[i] then begin
+
+            //match vdi bea number to electrode
+             for j:=0 to Form2.ListBox1.Count-1 do begin
+                    p_elam:=SplitString(';',Form2.ListBox1.Items[j]);
+                    if ListBox2.Items[i]=p_elam[0] then begin
+                       for k:=0 to ListBox13.Count-1 do begin
+                          //showmessage('pos. '+inttostr(k)+': '+ListBox13.Items[k]+' - '+p_elam[16]);
+                          if ListBox13.Items[k]=p_elam[16] then bea_nr:=k+1;
+                      end;
+                    end;
+                end;
+             //find out el properties for eroding direction
                       if ListBox9.Items[i]<>'Z' then begin
                            iusing:='error';
                            for k:=0 to ListBox10.Count-1 do begin
@@ -413,22 +446,33 @@ begin
                            if iusing='error' then ShowMessage('Wrong using number for iso file!');
                            geo_add:='2,2,1,1,0.0,2,1,1,AGIE.USING_'+iusing;
                            geo_add2:='0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,45,0,1,3,0,0,0,0,1,F,F,1,0,1,0,0,0,0,0,0,0,T,1,1,2,3,4,0,0,0,0,0,0,F,2,0,0,-1,2,1,1,0,0,0,0,0,0';
+                           only_vector:='T';
+                           only_ret:='1';
                       end
                       else begin
+                           for j:=0 to Form2.ListBox1.Count-1 do begin
+                               p_elam:=SplitString(';',Form2.ListBox1.Items[j]);
+                               if p_elam[0]=ListBox2.Items[i] then mtd:=p_elam[15];
+                           end;
                            sp_coords:='0.0000,0.0000,3.0000';
                            z_in_mach:='0.0';
                            mach_add:='0,0';
                            z_in_geo:=ListBox6.Items[i];
                            geo_add:='2,1,1,1,0.0,0,1,2,';
-                           geo_add2:='0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,5,0,0,0,0,0,45,1,1,3,0,0,0,0,1,F,T,1,0,1,0,0,0,0,0,0,0,F,1,1,2,3,4,0,0,0,0,0,0,F,1,0,0,0,1,1,1,0,0,0,0,0,0';
+                           //get values for this electrode and set varribles to the coresponding EDM method
+                           if mtd='1' then only_vector:='F'
+                           else only_vector:='T';
+                           if mtd='3' then only_ret:='2'
+                           else only_ret:='1';
+                           if mtd='0' then      geo_add2:='0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,5,0,0,0,0,0,45,1,1,3,0,0,0,0,1,F,T,1,0,1,0,0,0,0,0,0,0,F,1,1,2,3,4,0,0,0,0,0,0,F,1,0,0,0,1,1,1,0,0,0,0,0,0'  //3d
+                           else if mtd='3' then geo_add2:='0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,5,0,0,0,0,0,45,1,2,3,0,0,0,0,1,F,T,1,0,1,0,0,0,0,0,0,0,F,1,1,2,3,4,0,0,0,0,0,0,F,1,0,0,0,1,1,1,0,0,0,0,0,0'  //ret
+                           else                 geo_add2:='0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,5,0,0,0,0,0,45,1,1,3,0,0,0,0,1,F,T,1,0,1,0,0,0,0,0,0,0,F,1,1,2,3,4,0,0,0,0,0,0,F,1,0,0,0,1,1,1,0,0,0,0,0,0'; //cyl & vect
                       end;
-                  //end;
-            //end;
             // end of eroding direction things
 
-            if CheckBox3.Checked=True then write(job,AnsiString(#10)+'R,Mach'+inttostr(i)+','+ListBox3.Items[i]+','+ListBox4.Items[i]+','+z_in_mach+',0,0,'+ListBox5.Items[i]+',0,0,0,0,0,F,F,1,1,0,F,0,T,2,'+inttostr(kapiel)+',AGIE.USING_'+inttostr(using_nr)+',0,Geo_Mach'+inttostr(i)+',1,0001,AGIE.BEA_'+inttostr(using_nr)+',F,,StartPoint,6,,-1,1,0,0,0,0,T,5,F,T,T,T,F,0,0,0,1,0,'+mach_add+',0,0,0,0,1,0,0,0,134,'+gnam+','+Edit3.Text+',$,1.0000,1.0000,1,65536,0,0,0,65536,0,10000,10000,1'+AnsiString(#10))
-            else                           write(job,AnsiString(#10)+'A,Mach'+inttostr(i)+','+ListBox3.Items[i]+','+ListBox4.Items[i]+','+z_in_mach+',0,0,'+ListBox5.Items[i]+',0,0,0,0,0,F,F,1,1,0,F,0,T,2,'+inttostr(kapiel)+',AGIE.USING_'+inttostr(using_nr)+',0,Geo_Mach'+inttostr(i)+',1,0001,AGIE.BEA_'+inttostr(using_nr)+',F,,StartPoint,5,,-1,1,0,0,0,0,T,5,F,T,T,T,F,0,0,0,1,0,'+mach_add+',0,0,0,0,1,0,0,0,138,'+Edit3.Text+',$,1.0000,1.0000,1,64420,11397,0,-11397,64420,0,11000,11000,1'+AnsiString(#10));
-            write(job,'E,Geo_Mach'+inttostr(i)+',T,T,F,1,T,'+geo_add+',0,0,'+z_in_geo+',0,0,0,T,0,0.0,0.0,F,1,0,0,0,0,0,0,0,360,0,F,'+geo_add2+',Mach'+inttostr(i)+','+gnam+','+Edit3.Text+',$');
+            if CheckBox3.Checked=True then write(job,AnsiString(#10)+'R,Mach'+inttostr(i)+','+ListBox3.Items[i]+','+ListBox4.Items[i]+','+z_in_mach+',0,0,'+ListBox5.Items[i]+',0,0,0,0,0,F,F,1,1,0,F,0,T,2,'+inttostr(kapiel)+',AGIE.USING_'+inttostr(using_nr)+',0,Geo_Mach'+inttostr(i)+',1,0001,AGIE.BEA_'+inttostr(bea_nr)+',F,,StartPoint,6,,-1,1,0,0,0,0,T,5,F,T,T,T,F,0,0,0,1,0,'+mach_add+',0,0,0,0,1,0,0,0,134,'+gnam+','+Edit3.Text+',$,1.0000,1.0000,1,65536,0,0,0,65536,0,10000,10000,1'+AnsiString(#10))
+            else                           write(job,AnsiString(#10)+'A,Mach'+inttostr(i)+','+ListBox3.Items[i]+','+ListBox4.Items[i]+','+z_in_mach+',0,0,'+ListBox5.Items[i]+',0,0,0,0,0,F,F,1,1,0,F,0,T,2,'+inttostr(kapiel)+',AGIE.USING_'+inttostr(using_nr)+',0,Geo_Mach'+inttostr(i)+',1,0001,AGIE.BEA_'+inttostr(bea_nr)+',F,,StartPoint,5,,-1,1,0,0,0,0,T,5,F,T,T,T,F,0,0,0,1,0,'+mach_add+',0,0,0,0,1,0,0,0,138,'+Edit3.Text+',$,1.0000,1.0000,1,64420,11397,0,-11397,64420,0,11000,11000,1'+AnsiString(#10));
+            write(job,'E,Geo_Mach'+inttostr(i)+',T,T,F,1,'+only_vector+','+geo_add+',0,0,'+z_in_geo+',0,0,0,T,0,0.0,0.0,F,'+only_ret+',0,0,0,0,0,0,0,360,0,F,'+geo_add2+',Mach'+inttostr(i)+','+gnam+','+Edit3.Text+',$');
             //next lines for every physical electrode of this family (copy of .FUT information basically, but in slightly different format, cannot be copied)
 
             for j:=1 to 4 do begin
@@ -504,6 +548,7 @@ begin
              write(job,AnsiString(#10)+'I,StartPoint,'+sp_coords+',0,3.0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,T,F,F,Mach'+inttostr(i)+','+gnam+','+Edit3.Text+',$');
          end; //do_this_el
      end;
+
      CloseFile(job);
      if ListBox10.Count>0 then begin //create iso files
         for i:=0 to ListBox10.Count-1 do begin
@@ -526,7 +571,7 @@ begin
             write(iso,'N0G00'+sp_coords+'Z 0.;'+AnsiString(#10)+'N1G91;'+AnsiString(#10)+'N2G01'+drbok+';'+AnsiString(#10)+'N3M02;');
             CloseFile(iso);
             AssignFile(isr,dir+'\'+isoval[3]+'.ISR');
-            rewrite(isr);
+            rewrite(isr); //isr is the metadata file required for every iso
             write(isr,'AGIE.VERSION 2,05.01.0;'+AnsiString(#10)+'.LONGNAME Machiso'+isoval[4]+';');
             CloseFile(isr);
         end;
@@ -534,6 +579,7 @@ begin
      ProgressBar1.Position:=40;
      logToFile('saved program '+Edit3.Text,'OK');
      ShowMessage('Program '+Edit3.Text+' zapisany!'); // TODO: custom form with "open folder" button
+
      Application.Terminate;
    end;
 end;
@@ -560,19 +606,16 @@ begin
     ListBox8.Clear;
     ListBox9.Clear;
     ListBox11.Clear;
+    ListBox13.Clear;
     Button3.Enabled:=True;
     Form2.CheckListBox1.Clear;
     Form2.ListBox1.Clear;
-    //if OpenDialog1.FileName='n' then begin //for seeking another table without opening new file
-    //   OpenDialog1.Execute;
-    //   end_table_line:=0; //reset starting position
-    //end;
     if length(OpenDialog1.Filename)>3 then begin  // open file dialog, show error if no file is selected
      maxtables:=0;
      maxline:=0;
      AssignFile(fil,OpenDialog1.FileName); //dxf file choosen by user
     reset(fil);
-    repeat
+    repeat //find out number of eroding tables in file
     readln(fil,line);
     if AnsiContainsStr(line,'Electrodes are used for the following parts') then inc(maxtables);
     if AnsiContainsStr(line,'Elektroden werden fuer folgende Teile verwendet') then inc(maxtables);
@@ -611,7 +654,6 @@ begin
     repeat
       if length(line)=7 then savedline:=line;
       readln(fil,line);  //read 1 line
-      //showmessage(line);
       inc(current_line);  //increase counter for line number
       if current_line>=end_table_line then begin // discarrd line numbers lower than start position, for second table
          if start_defined=False then res:=SplitString(':',line);
@@ -630,14 +672,11 @@ begin
             end;
             if start_defined=True then begin
                if col_count_found=False then begin //try to find first electrode name, in order to determine no of columns
-                  //str:='0123456789';
                   for i:=1 to 15 do if current_line=(start_line+(i*text_per_item)) then begin
                       if trim(line)='Z' then plkp20z:=True;
                       if (((length(trim(line))=7) and (isNumber(trim(line)))) or (AnsiContainsStr(trim(line),'EL-FR'))) then begin
-                         //if  then begin
                             col_count_found:=True;
                             org_cur_line:=current_line;
-                            //ShowMessage(line);
                             SpinEdit1.Value:=(((current_line-start_line) div text_per_item)-1); //save found table width
                             if plkp20z=True then SpinEdit1.Value:=SpinEdit1.Value-1;
                             reset(fil);
@@ -647,7 +686,6 @@ begin
                                 readln(fil,line);
                             end;
                             current_line:=new_current_line;
-                         //end;
                       end;
                    end;
                end;
@@ -705,14 +743,12 @@ begin
                   end;
 
                   //if offset<>0 then SpinEdit1.Value:=((((SpinEdit1.Value*text_per_item)-offset) div text_per_item)-1);
-                  //showmessage(inttostr(current_line+offset)+' '+line+' ('+inttostr(offset)+')');
                   is_acceptable:=False;
                   for j:=1 to length(acceptable_list) do begin
                            if trim(line)=acceptable_list[j] then begin
                    is_acceptable:=True;
                   end
                   else begin
-                      //showmessage(trim(line)+AnsiString(#13#10)+acceptable_list[j]);
                       end;
                   end;
                   if is_acceptable=True then if trim(line)<>'Z' then ListBox1.Items.Add(line); //add those lines to listbox
@@ -756,9 +792,6 @@ begin
                         current_line:=current_line+offset;
                         offset:=0;
                         alternate_method:=True;
-                        //logToFile('error - file uses varrible string distance');
-                        //ShowMessage('Nie można odczytać tego pliku - zapisz numer rysunku i zgłos do Szymona.');
-                        //Application.Te
                         //the actual alternathe method below
                         //if (isNumber(trim(line)) and (length(trim(line))=7)) then ListBox2.Items.Add(trim(line))
                         //else if
@@ -806,7 +839,6 @@ begin
                            'Obfl. Werkst.': col_vdi:=i;
                       end;
                   end;
-                  //ShowMessage('id '+inttostr(col_id)+', X '+inttostr(col_x)+', Y '+inttostr(col_y)+', Z '+inttostr(col_z)+', C '+inttostr(col_c)+', material '+inttostr(col_mat)+', Fp '+inttostr(col_fp)); //debug message
                   assign_columns_done:=True; //mark this done, so it wont happen again
                   ProgressBar1.Position:=30;
                end;
@@ -816,7 +848,6 @@ begin
       end; //current line>= end table line
     until eof(fil);
     CloseFile(fil);
-    //showmessage('k');
     ProgressBar1.Position:=50;
     //evaluation of data
     ProgressBar1.Position:=60;
@@ -919,7 +950,6 @@ begin
    path:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');
    Label17.Visible:=directoryExists(path+'\'+Edit3.Text);
    ust.Free;
-    //showmessage(inttostr(offset));
 end;
 
 procedure TForm1.Button10Click(Sender: TObject);
@@ -947,6 +977,14 @@ begin
    ListBox9.Items[ListBox2.ItemIndex]:=Edit9.Text;
    ListBox11.Items[ListBox2.ItemIndex]:=Edit10.Text;
    ListBox12.Items[ListBox2.ItemIndex]:=vdi_ii_to_nr(ComboBox3.ItemIndex);
+end;
+
+procedure TForm1.Button12Click(Sender: TObject);
+var ust:TIniFile;
+begin
+  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+     ShellExecute(0,nil,'open',PChar(ust.ReadString('settings','pathOutput','c:\')),nil,SW_SHOWNORMAL);
+     ust.Free;
 end;
 
 procedure TForm1.Button2Click(Sender: TObject); //elektrody...
@@ -987,13 +1025,13 @@ end;
 
 procedure TForm1.Button3Click(Sender: TObject);
 begin
-  If Form1.Width=992 then begin
+  If Form1.Width=1000 then begin
      Form1.Width:=387;
      Form1.Height:=159;
      Button3.Caption:='Pokaż dane';
   end
   else begin
-    Form1.Width:=992;
+    Form1.Width:=1000;
     Form1.Height:=340;
     Button3.Caption:='Ukryj dane';
   end;
@@ -1019,6 +1057,7 @@ begin
       ListBox8.Items.Delete(di);
       ListBox9.Items.Delete(di);
       ListBox11.Items.Delete(di);
+      ListBox12.Items.Delete(di);
       ListBox2.ItemIndex:=-1;
    end;
 end;
@@ -1075,6 +1114,7 @@ begin
    ListBox1.Visible:=False;
    ListBox11.Visible:=False;
    ListBox12.Visible:=False;
+   ListBox13.Visible:=False;
    CheckBox1.Visible:=False;
    //CheckBox2.Visible:=False;  // reversed checkbox - now done automatically
    CheckBox3.Visible:=False;
@@ -1088,9 +1128,10 @@ begin
    Button10.Visible:=False;
    Button11.Visible:=False;
    ProgressBar1.Visible:=False;
-   SpinEdit1.Visible:=False;
+   //SpinEdit1.Visible:=False;
    Label1.Visible:=False;
    Label2.Visible:=False;
+   Label3.Visible:=False;
    Label4.Visible:=False;
    Label5.Visible:=False;
    Label6.Visible:=False;
@@ -1117,6 +1158,7 @@ begin
    Edit8.Visible:=False;
    Edit9.Visible:=False;
    Edit10.Visible:=False;
+   GroupBox1.Visible:=False;
    //Button8.Left:=(floor(Panel1.Width/2)-floor(Button8.Width/2));
    //Button8.Top:=5;
    PaintBox1.Top:=10+Button7.Height;
@@ -1218,6 +1260,7 @@ begin
    ListBox1.Visible:=True;
    ListBox11.Visible:=True;
    ListBox12.Visible:=True;
+   ListBox13.Visible:=True;
    CheckBox1.Visible:=True;
    //CheckBox2.Visible:=True;   //reversed checkbox - now done automatiaclly
    CheckBox3.Visible:=True;
@@ -1231,9 +1274,10 @@ begin
    Button10.Visible:=True;
    Button11.Visible:=True;
    ProgressBar1.Visible:=True;
-   SpinEdit1.Visible:=True;
+   //SpinEdit1.Visible:=True;
    Label1.Visible:=True;
    Label2.Visible:=True;
+   Label3.Visible:=True;
    Label4.Visible:=True;
    Label4.Visible:=True;
    Label5.Visible:=True;
@@ -1262,6 +1306,7 @@ begin
    Edit8.Visible:=True;
    Edit9.Visible:=True;
    Edit10.Visible:=True;
+   GroupBox1.Visible:=True;
    ust.Free;
 end;
 
@@ -1356,7 +1401,6 @@ begin
     for i:=0 to 31 do mpouts:=mpouts+inttostr(mpout[i]);
     if ((mcouts<>dms) and (mpouts<>dms)) then begin
        logToFile('bad license','ERR');
-       //showmessage('bad license');
        Application.Terminate;
     end;
     if mcouts<>dms then Label13.Visible:=True;
@@ -1447,9 +1491,11 @@ procedure TForm1.nospaces(Sender: TObject; var Key: Word; Shift: TShiftState);
 var ust:TIniFile;
   path:string;
 begin
-   (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,' ','_',[rfReplaceAll]);
-   (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,'-','_',[rfReplaceAll]);
-   (Sender as TEdit).SelStart:=high(Integer);
+  if (AnsiContainsStr((Sender as TEdit).Text,'-') or AnsiContainsStr((Sender as TEdit).Text,' ')) then begin
+     (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,' ','_',[rfReplaceAll]);
+     (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,'-','_',[rfReplaceAll]);
+     (Sender as TEdit).SelStart:=high(Integer);
+   end;
    if length((Sender as TEdit).Text)>1 then begin
    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
    path:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');

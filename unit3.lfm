@@ -173,7 +173,7 @@ object Form3: TForm3
     Text = 'LabeledEdit6'
   end
   object LabeledEdit7: TLabeledEdit
-    Left = 192
+    Left = 216
     Height = 23
     Top = 136
     Width = 160
@@ -181,7 +181,7 @@ object Form3: TForm3
     EditLabel.AnchorSideRight.Control = LabeledEdit7
     EditLabel.AnchorSideRight.Side = asrBottom
     EditLabel.AnchorSideBottom.Control = LabeledEdit7
-    EditLabel.Left = 192
+    EditLabel.Left = 216
     EditLabel.Height = 16
     EditLabel.Top = 117
     EditLabel.Width = 160
@@ -228,18 +228,18 @@ object Form3: TForm3
     TabOrder = 12
   end
   object Button6: TButton
-    Left = 224
+    Left = 232
     Height = 25
-    Top = 168
+    Top = 224
     Width = 155
     Caption = 'rozszerzenie .dxf do rejestru'
     OnClick = Button6Click
     TabOrder = 13
   end
   object Button7: TButton
-    Left = 224
+    Left = 232
     Height = 25
-    Top = 200
+    Top = 256
     Width = 155
     Caption = 'rozszerzenie .mi do rejestru'
     OnClick = Button7Click
@@ -263,16 +263,34 @@ object Form3: TForm3
     TabOrder = 15
     Text = '5'
   end
+  object LabeledEdit9: TLabeledEdit
+    Left = 216
+    Height = 23
+    Top = 184
+    Width = 160
+    EditLabel.AnchorSideLeft.Control = LabeledEdit9
+    EditLabel.AnchorSideRight.Control = LabeledEdit9
+    EditLabel.AnchorSideRight.Side = asrBottom
+    EditLabel.AnchorSideBottom.Control = LabeledEdit9
+    EditLabel.Left = 216
+    EditLabel.Height = 16
+    EditLabel.Top = 165
+    EditLabel.Width = 160
+    EditLabel.Caption = 'Poziom powrotu'
+    EditLabel.ParentColor = False
+    TabOrder = 16
+    Text = 'LabeledEdit9'
+  end
   object SelectDirectoryDialog1: TSelectDirectoryDialog
-    left = 240
-    top = 232
+    left = 248
+    top = 288
   end
   object SelectDirectoryDialog2: TSelectDirectoryDialog
-    left = 280
-    top = 232
+    left = 288
+    top = 288
   end
   object SelectDirectoryDialog3: TSelectDirectoryDialog
-    left = 320
-    top = 232
+    left = 328
+    top = 288
   end
 end

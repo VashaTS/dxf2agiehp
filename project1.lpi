@@ -19,7 +19,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <RevisionNr Value="3"/>
-      <BuildNr Value="592"/>
+      <BuildNr Value="635"/>
       <Language Value="0415"/>
       <StringTable InternalName="dxf2agiehp" ProductVersion=""/>
     </VersionInfo>

@@ -28,6 +28,7 @@ type
     LabeledEdit6: TLabeledEdit;
     LabeledEdit7: TLabeledEdit;
     LabeledEdit8: TLabeledEdit;
+    LabeledEdit9: TLabeledEdit;
     RadioButton1: TRadioButton;
     RadioButton2: TRadioButton;
     RadioButton3: TRadioButton;
@@ -85,6 +86,7 @@ begin
    ust.WriteString('settings','pathOutput',LabeledEdit6.Text);
    ust.WriteString('settings','maxPositionInMagazine',LabeledEdit7.Text);
    ust.WriteString('settings','defaultSideOffset',LabeledEdit8.Text);
+   ust.WriteString('settings','pp',LabeledEdit9.Text);
    if RadioButton1.Checked=True then ust.WriteString('settings','electrodeStrategy','1')
    else if RadioButton2.Checked=True then ust.WriteString('settings','electrodeStrategy','2')
    else if RadioButton3.Checked=True then ust.WriteString('settings','electrodeStrategy','3');
@@ -158,6 +160,7 @@ begin
    LabeledEdit6.Text:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');
    LabeledEdit7.Text:=ust.ReadString('settings','maxPositionInMagazine','50');
    LabeledEdit8.Text:=ust.ReadString('settings','defaultSideOffset','5');
+   LabeledEdit9.Text:=ust.ReadString('settings','pp','30');
    rad:=ust.ReadString('settings','electrodeStrategy','1');
    if rad='1' then RadioButton1.Checked:=True
    else if rad='2' then RadioButton2.CHecked:=True
