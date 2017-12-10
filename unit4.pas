@@ -20,6 +20,7 @@ type
     Label3: TLabel;
     StaticText1: TStaticText;
     procedure Button1Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { private declarations }
   public
@@ -38,6 +39,11 @@ implementation
 procedure TForm4.Button1Click(Sender: TObject);
 begin
   Form4.Close;
+end;
+
+procedure TForm4.FormCreate(Sender: TObject);
+begin
+
 end;
 
 end.

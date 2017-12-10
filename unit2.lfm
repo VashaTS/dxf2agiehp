@@ -1,11 +1,11 @@
 object Form2: TForm2
   Left = 1196
-  Height = 380
+  Height = 402
   Top = 143
   Width = 391
   BorderStyle = bsSingle
   Caption = 'Lista Elektrod'
-  ClientHeight = 380
+  ClientHeight = 402
   ClientWidth = 391
   OnClose = formclose
   OnCreate = FormCreate
@@ -74,7 +74,7 @@ object Form2: TForm2
   object CheckListBox1: TCheckListBox
     Left = 48
     Height = 291
-    Top = 29
+    Top = 40
     Width = 180
     ItemHeight = 0
     OnClick = editel
@@ -234,9 +234,9 @@ object Form2: TForm2
     Text = 'Edit10'
   end
   object Label11: TLabel
-    Left = 64
+    Left = 8
     Height = 16
-    Top = 16
+    Top = 8
     Width = 41
     Caption = 'Label11'
     ParentColor = False
@@ -250,7 +250,7 @@ object Form2: TForm2
     ParentColor = False
   end
   object Button2: TButton
-    Left = 16
+    Left = 24
     Height = 25
     Top = 336
     Width = 160
@@ -355,6 +355,24 @@ object Form2: TForm2
     Width = 19
     Caption = 'VDI'
     ParentColor = False
+  end
+  object Button3: TButton
+    Left = 64
+    Height = 25
+    Top = 7
+    Width = 120
+    Caption = 'Odwróć zaznaczenie'
+    OnClick = Button3Click
+    TabOrder = 21
+  end
+  object Button4: TButton
+    Left = 8
+    Height = 25
+    Top = 368
+    Width = 104
+    Caption = 'Pokaż szczegóły'
+    OnClick = Button4Click
+    TabOrder = 22
   end
   object OpenDialog1: TOpenDialog
     Filter = 'Pliku pomiaru|*.mes'

@@ -8,6 +8,7 @@ object Form4: TForm4
   Caption = 'O programie'
   ClientHeight = 185
   ClientWidth = 405
+  OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '1.0.1.3'
   object Image1: TImage
@@ -113,7 +114,7 @@ object Form4: TForm4
     Height = 16
     Top = 48
     Width = 118
-    Caption = 'wersja 10 (2017-07-14)'
+    Caption = 'wersja 14 (2017-11-14)'
     ParentColor = False
   end
   object Label2: TLabel

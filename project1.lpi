@@ -18,8 +18,8 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <RevisionNr Value="3"/>
-      <BuildNr Value="635"/>
+      <MinorVersionNr Value="1"/>
+      <BuildNr Value="787"/>
       <Language Value="0415"/>
       <StringTable InternalName="dxf2agiehp" ProductVersion=""/>
     </VersionInfo>
@@ -36,15 +36,18 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="2">
+    <RequiredPackages Count="3">
       <Item1>
-        <PackageName Value="dcpcrypt"/>
+        <PackageName Value="Printer4Lazarus"/>
       </Item1>
       <Item2>
-        <PackageName Value="LCL"/>
+        <PackageName Value="dcpcrypt"/>
       </Item2>
+      <Item3>
+        <PackageName Value="LCL"/>
+      </Item3>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="9">
       <Unit0>
         <Filename Value="project1.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -98,6 +101,18 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Unit6"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="myres.res"/>
+        <IsPartOfProject Value="True"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="unit7.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form7"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Unit7"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -1,13 +1,13 @@
 object Form1: TForm1
-  Left = 528
-  Height = 335
-  Top = 242
-  Width = 1000
+  Left = 350
+  Height = 368
+  Top = 160
+  Width = 1002
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'DXF to AGIE HP'
-  ClientHeight = 315
-  ClientWidth = 1000
+  ClientHeight = 348
+  ClientWidth = 1002
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDropFiles = hp2
@@ -25,9 +25,9 @@ object Form1: TForm1
     Visible = False
   end
   object Label2: TLabel
-    Left = 12
+    Left = 24
     Height = 16
-    Top = 96
+    Top = 120
     Width = 92
     Caption = 'Nazwa programu'
     ParentColor = False
@@ -43,10 +43,10 @@ object Form1: TForm1
     Visible = False
   end
   object ListBox1: TListBox
-    Left = 248
+    Left = 320
     Height = 81
-    Top = 225
-    Width = 136
+    Top = 257
+    Width = 64
     ItemHeight = 0
     TabOrder = 2
   end
@@ -57,7 +57,6 @@ object Form1: TForm1
     Width = 72
     ItemHeight = 0
     OnMouseDown = loadpos
-    OnMouseUp = scrollothers
     TabOrder = 3
   end
   object ListBox3: TListBox
@@ -115,12 +114,11 @@ object Form1: TForm1
     TabOrder = 9
   end
   object Button2: TButton
-    Left = 302
+    Left = 301
     Height = 25
-    Top = 94
-    Width = 83
+    Top = 35
+    Width = 81
     Caption = 'Elektrody...'
-    Enabled = False
     OnClick = Button2Click
     TabOrder = 10
   end
@@ -152,28 +150,18 @@ object Form1: TForm1
   object ProgressBar1: TProgressBar
     Left = 12
     Height = 20
-    Top = 64
-    Width = 276
+    Top = 88
+    Width = 279
     Max = 70
     TabOrder = 13
   end
-  object Button3: TButton
-    Left = 304
-    Height = 25
-    Top = 40
-    Width = 80
-    Caption = 'Pokaż dane'
-    Enabled = False
-    OnClick = Button3Click
-    TabOrder = 14
-  end
   object Edit3: TEdit
-    Left = 112
+    Left = 128
     Height = 23
-    Top = 96
+    Top = 120
     Width = 80
     OnKeyUp = nospaces
-    TabOrder = 15
+    TabOrder = 14
   end
   object Label1: TLabel
     Left = 400
@@ -238,25 +226,25 @@ object Form1: TForm1
     Width = 120
     Caption = 'Szukaj innej tabeli'
     OnClick = Button4Click
-    TabOrder = 16
+    TabOrder = 15
   end
   object CheckBox2: TCheckBox
-    Left = 960
+    Left = 492
     Height = 19
-    Top = 225
+    Top = 319
     Width = 64
     Caption = 'reversed'
     Enabled = False
-    TabOrder = 17
+    TabOrder = 16
     Visible = False
   end
   object CheckBox3: TCheckBox
-    Left = 13
+    Left = 16
     Height = 19
-    Top = 112
+    Top = 144
     Width = 91
     Caption = 'Utwórz grupę'
-    TabOrder = 18
+    TabOrder = 17
   end
   object ComboBox2: TComboBox
     Left = 188
@@ -282,7 +270,7 @@ object Form1: TForm1
       'VDI 17 Ra 0.71'
       'VDI 16 Ra 0.65'
     )
-    TabOrder = 19
+    TabOrder = 18
     Text = 'VDI 26 Ra 2.0'
   end
   object ListBox9: TListBox
@@ -292,7 +280,7 @@ object Form1: TForm1
     Width = 40
     ItemHeight = 0
     OnMouseDown = loadpos
-    TabOrder = 20
+    TabOrder = 19
   end
   object Label10: TLabel
     Left = 852
@@ -302,21 +290,12 @@ object Form1: TForm1
     Caption = 'dir'
     ParentColor = False
   end
-  object Button5: TButton
-    Left = 392
-    Height = 25
-    Top = 280
-    Width = 80
-    Caption = 'usuń wiersz'
-    OnClick = Button5Click
-    TabOrder = 21
-  end
   object Edit1: TEdit
     Left = 392
     Height = 23
     Top = 8
     Width = 60
-    TabOrder = 22
+    TabOrder = 20
   end
   object Edit2: TEdit
     Left = 464
@@ -324,7 +303,7 @@ object Form1: TForm1
     Top = 8
     Width = 60
     OnKeyUp = comatodot
-    TabOrder = 23
+    TabOrder = 21
     Text = '0'
   end
   object Edit4: TEdit
@@ -333,7 +312,7 @@ object Form1: TForm1
     Top = 8
     Width = 60
     OnKeyUp = comatodot
-    TabOrder = 24
+    TabOrder = 22
     Text = '0'
   end
   object Edit5: TEdit
@@ -342,7 +321,7 @@ object Form1: TForm1
     Top = 8
     Width = 60
     OnKeyUp = comatodot
-    TabOrder = 25
+    TabOrder = 23
     Text = '0'
   end
   object Edit6: TEdit
@@ -351,56 +330,46 @@ object Form1: TForm1
     Top = 8
     Width = 60
     OnKeyUp = comatodot
-    TabOrder = 26
+    TabOrder = 24
     Text = '0'
   end
-  object Button6: TButton
-    Left = 948
-    Height = 27
-    Top = 0
-    Width = 52
-    Caption = 'dodaj'
-    OnClick = Button6Click
-    TabOrder = 31
-  end
   object ListBox10: TListBox
-    Left = 120
+    Left = 264
     Height = 80
-    Top = 225
-    Width = 120
+    Top = 258
+    Width = 56
     ItemHeight = 0
-    TabOrder = 32
+    TabOrder = 29
   end
   object Label11: TLabel
-    Left = 264
+    Left = 338
     Height = 16
-    Top = 208
-    Width = 113
-    Caption = 'pierwszy wiersz tabeli'
+    Top = 240
+    Width = 30
+    Caption = 'p.w.t.'
     ParentColor = False
   end
   object Label12: TLabel
-    Left = 168
+    Left = 280
     Height = 16
-    Top = 208
-    Width = 41
-    Caption = 'pliki iso'
+    Top = 240
+    Width = 19
+    Caption = '.iso'
     ParentColor = False
   end
   object Button7: TButton
-    Left = 304
+    Left = 302
     Height = 25
-    Top = 64
+    Top = 88
     Width = 80
     Caption = 'GrafiCheck'
-    Enabled = False
     OnClick = Button7Click
-    TabOrder = 33
+    TabOrder = 30
   end
   object PaintBox1: TPaintBox
     Left = 8
     Height = 105
-    Top = 208
+    Top = 240
     Width = 105
     Color = clNavy
     ParentColor = False
@@ -412,7 +381,7 @@ object Form1: TForm1
     Width = 75
     Caption = 'Button8'
     OnClick = Button8Click
-    TabOrder = 34
+    TabOrder = 31
     Visible = False
   end
   object Edit7: TEdit
@@ -420,7 +389,7 @@ object Form1: TForm1
     Height = 23
     Top = 8
     Width = 60
-    TabOrder = 27
+    TabOrder = 25
     Text = 'Edit7'
   end
   object Edit8: TEdit
@@ -429,7 +398,7 @@ object Form1: TForm1
     Top = 8
     Width = 60
     OnKeyUp = comatodot
-    TabOrder = 28
+    TabOrder = 26
     Text = '0'
   end
   object Edit9: TEdit
@@ -438,31 +407,13 @@ object Form1: TForm1
     Top = 8
     Width = 40
     OnKeyUp = chkeckTypedDir
-    TabOrder = 29
+    TabOrder = 27
     Text = 'Z'
-  end
-  object Button9: TButton
-    Left = 302
-    Height = 25
-    Top = 6
-    Width = 82
-    Caption = 'Czytaj DXF/MI'
-    OnClick = Button9Click
-    TabOrder = 35
-  end
-  object Button10: TButton
-    Left = 201
-    Height = 25
-    Top = 94
-    Width = 75
-    Caption = 'nowy pusty'
-    OnClick = Button10Click
-    TabOrder = 36
   end
   object Label13: TLabel
     Left = 8
     Height = 16
-    Top = 64
+    Top = 96
     Width = 4
     Caption = '!'
     ParentColor = False
@@ -484,15 +435,6 @@ object Form1: TForm1
     Caption = '/ 1'
     ParentColor = False
   end
-  object Button11: TButton
-    Left = 948
-    Height = 27
-    Top = 26
-    Width = 52
-    Caption = 'zmień'
-    OnClick = Button11Click
-    TabOrder = 37
-  end
   object Edit10: TEdit
     Left = 864
     Height = 23
@@ -500,7 +442,7 @@ object Form1: TForm1
     Width = 40
     Enabled = False
     OnKeyUp = comatodot
-    TabOrder = 30
+    TabOrder = 28
     Text = '0'
   end
   object ListBox11: TListBox
@@ -510,7 +452,7 @@ object Form1: TForm1
     Width = 40
     ItemHeight = 0
     OnMouseDown = loadpos
-    TabOrder = 38
+    TabOrder = 32
   end
   object ListBox12: TListBox
     Left = 904
@@ -519,7 +461,7 @@ object Form1: TForm1
     Width = 44
     ItemHeight = 0
     OnMouseDown = loadpos
-    TabOrder = 39
+    TabOrder = 33
   end
   object Label16: TLabel
     Left = 916
@@ -554,13 +496,13 @@ object Form1: TForm1
       '16'
     )
     OnChange = ComboBox3Change
-    TabOrder = 40
+    TabOrder = 34
     Text = '26'
   end
   object Label17: TLabel
-    Left = 120
+    Left = 136
     Height = 16
-    Top = 120
+    Top = 144
     Width = 64
     Caption = 'już istnieje!'
     Font.Color = clRed
@@ -575,22 +517,22 @@ object Form1: TForm1
     Top = 32
     Width = 158
     Caption = 'Zastąp jakość powierzchni'
-    TabOrder = 41
+    TabOrder = 35
   end
   object ListBox13: TListBox
-    Left = 24
+    Left = 208
     Height = 80
-    Top = 225
-    Width = 93
+    Top = 258
+    Width = 53
     ItemHeight = 0
-    TabOrder = 42
+    TabOrder = 36
   end
   object Label3: TLabel
-    Left = 40
+    Left = 224
     Height = 16
-    Top = 208
-    Width = 50
-    Caption = 'użyte VDI'
+    Top = 240
+    Width = 19
+    Caption = 'VDI'
     ParentColor = False
   end
   object Button12: TButton
@@ -600,18 +542,18 @@ object Form1: TForm1
     Width = 75
     Caption = 'Button12'
     OnClick = Button12Click
-    TabOrder = 43
+    TabOrder = 37
     Visible = False
   end
   object GroupBox1: TGroupBox
     Left = 16
     Height = 57
-    Top = 144
+    Top = 176
     Width = 352
     Caption = 'Odległość Referencje detalu -> Punkt pomiarowy'
     ClientHeight = 39
     ClientWidth = 348
-    TabOrder = 44
+    TabOrder = 38
     object Label18: TLabel
       Left = 6
       Height = 16
@@ -681,19 +623,160 @@ object Form1: TForm1
       Text = '0.00'
     end
   end
+  object ComboBox4: TComboBox
+    Left = 188
+    Height = 23
+    Top = 56
+    Width = 100
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'Steel'
+      'Hard metal (13% binder phase)'
+      'Aluminium'
+      'Titanium'
+      'Copper'
+      'Copper base Alloy'
+      'Nickel base Alloy'
+      'Cast Iron'
+    )
+    OnChange = ComboBox4Change
+    TabOrder = 39
+    Text = 'Steel'
+  end
+  object Label22: TLabel
+    Left = 94
+    Height = 16
+    Top = 57
+    Width = 80
+    Caption = 'Material detalu'
+    ParentColor = False
+  end
+  object Button14: TButton
+    Left = 88
+    Height = 25
+    Top = 296
+    Width = 104
+    Caption = 'Wyslij program'
+    OnClick = Button14Click
+    TabOrder = 40
+  end
+  object CheckBox5: TCheckBox
+    Left = 575
+    Height = 19
+    Top = 312
+    Width = 65
+    Caption = 'Saved as'
+    TabOrder = 41
+    Visible = False
+  end
+  object BitBtn1: TBitBtn
+    Left = 952
+    Height = 36
+    Hint = 'Kopiuj'
+    Top = 88
+    Width = 36
+    OnClick = BitBtn1Click
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 42
+  end
+  object BitBtn2: TBitBtn
+    Left = 952
+    Height = 36
+    Hint = 'Usuń wiersz'
+    Top = 128
+    Width = 36
+    OnClick = BitBtn2Click
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 43
+  end
+  object Label23: TLabel
+    Left = 228
+    Height = 16
+    Top = 135
+    Width = 15
+    Caption = 'inf'
+    ParentColor = False
+  end
+  object Edit15: TEdit
+    Left = 248
+    Height = 23
+    Top = 135
+    Width = 120
+    TabOrder = 44
+    Text = 'Edit15'
+  end
+  object BitBtn3: TBitBtn
+    Left = 952
+    Height = 36
+    Hint = 'Akceptuj zmiany'
+    Top = 48
+    Width = 36
+    OnClick = BitBtn3Click
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 45
+  end
+  object BitBtn4: TBitBtn
+    Left = 952
+    Height = 36
+    Hint = 'Dodaj linie'
+    Top = 8
+    Width = 36
+    OnClick = BitBtn4Click
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 46
+  end
   object OpenDialog1: TOpenDialog
-    Filter = 'Pliki DXF|*.dxf|Pliki MI|*.mi'
+    Filter = 'Pliki DXF/MI|*.dxf|*.mi'
     InitialDir = 'C:\Intel\LazarusPortable\dxf test'
-    left = 88
-    top = 216
+    left = 120
+    top = 240
   end
   object MainMenu1: TMainMenu
+    Images = ImageList1
     left = 24
-    top = 216
+    top = 248
+    object MenuItem7: TMenuItem
+      Caption = 'Plik'
+      OnClick = MenuItem7Click
+      object MenuItem8: TMenuItem
+        Caption = 'Nowy'
+        ImageIndex = 1
+        OnClick = MenuItem8Click
+      end
+      object MenuItem9: TMenuItem
+        Caption = 'Import DXF/MI'
+        ImageIndex = 6
+        OnClick = MenuItem9Click
+      end
+      object MenuItem10: TMenuItem
+        Caption = 'Otwórz EDF'
+        ImageIndex = 0
+        OnClick = MenuItem10Click
+      end
+      object MenuItem13: TMenuItem
+        Caption = 'Zapisz'
+        ImageIndex = 3
+        OnClick = MenuItem13Click
+      end
+      object MenuItem11: TMenuItem
+        Caption = 'Zapisz jako'
+        OnClick = MenuItem11Click
+      end
+      object MenuItem12: TMenuItem
+        Caption = 'Zakoncz'
+        OnClick = MenuItem12Click
+      end
+    end
     object MenuItem1: TMenuItem
       Caption = 'Opcje...'
       object MenuItem5: TMenuItem
         Caption = 'Ustawienia'
+        ImageIndex = 4
         OnClick = MenuItem1Click
       end
       object MenuItem6: TMenuItem
@@ -705,19 +788,34 @@ object Form1: TForm1
       Caption = 'Pomoc'
       object MenuItem3: TMenuItem
         Caption = 'O programie'
+        ImageIndex = 5
         OnClick = MenuItem3Click
       end
       object MenuItem4: TMenuItem
         Caption = 'Jak używać?'
+        ImageIndex = 2
         OnClick = MenuItem4Click
       end
     end
   end
-  object Timer1: TTimer
-    Enabled = False
-    Interval = 500
-    OnTimer = Timer1Timer
+  object SaveDialog1: TSaveDialog
+    DefaultExt = '.edf'
+    Filter = 'Plik EDF|*.edf'
     left = 56
-    top = 216
+    top = 248
+  end
+  object ImageList1: TImageList
+    left = 168
+    top = 240
+  end
+  object OpenDialog2: TOpenDialog
+    Filter = 'Pliki EDF|*.edf'
+    left = 144
+    top = 240
+  end
+  object OpenDialog3: TOpenDialog
+    Filter = 'Pliki pomiaru|*.mes'
+    left = 412
+    top = 296
   end
 end
