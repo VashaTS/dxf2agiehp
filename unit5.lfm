@@ -1,13 +1,13 @@
 object Form5: TForm5
   Left = 478
-  Height = 315
+  Height = 331
   Top = 293
-  Width = 426
+  Width = 539
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Jak Używać'
-  ClientHeight = 315
-  ClientWidth = 426
+  ClientHeight = 331
+  ClientWidth = 539
   Position = poScreenCenter
   LCLVersion = '1.0.1.3'
   object Label1: TLabel
@@ -28,8 +28,8 @@ object Form5: TForm5
     Left = 56
     Height = 16
     Top = 72
-    Width = 147
-    Caption = 'Pomiar elektrod na presecie'
+    Width = 460
+    Caption = 'Jeżeli nie ma starego programu, załaduj rysunek 2D do Creo i zapisz jako plik "Sheet MI"'
     ParentColor = False
   end
   object Label3: TLabel
@@ -49,25 +49,17 @@ object Form5: TForm5
   object Label4: TLabel
     Left = 56
     Height = 16
-    Top = 112
-    Width = 55
-    Caption = 'Czytaj .dxf'
+    Top = 88
+    Width = 296
+    Caption = 'Otwórz zapisany plik przez dwukrotne kliknięcie myszką.'
     ParentColor = False
   end
   object Label5: TLabel
     Left = 56
-    Height = 16
-    Top = 128
-    Width = 253
-    Caption = 'Jeżeli więcej niż 1 tabela na rysunku, Pokaż dane'
-    ParentColor = False
-  end
-  object Label6: TLabel
-    Left = 56
-    Height = 16
-    Top = 144
-    Width = 364
-    Caption = 'W przypadku gdy została załadowana zła tabela, Szukaj kolejnej tabeli'
+    Height = 31
+    Top = 112
+    Width = 397
+    Caption = 'Jeżeli więcej niż 1 tabela na rysunku, '#13#10'klikaj przycisk"Szukaj kolejnej tabeli" do momentu wyświetlenia poprawnej.'
     ParentColor = False
   end
   object Label7: TLabel
@@ -88,16 +80,16 @@ object Form5: TForm5
     Left = 56
     Height = 16
     Top = 168
-    Width = 287
-    Caption = 'Elektrody...   wpisz podwymiary i pozycje w magazynie'
+    Width = 342
+    Caption = 'przycisk "Elektrody..."   wpisz podwymiary i pozycje w magazynie'
     ParentColor = False
   end
   object Label9: TLabel
     Left = 56
     Height = 16
     Top = 184
-    Width = 302
-    Caption = 'Oraz Fp i materiał elektrody, jeżeli były błędne na rysunku'
+    Width = 170
+    Caption = 'Zapisz program W formacie EDF'
     ParentColor = False
   end
   object Label10: TLabel
@@ -117,7 +109,7 @@ object Form5: TForm5
   object Label11: TLabel
     Left = 56
     Height = 16
-    Top = 232
+    Top = 240
     Width = 201
     Caption = 'Gotowe! Skopiuj program na maszynę'
     ParentColor = False
@@ -125,17 +117,17 @@ object Form5: TForm5
   object Label12: TLabel
     Left = 56
     Height = 16
-    Top = 248
+    Top = 256
     Width = 241
     Caption = 'Na maszynie Wybór technologii -> TECTRON'
     ParentColor = False
   end
   object Label13: TLabel
     Left = 56
-    Height = 16
+    Height = 31
     Top = 200
-    Width = 184
-    Caption = 'Załaduj plik pomiaru elektrod .mes'
+    Width = 341
+    Caption = 'Przycisk "Wyślij program", załaduj plik pomiarów .mes '#13#10'Program zostanie utworzony w tym samym folderze co plik .mes'
     ParentColor = False
   end
   object Label14: TLabel
@@ -156,17 +148,25 @@ object Form5: TForm5
     Left = 56
     Height = 16
     Top = 55
-    Width = 265
-    Caption = 'Upewnij się że na maszynie nie ma tego programu'
+    Width = 458
+    Caption = 'Otwórz stary program .edf z folderu Q:\Narzedziownia\WSPOLNY\HP i przejdź do pkt 3'
     ParentColor = False
   end
   object Button1: TButton
     Left = 56
-    Height = 25
-    Top = 280
-    Width = 75
+    Height = 32
+    Top = 288
+    Width = 120
     Caption = 'OK'
     OnClick = Button1Click
     TabOrder = 0
+  end
+  object Label6: TLabel
+    Left = 56
+    Height = 16
+    Top = 144
+    Width = 455
+    Caption = 'Sprawdź poprawność danych (materiał elektrody, VDI, kierunek) i ewentualnie popraw.'
+    ParentColor = False
   end
 end

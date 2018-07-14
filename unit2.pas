@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, PrintersDlgs, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, CheckLst, inifiles, strutils;
+  StdCtrls, CheckLst, ExtCtrls, Menus, inifiles, strutils;
 
 type
    TArrayOfString = array of String;
@@ -18,6 +18,7 @@ type
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
+    Button5: TButton;
     CheckBox1: TCheckBox;
     CheckListBox1: TCheckListBox;
     ComboBox1: TComboBox;
@@ -27,6 +28,10 @@ type
     Edit1: TEdit;
     Edit10: TEdit;
     Edit11: TEdit;
+    Edit12: TEdit;
+    Edit13: TEdit;
+    Edit14: TEdit;
+    Edit15: TEdit;
     Edit2: TEdit;
     Edit3: TEdit;
     Edit4: TEdit;
@@ -41,6 +46,8 @@ type
     Label12: TLabel;
     Label13: TLabel;
     Label14: TLabel;
+    Label15: TLabel;
+    Label16: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
@@ -52,6 +59,9 @@ type
     ListBox1: TListBox;
     ListBox2: TListBox;
     OpenDialog1: TOpenDialog;
+    RadioButton1: TRadioButton;
+    RadioButton2: TRadioButton;
+    RadioGroup1: TRadioGroup;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -204,26 +214,30 @@ begin
   Edit3.Text:=el_values[4]; // u2
   Edit4.Text:=el_values[5]; // u3
   Edit5.Text:=el_values[6]; // u4
-  Edit6.Text:=el_values[7]; // poz1
-  Edit7.Text:=el_values[8]; // poz2
-  Edit8.Text:=el_values[9]; // poz3
-  Edit9.Text:=el_values[10]; // poz4
-  Edit10.Text:=el_values[11]; // name for changing in AGIE program
-  Edit11.Text:=el_values[14]; // offset for side eroding
+  Edit12.Text:=el_values[7]; //u5
+  Edit14.Text:=el_values[8]; //u6
+  Edit6.Text:=el_values[9]; // poz1   old 7
+  Edit7.Text:=el_values[10]; // poz2  old 8
+  Edit8.Text:=el_values[11]; // poz3   old 9
+  Edit9.Text:=el_values[12]; // poz4  old 10
+  Edit13.Text:=el_values[13]; // poz5
+  Edit15.Text:=el_values[14]; // poz6
+  Edit10.Text:=el_values[15]; // name for changing in AGIE program //old 11
+  Edit11.Text:=el_values[18]; // offset for side eroding  //old 14
   Label8.Caption:=inttostr(CheckListBox1.ItemIndex); //number of electrode on the listbox
-  if el_values[12]='1' then CheckBox1.Checked:=True //multi
+  if el_values[16]='1' then CheckBox1.Checked:=True //multi //old 12
   else CheckBox1.Checked:=False;
  // ShowMessage(inttostr(length(el_values[13]))+' '+el_values[13]);
   dlet:='Z';
   dsig:='';
-  if length(el_values[13])=2 then begin
-    case el_values[13][1] of
+  if length(el_values[17])=2 then begin  //old 13
+    case el_values[17][1] of
       '-': dsig:='-';
       '+': dsig:='+';
       'X': dlet:='X';
       'Y': dlet:='Y';
     end;
-    case el_values[13][2] of
+    case el_values[17][2] of
       '-': dsig:='-';
       '+': dsig:='+';
       'X': dlet:='X';
@@ -239,8 +253,10 @@ begin
     end;
     if trim(dlet+dsig)<>'Z' then Edit11.Enabled:=True
     else Edit11.Enabled:=False;
-    ComboBox2.ItemIndex:=strtoint(el_values[15]);
-    ComboBox3.ItemIndex:=vdi_nr_to_ii(el_values[16]);
+    ComboBox2.ItemIndex:=strtoint(el_values[19]); //old 15
+    ComboBox3.ItemIndex:=vdi_nr_to_ii(el_values[20]); // old 16
+    if length(el_values[17])=2 then RadioButton2.Checked:=True
+    else RadioButton1.Checked:=True;
   if (CheckListBox1.ItemIndex=(CheckListBox1.Count-1)) then Button1.Caption:='Koniec - zapisz program' //change button to more acurately reflect action taken on pressing it
   else Button1.Caption:='Kolejna elektroda';
 
@@ -268,6 +284,10 @@ begin
            (Sender as TEdit).Text:=ust.ReadString('settings','maxPositionInMagazine','50');
            (Sender as TEdit).SelStart:=high(Integer);
         end;
+        // if (strtoint((Sender as TEdit).Text) < strtoint(ust.ReadString('settings','minPositionInMagazine','1'))) then begin
+        //   (Sender as TEdit).Text:=ust.ReadString('settings','minPositionInMagazine','1');
+        //   (Sender as TEdit).SelStart:=high(Integer);
+        //end;
      ust.Free;
      end;
 end;
@@ -275,7 +295,7 @@ end;
 procedure TForm2.Button1Click(Sender: TObject);
 var preset,fut,fur,f0r,f00,tempp:Textfile;
 pval,eval,pval2,tf_val,pe_val,lb1,prefil:TArrayOfString;
-pline,str,elmname,dir,strat,phase,eip,elno,multi_tf,umode,le,f00f,f00_sk:string;
+pline,str,elmname,dir,strat,phase,eip,elno,multi_tf,umode,le,f00f,f00_sk,utype:string;
 i,j,ii,iii,amount_of_el:integer;
 ust:TIniFile;
 line_changed,ok_for_multi:boolean;
@@ -286,9 +306,11 @@ begin
   for iii:=1 to 5 do elmname:=elmname + str[random(length(str))+1];
   if CheckBox1.Checked=True then multi_tf:='1'
   else multi_tf:='0';
+  if RadioButton1.Checked then utype:='Z'
+  else if RadioButton2.Checked then utype:='X+';
   ListBox1.Items.Delete(strtoint(Label8.Caption));  //temp delete existing entry, then add a new one (next line)
-  //                          0               1                               2             3                 4             5             6              7             8                9              10              11           12                       13                             14                        15                              16                      17
-  ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit10.Text+';'+multi_tf+';'+ComboBox1.Items[ComboBox1.ItemIndex]+';'+Edit11.Text+';'+inttostr(ComboBox2.ItemIndex)+';'+vdi_ii_to_nr(ComboBox3.ItemIndex)+';'+elmname);
+  //                          0               1                               2             3                 4             5             6              7             8                9               10              11           12             13              14                15           16           17         18                     19                                 20                           21
+  ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit12.Text+';'+Edit14.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit13.Text+';'+Edit15.Text+';'+Edit10.Text+';'+multi_tf+';'+utype+';'+Edit11.Text+';'+inttostr(ComboBox2.ItemIndex)+';'+vdi_ii_to_nr(ComboBox3.ItemIndex)+';'+elmname);
   ListBox1.Items.Move((ListBox1.Count-1),strtoint(Label8.Caption)); //move added antry to previous place
   if (((strtofloat(Edit1.Text)>0) and (strtofloat(Edit2.Text)>0)) or (CheckListBox1.Checked[CheckListBox1.ItemIndex]=False)) then begin  //check if fp and u1 are empty
      ok_for_multi:=true;
@@ -296,15 +318,17 @@ begin
      if Edit4.Text<>Edit5.Text then ok_for_multi:=false;
      if Edit6.Text<>Edit7.Text then ok_for_multi:=false;
      if Edit8.Text<>Edit9.Text then ok_for_multi:=false;
-     //if ok_for_multi=true then showmessage('true');
+     if Edit12.Text<>Edit14.Text then ok_for_multi:=false;
+     if Edit13.Text<>Edit15.Text then ok_for_multi:=false; // U5 and U6
+     ok_for_multi:=true; //disable checks above
      if (CheckBox1.Checked and ok_for_multi) or (not CheckBox1.Checked) then begin
      if CheckListBox1.ItemIndex=(CheckListBox1.Count-1) then begin //when all electrodes done
         Label13.Caption:='done';
-        Form2.Visible:=False; //close this window
+        Button5.Click;
+        //Form2.Close; //close this window
      end
      else begin
-          CheckListBox1.ItemIndex:=(CheckListBox1.ItemIndex+1);
-
+          CheckListBox1.ItemIndex:=(CheckListBox1.ItemIndex+1);  //select next electrode
           Form2.editel(Form2);
           Edit1.SetFocus; //set focus to Fp field
           end;
@@ -317,7 +341,7 @@ end;
 
 procedure TForm2.Button2Click(Sender: TObject);
 begin
-    Form2.Visible:=False;
+    Form2.Close;
 end;
 
 procedure TForm2.Button3Click(Sender: TObject);
@@ -333,15 +357,15 @@ end;
 
 procedure TForm2.Button4Click(Sender: TObject);
 begin
-  if Form2.Height=772 then begin
-      Form2.Height:=402;
-      Button4.Caption:='Pokaż szczegóły';
+  if Form2.Height=633 then begin
+      Form2.Height:=460;
+      Button4.Caption:='v';
   end
-  else if Form2.Height=402 then begin
-   Form2.Height:=772;
-    Button4.Caption:='Ukryj szczegóły';
+  else if Form2.Height=460 then begin
+   Form2.Height:=633;
+    Button4.Caption:='^';
   end
-  Else Form2.Height:=402;
+  Else Form2.Height:=460;
 end;
 
 procedure TForm2.chck_l(Sender: TObject; var Key: Word; Shift: TShiftState);

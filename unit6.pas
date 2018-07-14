@@ -21,10 +21,9 @@ type
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure DateEdit1Change(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure oad(Sender: TObject; var ADate: TDateTime;
-      var AcceptDate: Boolean);
-    procedure oad2(Sender: TObject);
+    procedure resi(Sender: TObject);
   private
     { private declarations }
   public
@@ -92,17 +91,19 @@ procedure readLog;
 var i,j:integer;
   sl:TStringList;
   sp:TArrayOfString;
-  joint_str:string;
+  joint_str,sd:string;
 begin
+ //showmessage('ok');
+ sd:=Form6.DateEdit1.Text;
+ //showmessage('ok2');
   //if Form6.StringGrid1.RowCount>1 then for i:=(Form6.StringGrid1.RowCount-1) downto 1 do Form6.StringGrid1.Rows[i].Clear; //delete old data, if any
  Form6.StringGrid1.RowCount:=1;
  sl:=TStringList.Create;
-   sl.LoadFromFile(Application.Location+'\logfile'+inttostr(YearOf(Now))+'.log');
+   sl.LoadFromFile(Application.Location+'\logfile'+inttostr(YearOf(strtodatetime(sd)))+'.log');
    for i:= 0 to sl.Count-1 do begin
        sp:=SplitString(' ',sl.Strings[i]);
-       if strtodatetime(sp[0])=Form6.DateEdit1.Date then begin
+       if sp[0]=sd then begin
          Form6.StringGrid1.RowCount:=Form6.StringGrid1.RowCount+1;
-
          Form6.StringGrid1.Cells[0,(Form6.StringGrid1.RowCount-1)]:=sp[0];
          Form6.StringGrid1.Cells[1,(Form6.StringGrid1.RowCount-1)]:=sp[1];
          Form6.StringGrid1.Cells[2,(Form6.StringGrid1.RowCount-1)]:=sp[2];
@@ -125,6 +126,7 @@ procedure TForm6.FormCreate(Sender: TObject);
 
 
 begin
+  DateEdit1.Date:=Now;
   StringGrid1.Cells[0,0]:='Data';
   StringGrid1.Cells[1,0]:='Czas';
   StringGrid1.Cells[2,0]:='Typ';
@@ -132,25 +134,27 @@ begin
   StringGrid1.ColWidths[0]:=70;
   StringGrid1.ColWidths[1]:=50;
   StringGrid1.ColWidths[2]:=50;
-  StringGrid1.ColWidths[3]:=700;
+  StringGrid1.ColWidths[3]:=800;
   readLog;
 end;
 
-procedure TForm6.oad(Sender: TObject; var ADate: TDateTime;
-  var AcceptDate: Boolean);
+procedure TForm6.resi(Sender: TObject);
 begin
-   readLog;
-end;
-
-procedure TForm6.oad2(Sender: TObject);
-begin
-  readLog;
+   StringGrid1.Height:=Form6.Height-100;
+   StringGrid1.Width:=Form6.Width-39;
+   StringGrid1.ColWidths[3]:=800+(Form6.Width-1063);
 end;
 
 procedure TForm6.Button3Click(Sender: TObject);
 begin
   DateEdit1.Date:=DateEdit1.Date+1;
   readLog;
+end;
+
+procedure TForm6.DateEdit1Change(Sender: TObject);
+begin
+  //causes access violation :(
+  //readLog;
 end;
 
 procedure TForm6.Button1Click(Sender: TObject);

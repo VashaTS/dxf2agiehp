@@ -1,0 +1,1 @@
+lazres myres.lrs resfiles\Add.png resfiles\Copy.png resfiles\dxf-file.png resfiles\Edit-validated.png resfiles\File-info.png resfiles\Help.png resfiles\Information.png "resfiles\new file.png" resfiles\Ok.png resfiles\open-file.png resfiles\Remove.png resfiles\Save.png resfiles\seb_ic.png resfiles\Settings.png resfiles\Printer.png

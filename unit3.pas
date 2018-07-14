@@ -14,6 +14,8 @@ type
 
   TForm3 = class(TForm)
     Button1: TButton;
+    Button10: TButton;
+    Button11: TButton;
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
@@ -21,13 +23,22 @@ type
     Button6: TButton;
     Button7: TButton;
     Button8: TButton;
+    Button9: TButton;
     CheckBox1: TCheckBox;
     CheckBox2: TCheckBox;
+    CheckBox3: TCheckBox;
+    CheckBox4: TCheckBox;
+    CheckBox5: TCheckBox;
+    CheckGroup1: TCheckGroup;
     ComboBox1: TComboBox;
+    Label1: TLabel;
     LabeledEdit1: TLabeledEdit;
     LabeledEdit10: TLabeledEdit;
     LabeledEdit11: TLabeledEdit;
+    LabeledEdit12: TLabeledEdit;
+    LabeledEdit13: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
+    LabeledEdit3: TLabeledEdit;
     LabeledEdit4: TLabeledEdit;
     LabeledEdit5: TLabeledEdit;
     LabeledEdit6: TLabeledEdit;
@@ -37,11 +48,18 @@ type
     RadioButton1: TRadioButton;
     RadioButton2: TRadioButton;
     RadioButton3: TRadioButton;
+    RadioButton4: TRadioButton;
+    RadioButton5: TRadioButton;
     RadioGroup1: TRadioGroup;
+    RadioGroup2: TRadioGroup;
     SelectDirectoryDialog1: TSelectDirectoryDialog;
     SelectDirectoryDialog2: TSelectDirectoryDialog;
     SelectDirectoryDialog3: TSelectDirectoryDialog;
     SelectDirectoryDialog4: TSelectDirectoryDialog;
+    SelectDirectoryDialog5: TSelectDirectoryDialog;
+    SelectDirectoryDialog6: TSelectDirectoryDialog;
+    procedure Button10Click(Sender: TObject);
+    procedure Button11Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -96,17 +114,37 @@ begin
    ust.WriteString('settings','pp',LabeledEdit9.Text);
    ust.WriteString('settings','defaultZOffset',LabeledEdit10.Text);
    ust.WriteString('settings','pathVDM',LabeledEdit11.Text);
+   ust.WriteString('settings','pathCSV',LabeledEdit3.Text);
+   ust.WriteString('settings','pathCSVexport',LabeledEdit13.Text);
+   ust.WriteString('settings','minPositionInMagazine',LabeledEdit12.Text);
    if RadioButton1.Checked=True then ust.WriteString('settings','electrodeStrategy','1')
    else if RadioButton2.Checked=True then ust.WriteString('settings','electrodeStrategy','2')
    else if RadioButton3.Checked=True then ust.WriteString('settings','electrodeStrategy','3');
+   if RadioButton4.Checked=True then ust.WriteString('settings','tabOrederF2','stary')
+   else if RadioButton5.Checked=True then ust.WriteString('settings','tabOrderF2','nowy');
    if CheckBox1.Checked then ust.WriteString('settings','createFolder','1')
    else ust.WriteString('settings','createFolder','0');
    if CheckBox2.Checked then ust.WriteString('settings','naPen','1')
    else ust.WriteString('settings','naPen','0');
-
+   if CheckBox3.Checked then ust.WriteString('settings','exportAgieHP','1')
+   else ust.WriteString('settings','exportAgieHP','0');
+   if CheckBox4.Checked then ust.WriteString('settings','exportX400','1')
+   else ust.WriteString('settings','exportX400','0');
+   if CheckBox5.Checked then ust.WriteString('settings','exportCERTA','1')
+   else ust.WriteString('settings','exportCERTA','0');
    ust.Free;
    logToFile('settings saved');
    Form3.Close;
+end;
+
+procedure TForm3.Button10Click(Sender: TObject);
+begin
+  if SelectDirectoryDialog5.Execute then LabeledEdit3.Text:=SelectDirectoryDialog5.FileName;
+end;
+
+procedure TForm3.Button11Click(Sender: TObject);
+begin
+  if SelectDirectoryDialog6.Execute then LabeledEdit13.Text:=SelectDirectoryDialog6.FileName;
 end;
 
 procedure TForm3.Button2Click(Sender: TObject);
@@ -134,12 +172,12 @@ begin
   with TRegistry.Create do
     try
       RootKey:=HKEY_CURRENT_USER;
-      if OpenKey('\Software\Classes\.dxf', true) then WriteString('','Dxf2AgiehpFile');
-      if OpenKey('\Software\Classes\Dxf2AgiehpFile', true) then WriteString('','Dxf File');
-      if OpenKey('\Software\Classes\Dxf2AgiehpFile\DefaultIcon', true) then WriteString('',Application.Location+'icon_file.ico');
-      if OpenKey('\Software\Classes\Dxf2AgiehpFile\shell\open\command', true) then WriteString('',Application.ExeName+' "%1"');
-      RootKey:=HKEY_CLASSES_ROOT;
-      if OpenKey('\Applications\dxf2agiehp.exe\shell\open', true) then WriteString('FriendlyAppName','DXF 2 AGIE HP');
+      if OpenKey('\Software\Classes\.edf', true) then WriteString('','EdfFile');
+      if OpenKey('\Software\Classes\EdfFile', true) then WriteString('','EDF File');
+      if OpenKey('\Software\Classes\EdfFile\DefaultIcon', true) then WriteString('',Application.Location+'edf.ico');
+      if OpenKey('\Software\Classes\EdfFile\shell\open\command', true) then WriteString('',Application.ExeName+' "%1"');
+     // RootKey:=HKEY_CLASSES_ROOT;
+     // if OpenKey('\Applications\dxf2agiehp.exe\shell\open', true) then WriteString('FriendlyAppName','DXF 2 AGIE HP');
     finally
       Free;
     end;
@@ -168,7 +206,7 @@ end;
 
 procedure TForm3.FormCreate(Sender: TObject);
 var ust:TIniFile;
-rad,fold,nap:string;
+rad,fold,nap,agiehp,x400,certa,tabf2:string;
 begin
    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
    LabeledEdit1.Text:=ust.ReadString('settings','defaultNoOfRows','10');
@@ -182,9 +220,16 @@ begin
    LabeledEdit9.Text:=ust.ReadString('settings','pp','30');
    LabeledEdit10.Text:=ust.ReadString('settings','defaultZOffset','-0.03');
    LabeledEdit11.Text:=ust.ReadString('settings','pathVDM','C:\VDM');
+   LabeledEdit3.Text:=ust.ReadString('settings','pathCSV','C:\CSV');
+   LabeledEdit13.Text:=ust.ReadString('settings','pathCSVexport','V:\Import\CSV');
+   LabeledEdit12.Text:=ust.ReadString('settings','minPositionInMagazine','1');
    rad:=ust.ReadString('settings','electrodeStrategy','1');
    fold:=ust.ReadString('settings','createFolder','1');
    nap:=ust.ReadString('settings','naPen','0');
+   agiehp:=ust.ReadString('settings','exportAgieHP','1');
+   x400:=ust.ReadString('settings','exportX400','1');
+   certa:=ust.ReadString('settings','exportCERTA','1');
+   tabf2:=ust.ReadSTring('settings','tabOrderF2','nowy');
    if rad='1' then RadioButton1.Checked:=True
    else if rad='2' then RadioButton2.CHecked:=True
    else RadioButton3.Checked:=True;
@@ -192,6 +237,15 @@ begin
    else CheckBox1.Checked:=False;
    if nap='1' then CheckBox2.Checked:=True
    else CheckBox2.Checked:=False;
+   if agiehp='1' then CheckBox3.Checked:=True
+   else CheckBox3.Checked:=False;
+   if x400='1' then CheckBox4.Checked:=True
+   else CheckBox4.Checked:=False;
+   if certa='1' then CheckBox5.Checked:=True
+   else Checkbox5.Checked:=False;
+   if tabf2='stary' then RadioButton4.Checked:=True
+   else if tabf2='nowy' then RadioButton5.Checked:=True;
+
    ust.Free;
 end;
 
