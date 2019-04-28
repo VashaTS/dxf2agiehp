@@ -6,7 +6,8 @@ object Form7: TForm7
   Caption = 'kopiowanie'
   ClientHeight = 429
   ClientWidth = 452
-  LCLVersion = '1.0.1.3'
+  OnCreate = FormCreate
+  LCLVersion = '1.4.5.0'
   object RadioGroup1: TRadioGroup
     Left = 16
     Height = 193
@@ -22,7 +23,7 @@ object Form7: TForm7
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 1
-    ClientHeight = 175
+    ClientHeight = 173
     ClientWidth = 181
     TabOrder = 0
     object RadioButton1: TRadioButton
@@ -56,7 +57,7 @@ object Form7: TForm7
     end
     object RadioButton4: TRadioButton
       Left = 6
-      Height = 40
+      Height = 38
       Top = 129
       Width = 169
       Caption = 'Kolowy'
@@ -74,13 +75,14 @@ object Form7: TForm7
     EditLabel.AnchorSideRight.Side = asrBottom
     EditLabel.AnchorSideBottom.Control = LabeledEdit1
     EditLabel.Left = 24
-    EditLabel.Height = 16
-    EditLabel.Top = 221
+    EditLabel.Height = 15
+    EditLabel.Top = 222
     EditLabel.Width = 152
     EditLabel.Caption = 'Zwiększenie X'
     EditLabel.ParentColor = False
     TabOrder = 1
     Text = '0.0'
+    OnKeyUp = ctd
   end
   object LabeledEdit2: TLabeledEdit
     Left = 24
@@ -92,13 +94,14 @@ object Form7: TForm7
     EditLabel.AnchorSideRight.Side = asrBottom
     EditLabel.AnchorSideBottom.Control = LabeledEdit2
     EditLabel.Left = 24
-    EditLabel.Height = 16
-    EditLabel.Top = 277
+    EditLabel.Height = 15
+    EditLabel.Top = 278
     EditLabel.Width = 152
     EditLabel.Caption = 'Zwiększenie Y'
     EditLabel.ParentColor = False
     TabOrder = 2
     Text = '0.0'
+    OnKeyUp = ctd
   end
   object LabeledEdit3: TLabeledEdit
     Left = 24
@@ -110,13 +113,14 @@ object Form7: TForm7
     EditLabel.AnchorSideRight.Side = asrBottom
     EditLabel.AnchorSideBottom.Control = LabeledEdit3
     EditLabel.Left = 24
-    EditLabel.Height = 16
-    EditLabel.Top = 325
+    EditLabel.Height = 15
+    EditLabel.Top = 326
     EditLabel.Width = 152
     EditLabel.Caption = 'Zwiększenie Z'
     EditLabel.ParentColor = False
     TabOrder = 3
     Text = '0.0'
+    OnKeyUp = ctd
   end
   object LabeledEdit4: TLabeledEdit
     Left = 24
@@ -128,13 +132,14 @@ object Form7: TForm7
     EditLabel.AnchorSideRight.Side = asrBottom
     EditLabel.AnchorSideBottom.Control = LabeledEdit4
     EditLabel.Left = 24
-    EditLabel.Height = 16
-    EditLabel.Top = 373
+    EditLabel.Height = 15
+    EditLabel.Top = 374
     EditLabel.Width = 152
     EditLabel.Caption = 'Zwiększenie C'
     EditLabel.ParentColor = False
     TabOrder = 4
     Text = '0.0'
+    OnKeyUp = ctd
   end
   object Button1: TButton
     Left = 210
@@ -167,13 +172,20 @@ object Form7: TForm7
     EditLabel.AnchorSideRight.Side = asrBottom
     EditLabel.AnchorSideBottom.Control = LabeledEdit5
     EditLabel.Left = 205
-    EditLabel.Height = 16
-    EditLabel.Top = 301
+    EditLabel.Height = 15
+    EditLabel.Top = 302
     EditLabel.Width = 80
     EditLabel.Caption = 'LabeledEdit5'
     EditLabel.ParentColor = False
     TabOrder = 7
     Text = 'LabeledEdit5'
     Visible = False
+    OnKeyUp = ctd
+  end
+  object PaintBox1: TPaintBox
+    Left = 224
+    Height = 200
+    Top = 24
+    Width = 200
   end
 end

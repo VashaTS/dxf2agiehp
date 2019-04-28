@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 350
+  Left = 353
   Height = 457
-  Top = 151
+  Top = 175
   Width = 1002
   BorderStyle = bsSingle
   Caption = 'DXF to AGIE HP'
@@ -118,11 +118,14 @@ object Form1: TForm1
   object ListBox8: TListBox
     Left = 776
     Height = 224
+    Hint = 'Pole powierzchni styku elektrody z detalem'#13#10'jednostka: cm²'
     Top = 56
     Width = 60
     ItemHeight = 0
     OnMouseDown = loadpos
     OnSelectionChange = loadpos
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 9
   end
   object Button2: TButton
@@ -164,7 +167,7 @@ object Form1: TForm1
   object ProgressBar1: TProgressBar
     Left = 12
     Height = 20
-    Top = 88
+    Top = 91
     Width = 279
     Max = 70
     TabOrder = 13
@@ -228,10 +231,13 @@ object Form1: TForm1
   object Label9: TLabel
     Left = 800
     Height = 15
+    Hint = 'Pole powierzchni styku elektrody z detalem'#13#10'jednostka: cm²'
     Top = 33
     Width = 13
     Caption = 'Fp'
     ParentColor = False
+    ParentShowHint = False
+    ShowHint = True
   end
   object Button4: TButton
     Left = 843
@@ -255,10 +261,13 @@ object Form1: TForm1
   object CheckBox3: TCheckBox
     Left = 16
     Height = 19
+    Hint = 'Tylko dla Agie Hyperspark (AGIEVISON)'#13#10'Ułatwia kopiowanie na maszynie'
     Top = 144
     Width = 91
     Caption = 'Utwórz grupę'
     OnChange = setchmathod
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 17
   end
   object ComboBox2: TComboBox
@@ -389,9 +398,12 @@ object Form1: TForm1
   object Edit8: TEdit
     Left = 776
     Height = 23
+    Hint = 'Pole powierzchni styku elektrody z detalem'#13#10'jednostka: cm²'
     Top = 8
     Width = 60
     OnKeyUp = comatodot
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 25
     Text = '0'
   end
@@ -445,6 +457,7 @@ object Form1: TForm1
     Top = 56
     Width = 40
     ItemHeight = 0
+    OnClick = ListBox11Click
     OnMouseDown = loadpos
     OnSelectionChange = loadpos
     TabOrder = 31
@@ -2245,7 +2258,7 @@ object Form1: TForm1
   object BitBtn7: TBitBtn
     Left = 964
     Height = 32
-    Top = 200
+    Top = 232
     Width = 36
     Caption = 'A->Z'
     OnClick = BitBtn7Click
@@ -2254,7 +2267,7 @@ object Form1: TForm1
   object BitBtn8: TBitBtn
     Left = 964
     Height = 30
-    Top = 232
+    Top = 264
     Width = 36
     Caption = 'Fp'
     OnClick = BitBtn8Click
@@ -2263,7 +2276,7 @@ object Form1: TForm1
   object Label3: TLabel
     Left = 966
     Height = 15
-    Top = 184
+    Top = 216
     Width = 34
     Caption = 'Sortuj:'
     ParentColor = False
@@ -3020,14 +3033,47 @@ object Form1: TForm1
     Visible = False
   end
   object CheckBox8: TCheckBox
-    Left = 32
+    Left = 16
     Height = 19
-    Top = 407
+    Top = 408
     Width = 88
     Caption = 'Dodaj skaner'
     Checked = True
     State = cbChecked
     TabOrder = 57
+  end
+  object BitBtn10: TBitBtn
+    Left = 964
+    Height = 36
+    Hint = 'Kopiuj grupę'
+    Top = 168
+    Width = 36
+    Caption = 'Gr'
+    OnClick = BitBtn10Click
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 58
+  end
+  object CheckBox9: TCheckBox
+    Left = 400
+    Height = 19
+    Top = 400
+    Width = 171
+    Caption = 'preCalulatedDataFromPreset'
+    Checked = True
+    State = cbChecked
+    TabOrder = 59
+    Visible = False
+  end
+  object Button5: TButton
+    Left = 301
+    Height = 25
+    Top = 120
+    Width = 82
+    Caption = 'test calc'
+    OnClick = Button5Click
+    TabOrder = 60
+    Visible = False
   end
   object OpenDialog1: TOpenDialog
     Filter = 'Pliki DXF/MI|*.dxf;*.mi;'
@@ -3045,17 +3091,41 @@ object Form1: TForm1
       object MenuItem8: TMenuItem
         Caption = 'Nowy'
         ImageIndex = 1
+        ShortCutKey2 = 16462
         OnClick = MenuItem8Click
       end
-      object MenuItem9: TMenuItem
-        Caption = 'Import DXF/MI'
-        ImageIndex = 6
-        OnClick = MenuItem9Click
+      object MenuItem17: TMenuItem
+        Caption = 'Import...'
+        OnClick = MenuItem17Click
+        object MenuItem16: TMenuItem
+          Caption = 'Otwórz istniejący program Agie HP / X400'
+          OnClick = MenuItem16Click
+        end
+        object MenuItem14: TMenuItem
+          Caption = 'Import CSV (z SEB)'
+          ImageIndex = 8
+          OnClick = MenuItem14Click
+        end
+        object MenuItem9: TMenuItem
+          Caption = 'Import DXF/MI'
+          ImageIndex = 6
+          OnClick = MenuItem9Click
+        end
       end
-      object MenuItem14: TMenuItem
-        Caption = 'Import CSV (z SEB)'
-        ImageIndex = 8
-        OnClick = MenuItem14Click
+      object MenuItem18: TMenuItem
+        Caption = 'Export...'
+        object MenuItem19: TMenuItem
+          Caption = 'AgieVision (.JOB)'
+          OnClick = MenuItem19Click
+        end
+        object MenuItem20: TMenuItem
+          Caption = 'HMI (.xmlj)'
+          OnClick = MenuItem20Click
+        end
+        object MenuItem21: TMenuItem
+          Caption = 'CERTA (.csv)'
+          OnClick = MenuItem21Click
+        end
       end
       object MenuItem10: TMenuItem
         Caption = 'Otwórz EDF'
@@ -3065,6 +3135,7 @@ object Form1: TForm1
       object MenuItem13: TMenuItem
         Caption = 'Zapisz'
         ImageIndex = 3
+        ShortCutKey2 = 16467
         OnClick = MenuItem13Click
       end
       object MenuItem11: TMenuItem
@@ -3078,6 +3149,7 @@ object Form1: TForm1
       end
       object MenuItem12: TMenuItem
         Caption = 'Zakończ'
+        ShortCutKey2 = 16472
         OnClick = MenuItem12Click
       end
     end
@@ -3143,7 +3215,7 @@ object Form1: TForm1
   object SaveDialog3: TSaveDialog
     DefaultExt = '.xmlj'
     Filter = 'Pliki xmlj|*.xmlj'
-    left = 392
-    top = 368
+    left = 384
+    top = 360
   end
 end

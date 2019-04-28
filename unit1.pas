@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ExtCtrls, Comctrls, Spin, Menus, Math, Unit2, Unit3, Unit4, Unit5,
   Unit6, DCPsha256, inifiles, StrUtils, DateUtils, Windows,
-  LResources, Buttons, Unit7,Unit8,Unit9,ShellAPI;
+  LResources, Buttons, Unit7,Unit8,Unit9,Unit10,ShellAPI;
 
 type
   TArrayOfString = array of String;
@@ -23,6 +23,7 @@ type
 
   TForm1 = class(TForm)
     BitBtn1: TBitBtn;
+    BitBtn10: TBitBtn;
     BitBtn2: TBitBtn;
     BitBtn3: TBitBtn;
     BitBtn4: TBitBtn;
@@ -36,6 +37,7 @@ type
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
+    Button5: TButton;
     Button7: TButton;
     Button8: TButton;
     CheckBox1: TCheckBox;
@@ -46,6 +48,7 @@ type
     CheckBox6: TCheckBox;
     CheckBox7: TCheckBox;
     CheckBox8: TCheckBox;
+    CheckBox9: TCheckBox;
     ComboBox1: TComboBox;
     ComboBox2: TComboBox;
     ComboBox3: TComboBox;
@@ -113,7 +116,13 @@ type
     MenuItem13: TMenuItem;
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
+    MenuItem16: TMenuItem;
+    MenuItem17: TMenuItem;
+    MenuItem18: TMenuItem;
+    MenuItem19: TMenuItem;
     MenuItem2: TMenuItem;
+    MenuItem20: TMenuItem;
+    MenuItem21: TMenuItem;
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
     MenuItem5: TMenuItem;
@@ -131,6 +140,7 @@ type
     SaveDialog2: TSaveDialog;
     SaveDialog3: TSaveDialog;
     SpinEdit1: TSpinEdit;
+    procedure BitBtn10Click(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
@@ -161,6 +171,7 @@ type
     procedure FormPaint(Sender: TObject);
     procedure handleparams(Sender: TObject);
     procedure hp2(Sender: TObject; const FileNames: array of String);
+    procedure ListBox11Click(Sender: TObject);
     procedure loadpos(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure loadpos(Sender: TObject; var Key: char);
@@ -172,7 +183,12 @@ type
     procedure MenuItem13Click(Sender: TObject);
     procedure MenuItem14Click(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
+    procedure MenuItem16Click(Sender: TObject);
+    procedure MenuItem17Click(Sender: TObject);
+    procedure MenuItem19Click(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
+    procedure MenuItem20Click(Sender: TObject);
+    procedure MenuItem21Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure MenuItem7Click(Sender: TObject);
@@ -1130,7 +1146,8 @@ begin
              ListBox3.Items.Add(floattostr(strtofloat(ListBox3.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit1.Text)));  //x
              ListBox4.Items.Add(floattostr(strtofloat(ListBox4.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit2.Text)));  //y
              ListBox5.Items.Add(floattostr(strtofloat(ListBox5.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit4.Text)));  //c
-             ListBox6.Items.Add(floattostr(strtofloat(ListBox6.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit3.Text)));  //z
+             //ListBox6.Items.Add(floattostr(roundto(strtofloat(ListBox6.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit3.Text),4)));  //z
+             ListBox6.Items.Add(ListBox6.Items[ListBox2.ItemIndex]);
              ListBox7.Items.Add(ListBox7.Items[ListBox2.ItemIndex]);
              ListBox8.Items.Add(ListBox8.Items[ListBox2.ItemIndex]);
              ListBox9.Items.Add(ListBox9.Items[ListBox2.ItemIndex]);
@@ -1148,7 +1165,8 @@ begin
                 ListBox3.Items.Add(floattostr(strtofloat(ListBox3.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit1.Text)*i));  //x
                 ListBox4.Items.Add(floattostr(strtofloat(ListBox4.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit2.Text)*i));  //y
                 ListBox5.Items.Add(floattostr(strtofloat(ListBox5.Items[ListBox2.ItemIndex])));  //c
-                ListBox6.Items.Add(floattostr(strtofloat(ListBox6.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit3.Text)*i));  //z
+                //ListBox6.Items.Add(floattostr(roundto(strtofloat(ListBox6.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit3.Text)*i,4)));  //z
+                ListBox6.Items.Add(ListBox6.Items[ListBox2.ItemIndex]);
                 ListBox7.Items.Add(ListBox7.Items[ListBox2.ItemIndex]);
                 ListBox8.Items.Add(ListBox8.Items[ListBox2.ItemIndex]);
                 ListBox9.Items.Add(ListBox9.Items[ListBox2.ItemIndex]);
@@ -1162,12 +1180,12 @@ begin
              logTofile('matrix copy '+ListBox2.Items[ListBox2.ItemIndex]+' ( '+inttostr(iw)+' x '+inttostr(ik)+' )','INF');
                for i:=1 to iw do begin
                   for j:=1 to ik do begin
-                     if ((i<>1) and (j<>1)) then begin
+                     if not ((i=1) and (j=1)) then begin
                          ListBox2.Items.Add(ListBox2.Items[ListBox2.ItemIndex]);
-                         ListBox3.Items.Add(floattostr(strtofloat(ListBox3.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit1.Text)*j));  //x
-                         ListBox4.Items.Add(floattostr(strtofloat(ListBox4.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit2.Text)*i));  //y
+                         ListBox3.Items.Add(floattostr(strtofloat(ListBox3.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit1.Text)*(j-1)));  //x
+                         ListBox4.Items.Add(floattostr(strtofloat(ListBox4.Items[ListBox2.ItemIndex])+strtofloat(Form7.LabeledEdit2.Text)*(i-1)));  //y
                          ListBox5.Items.Add(floattostr(strtofloat(ListBox5.Items[ListBox2.ItemIndex])));  //c
-                         ListBox6.Items.Add(floattostr(strtofloat(ListBox6.Items[ListBox2.ItemIndex])));  //z
+                         ListBox6.Items.Add(ListBox6.Items[ListBox2.ItemIndex]);  //z
                          ListBox7.Items.Add(ListBox7.Items[ListBox2.ItemIndex]);
                          ListBox8.Items.Add(ListBox8.Items[ListBox2.ItemIndex]);
                          ListBox9.Items.Add(ListBox9.Items[ListBox2.ItemIndex]);
@@ -1197,6 +1215,100 @@ begin
                      ListBox12.Items.Add(ListBox12.Items[ListBox2.ItemIndex]);
                  end;
 
+          end;
+      end;
+  end;
+end;
+
+procedure TForm1.BitBtn10Click(Sender: TObject);
+ var i,j,ik,iw,k,lb2i:integer;
+  sx,sy,ko,kd:real;
+begin
+     lb2i:=ListBox2.Items.Count;
+    If lb2i>0 then begin
+      if Form7.ShowModal = mrOK then begin
+         setChanged(true);
+          if Form7.RadioButton1.Checked then begin  //pojedyncza kopia
+             logTofile('single copy group','INF');
+             for k:=0 to lb2i-1 do begin
+                 ListBox2.Items.Add(ListBox2.Items[k]);
+                 ListBox3.Items.Add(floattostr(strtofloat(ListBox3.Items[k])+strtofloat(Form7.LabeledEdit1.Text)));  //x
+                 ListBox4.Items.Add(floattostr(strtofloat(ListBox4.Items[k])+strtofloat(Form7.LabeledEdit2.Text)));  //y
+                 ListBox5.Items.Add(floattostr(strtofloat(ListBox5.Items[k])+strtofloat(Form7.LabeledEdit4.Text)));  //c
+                 //ListBox6.Items.Add(floattostr(roundto(strtofloat(ListBox6.Items[k])+strtofloat(Form7.LabeledEdit3.Text),4)));  //z
+                 ListBox6.Items.Add(ListBox6.Items[k]);
+                 ListBox7.Items.Add(ListBox7.Items[k]);
+                 ListBox8.Items.Add(ListBox8.Items[k]);
+                 ListBox9.Items.Add(ListBox9.Items[k]);
+                 ListBox11.Items.Add(ListBox11.Items[k]);
+                 ListBox12.Items.Add(ListBox12.Items[k]);
+             end;
+          end
+          else if Form7.RadioButton2.Checked then begin //liniowy
+             ik:=strtoint(Form7.LabeledEdit4.Text);
+             if ik<1 then ik:=2;
+             if ik>99 then ik:=99;
+             logTofile('linear copy group ('+inttostr(ik)+')','INF');
+             for k:=0 to lb2i-1 do begin
+                 for i:=1 to ik do begin
+                     ListBox2.Items.Add(ListBox2.Items[k]);
+                     ListBox3.Items.Add(floattostr(strtofloat(ListBox3.Items[k])+strtofloat(Form7.LabeledEdit1.Text)*i));  //x
+                     ListBox4.Items.Add(floattostr(strtofloat(ListBox4.Items[k])+strtofloat(Form7.LabeledEdit2.Text)*i));  //y
+                     ListBox5.Items.Add(floattostr(strtofloat(ListBox5.Items[k])));  //c
+                     //ListBox6.Items.Add(floattostr(roundto(strtofloat(ListBox6.Items[k])+strtofloat(Form7.LabeledEdit3.Text)*i,4)));  //z
+                     ListBox6.Items.Add(ListBox6.Items[k]);
+                     ListBox7.Items.Add(ListBox7.Items[k]);
+                     ListBox8.Items.Add(ListBox8.Items[k]);
+                     ListBox9.Items.Add(ListBox9.Items[k]);
+                     ListBox11.Items.Add(ListBox11.Items[k]);
+                     ListBox12.Items.Add(ListBox12.Items[k]);
+                 end;
+             end;
+          end
+          else if Form7.RadioButton3.Checked then begin  //macierz
+             iw:=strtoint(Form7.LabeledEdit3.Text);
+             ik:=strtoint(Form7.LabeledEdit4.Text);
+             logTofile('matrix copy group ( '+inttostr(iw)+' x '+inttostr(ik)+' )','INF');
+             for k:=0 to lb2i-1 do begin
+                 for i:=1 to iw do begin
+                     for j:=1 to ik do begin
+                         if not ((i=1) and (j=1)) then begin
+                            ListBox2.Items.Add(ListBox2.Items[k]);
+                            ListBox3.Items.Add(floattostr(strtofloat(ListBox3.Items[k])+strtofloat(Form7.LabeledEdit1.Text)*(j-1)));  //x
+                            ListBox4.Items.Add(floattostr(strtofloat(ListBox4.Items[k])+strtofloat(Form7.LabeledEdit2.Text)*(i-1)));  //y
+                            ListBox5.Items.Add(floattostr(strtofloat(ListBox5.Items[k])));  //c
+                            ListBox6.Items.Add(ListBox6.Items[k]);  //z
+                            ListBox7.Items.Add(ListBox7.Items[k]);
+                            ListBox8.Items.Add(ListBox8.Items[k]);
+                            ListBox9.Items.Add(ListBox9.Items[k]);
+                            ListBox11.Items.Add(ListBox11.Items[k]);
+                            ListBox12.Items.Add(ListBox12.Items[k]);
+                         end;
+                     end;
+                 end;
+             end;
+          end
+          else if Form7.RadioButton4.Checked then begin //kolowy
+                 sx:=strtofloat(Form7.LabeledEdit1.Text);
+                 sy:=strtofloat(Form7.LabeledEdit2.Text);
+                 ko:=strtofloat(Form7.LabeledEdit3.Text);
+                 kd:=strtofloat(Form7.LabeledEdit4.Text);
+                 ik:=strtoint(Form7.LabeledEdit5.Text);
+                 logTofile('circular copy group ('+inttostr(ik)+')','INF');
+                 for k:=0 to lb2i-1 do begin
+                     for i:=1 to ik do begin
+                         ListBox2.Items.Add(ListBox2.Items[k]);
+                         ListBox3.Items.Add(floattostr(RoundTo((strtofloat(ListBox3.Items[k])-sx)*cos(DegToRad(ko*i))-(strtofloat(ListBox4.Items[k])-sy)*sin(DegToRad(ko*i))+sx,4)));
+                         ListBox4.Items.Add(floattostr(RoundTo((strtofloat(ListBox3.Items[k])-sx)*sin(DegToRad(ko*i))+(strtofloat(ListBox4.Items[k])-sy)*cos(DegToRad(ko*i))+sy,4)));
+                         ListBox5.Items.Add(floattostr(strtofloat(ListBox5.Items[k])+kd*i));
+                         ListBox6.Items.Add(ListBox6.Items[k]);  //z
+                         ListBox7.Items.Add(ListBox7.Items[k]);
+                         ListBox8.Items.Add(ListBox8.Items[k]);
+                         ListBox9.Items.Add(ListBox9.Items[k]);
+                         ListBox11.Items.Add(ListBox11.Items[k]);
+                         ListBox12.Items.Add(ListBox12.Items[k]);
+                     end;
+                 end;
           end;
       end;
   end;
@@ -1439,23 +1551,34 @@ end;
 
 procedure TForm1.BitBtn9Click(Sender: TObject);
 var xj:TextFile;
-  fd:string;
-  pieces,pval,rval,elv,relv,relv2,tl:TArrayOfString;
-  i,j,k,countpp,el_n,aoe,global_aoe,gaoe2,elind,shape_nr:integer;
+  fd,gcyc:string;
+  pieces,pval,rval,elv,relv,relv2,tl,sh,genmes,elv_points:TArrayOfString;
+  i,j,k,l,countpp,el_n,aoe,global_aoe,gaoe2,elind,shape_nr,passnbr,ff_sn,rii,max_shapes,ums:integer;
   pinf:Array[0..10] of string;
   einf:Array[0..200] of string;
   einf2:Array[0..200] of string;
-  curz,magpos,mdet:string;
-  do_this_el:boolean;
-  oldx,oldy,oldc,newx,newy,newc,wpc,wpx,wpy,nwpx,nwpy:real;
+  shape_names:Array[0..200] of string;
+  shape_points:Array[0..200] of string;
+  distinct_um:Array[0..10] of string;
+  chip_id:Array[0..2000] of string;
+  chip_nam:Array[0..2000] of string;
+  curz,magpos,mdet,new_sn,isogapstep,qcode:string;
+  do_this_el,found_sn,feum,new_um:boolean;
+  oldx,oldy,oldc,newx,newy,newc,wpc,wpx,wpy,nwpx,nwpy,c180,cus:real;
 begin
+ chip_id[0]:='EA7E631101';
+ chip_nam[0]:='1';
+ chip_id[1]:='B033C31101';
+ chip_nam[1]:='10';
  global_aoe:=0;
   if Form2.Label13.Caption='done' then begin
      SaveDialog3.FileName:=Edit3.Text;
-      if SaveDialog3.Execute then begin
+     Memo1.Lines.Clear;
+      if SaveDialog3.Execute then begin //location of xmlj file selected
           ProgressBar1.Max:=60;
           ProgressBar1.Min:=0;
           ProgressBar1.Position:=0;
+          DateTimeToString(fd,'yyyy/mm/dd hh:nn:ss',Now); //date used for evert creation and modification date in xmlj file
           AssignFile(xj,SaveDialog3.FileName);
           rewrite(xj);
           writeln(xj,'<?xml version="1.0" encoding="windows-1252"?>');
@@ -1470,7 +1593,6 @@ begin
           writeln(xj,'    <FlushingOffAtEnd>1</FlushingOffAtEnd>');
           writeln(xj,'    <UnloadToolAtEnd>1</UnloadToolAtEnd>');
           writeln(xj,'    <UnloadPalletAtEnd>1</UnloadPalletAtEnd>');
-          DateTimeToString(fd,'yyyy/mm/dd hh:nn:ss',Now);
           writeln(xj,'    <CreationDate>'+fd+'</CreationDate>');
           writeln(xj,'    <ModificationDate>'+fd+'</ModificationDate>');
           writeln(xj,'      <IsoHeader/>');
@@ -1502,17 +1624,30 @@ begin
           writeln(xj,'    <Pieces>');
           pieces:=SplitString(',',LabeledEdit1.Text);
           ProgressBar1.Position:=5;
-          if OpenDialog3.Execute then begin
-             countpp:=0;
-              Memo1.Lines.LoadFromFile(OpenDialog3.FileName);
-              for i:=0 to Memo1.Lines.Count-1 do begin
-                  pval:=SplitString(',',Memo1.Lines[i]);
-                  if pval[1]='W' then begin
-                     inc(countpp);
-                     pinf[(countpp-1)]:=pval[10]+';'+pval[11]+';'+pval[12]+';'+pval[15];
-                  end;
+          if OpenDialog3.Execute then begin //load from file
+             Memo1.Lines.LoadFromFile(OpenDialog3.FileName); //TODO: file needs to be changed to account for multi electrodes
+          end
+          else begin //generate from itself, with zero values
+               for i:=0 to length(pieces)-1 do Memo1.Lines.Add(Edit3.Text+':'+inttostr(i)+',W,,,,,,,,,0.000,0.000,0.000,0.000,0.000,0.000,,,,,,,,,');
+               for i:=0 to Form2.ListBox1.Count-1 do begin
+                   genmes:=SplitString(';',Form2.ListBox1.Items[i]);
+                   if genmes[3]<>'0' then Memo1.Lines.Add(Form2.CheckListBox1.Items[i]+';R1,U,,0,,,,,,,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,,0.000,,,,,,');
+                   if genmes[4]<>'0' then Memo1.Lines.Add(Form2.CheckListBox1.Items[i]+';R2,U,,0,,,,,,,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,,0.000,,,,,,');
+                   if genmes[5]<>'0' then Memo1.Lines.Add(Form2.CheckListBox1.Items[i]+';R3,U,,0,,,,,,,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,,0.000,,,,,,');
+                   if genmes[6]<>'0' then Memo1.Lines.Add(Form2.CheckListBox1.Items[i]+';R4,U,,0,,,,,,,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,,0.000,,,,,,');
+                   if genmes[7]<>'0' then Memo1.Lines.Add(Form2.CheckListBox1.Items[i]+';R5,U,,0,,,,,,,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,,0.000,,,,,,');
+                   if genmes[8]<>'0' then Memo1.Lines.Add(Form2.CheckListBox1.Items[i]+';R6,U,,0,,,,,,,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,,0.000,,,,,,');
+               end;
+          end;
+          countpp:=0;
+          for i:=0 to Memo1.Lines.Count-1 do begin
+              pval:=SplitString(',',Memo1.Lines[i]);
+              if pval[1]='W' then begin
+                 inc(countpp);
+                 pinf[(countpp-1)]:=pval[10]+';'+pval[11]+';'+pval[12]+';'+pval[15];
               end;
           end;
+
           ProgressBar1.Position:=10;
           if length(pieces)<>countpp then ShowMessage('Niezgodność danych z preseta - detale ('+inttostr(length(pieces))+' ≠ '+inttostr(countpp)+')');
           for i:=0 to length(pieces)-1 do begin
@@ -1522,8 +1657,8 @@ begin
               wpx:=strtofloat(rval[0]);
               wpy:=strtofloat(rval[1]);
               wpc:=strtofloat(rval[3]);
-              nwpx:=roundto((wpx*cos(degtorad(-(wpc*(-1)))))-(wpy*sin(degtorad(-(wpc*(-1))))),3);
-              nwpy:=roundto((wpx*sin(degtorad(-(wpc*(-1)))))+(wpy*cos(degtorad(-(wpc*(-1))))),3);
+              nwpx:=roundto((wpx*cos(degtorad(-(wpc*(-1)))))-(wpy*sin(degtorad(-(wpc*(-1))))),4);
+              nwpy:=roundto((wpx*sin(degtorad(-(wpc*(-1)))))+(wpy*cos(degtorad(-(wpc*(-1))))),4);
               writeln(xj,'        <X>'+floattostr(nwpx)+'</X>');
               writeln(xj,'        <Y>'+floattostr(nwpy)+'</Y>');
               writeln(xj,'        <Z>'+floattostr(strtofloat(rval[2])-strtofloat(Edit13.Text))+'</Z>');
@@ -1531,7 +1666,7 @@ begin
               writeln(xj,'        <HBac>'+inttostr(floor(strtofloat(rval[2]))+70)+'</HBac>'); //dielectric height
               writeln(xj,'        <Palette>0</Palette>');
               writeln(xj,'        <MagPos>'+pieces[i]+'</MagPos>');
-              writeln(xj,'        <Mandrin>1</Mandrin>'); //chuck, always 1
+              writeln(xj,'        <Mandrin>1</Mandrin>'); //chuck number, always 1
               writeln(xj,'        <CreationDate>'+fd+'</CreationDate>');
               writeln(xj,'        <ModificationDate>'+fd+'</ModificationDate>');
               writeln(xj,'        <PartAxisA>0</PartAxisA>');
@@ -1563,18 +1698,54 @@ begin
              if do_this_el then begin
                 inc(shape_nr);
               writeln(xj,'      <Point N="'+inttostr(shape_nr)+'">');
-              writeln(xj,'        <X>'+ListBox3.Items[i]+'</X>');
-              writeln(xj,'        <Y>'+ListBox4.Items[i]+'</Y>');
-              writeln(xj,'        <Z>'+ListBox11.Items[i]+'</Z>'); //startpoint
-              writeln(xj,'        <Rot>'+ListBox5.Items[i]+'</Rot>');
-              writeln(xj,'        <FromDistance>'+ListBox11.Items[i]+'</FromDistance>');
+              if AnsiContainsStr(ListBox9.Items[i],'X') then begin
+                  if AnsiContainsStr(ListBox9.Items[i],'+') then writeln(xj,'        <X>'+floattostr(strtofloat(ListBox3.Items[i])-strtofloat(ListBox11.Items[i]))+'</X>');
+                  if AnsiContainsStr(ListBox9.Items[i],'-') then writeln(xj,'        <X>'+floattostr(strtofloat(ListBox3.Items[i])+strtofloat(ListBox11.Items[i]))+'</X>');
+              end
+              else writeln(xj,'        <X>'+ListBox3.Items[i]+'</X>');
+              if AnsiContainsStr(ListBox9.Items[i],'Y') then begin
+                  if AnsiContainsStr(ListBox9.Items[i],'+') then writeln(xj,'        <Y>'+floattostr(strtofloat(ListBox4.Items[i])-strtofloat(ListBox11.Items[i]))+'</Y>');
+                  if AnsiContainsStr(ListBox9.Items[i],'-') then writeln(xj,'        <Y>'+floattostr(strtofloat(ListBox4.Items[i])+strtofloat(ListBox11.Items[i]))+'</Y>');
+              end
+              else writeln(xj,'        <Y>'+ListBox4.Items[i]+'</Y>');
+
+              for j:=0 to Form2.ListBox1.Count-1 do begin
+                   elv_points:=SplitString(';',Form2.ListBox1.Items[j]);
+                   if elv_points[0]=ListBox2.Items[i] then cus:=strtofloat(elv_points[3])/2;
+              end;
+
+              if ListBox9.Items[i]='Z' then writeln(xj,'        <Z>'+ListBox11.Items[i]+'</Z>') //startpoint must be equal to FromDistance !!!
+              else writeln(xj,'        <Z>'+floattostr(strtofloat(ListBox6.Items[i])+cus)+'</Z>'); //side eroding - startpoint at Z coord minus undersize pre side!
+              c180:=strtofloat(ListBox5.Items[i]);
+              c180:=c180+180;  //rotate because chip direction is different on x400 magazine
+              if c180>=360 then c180:=c180-360; //normalize C to 0-360
+              writeln(xj,'        <Rot>'+floattostr(roundto(c180,4))+'</Rot>');
+              writeln(xj,'        <FromDistance>'+ListBox11.Items[i]+'</FromDistance>');  //startpoint must be equal to FromDistance !!!
               writeln(xj,'        <X0>'+ListBox3.Items[i]+'</X0>');
               writeln(xj,'        <Y0>'+ListBox4.Items[i]+'</Y0>');
-              writeln(xj,'        <Z0>0</Z0>');
-              writeln(xj,'        <AngleX>0</AngleX>');
+              if ListBox9.Items[i]='Z' then writeln(xj,'        <Z0>0</Z0>')
+              else writeln(xj,'        <Z0>'+floattostr(strtofloat(ListBox6.Items[i])+cus)+'</Z0>');
+              write(xj,'        <AngleX>');
+              if ListBox9.Items[i]='Z' then write(xj,'0')
+              else begin
+                  case ListBox9.Items[i] of
+                      'X+': write(xj,'180');
+                      'Y+': write(xj,'270');
+                      'X-': write(xj,'0');
+                      'Y-': write(xj,'90');
+                      '+X': write(xj,'180');
+                      '+Y': write(xj,'270');
+                      '-X': write(xj,'0');
+                      '-Y': write(xj,'90');
+                  end;
+              end;
+              writeln(xj,'</AngleX>');
               writeln(xj,'        <CavityType>1</CavityType>');
               writeln(xj,'        <Zf>0</Zf>');
-              writeln(xj,'        <AngleZ>0</AngleZ>');
+              write(xj,'        <AngleZ>');
+              if ListBox9.Items[i]='Z' then write(xj,'0')
+              else write(xj,'90'); //always 90 for side eroding, direction regulated in <AngleX>
+              writeln(xj,'</AngleZ>');
               writeln(xj,'        <CreationDate>'+fd+'</CreationDate>');
               writeln(xj,'        <ModificationDate>'+fd+'</ModificationDate>');
               writeln(xj,'        <AxisA>0</AxisA>');
@@ -1611,28 +1782,54 @@ begin
               else if elv[4]<>'0' then aoe:=2
               else aoe:=1;
               einf2[i]:='';
-              for j:=1 to aoe do begin
+              for j:=1 to aoe do begin //for each electrode on current family
                   if length(einf2[i])>0 then einf2[i]:=einf2[i]+',';
-                  einf2[i]:=einf2[i]+inttostr(gaoe2+j);
+                  einf2[i]:=einf2[i]+inttostr(gaoe2+j); //create easily accesible data table
               end;
-              gaoe2:=gaoe2+aoe;
+              gaoe2:=gaoe2+aoe; // gloal amount of electrodes.
               if aoe=1 then einf[i]:=inttostr(global_aoe+1)
              else if aoe=2 then einf[i]:=inttostr(global_aoe+1)+'.'+inttostr(global_aoe+2)
              else einf[i]:=inttostr(global_aoe+1)+'-'+inttostr(global_aoe+aoe);
-             global_aoe:=global_aoe+aoe;
-              for j:=1 to aoe do begin
+             global_aoe:=global_aoe+aoe; //global amount of electrodes
+             ums:=0;
+             feum:=False;
+             for j:=1 to 10 do distinct_um[j]:='_';
+             for j:=1 to aoe do begin //see how many different understze types there are
+                 new_um:=True;
+                 for k:=1 to 10 do begin
+                     if distinct_um[k]=elv[(2+j)] then new_um:=False;
+                 end;
+                 //showmessage('j: '+inttostr(j)+', first_empty_um: '+inttostr(first_empty_um));
+                 if new_um then begin
+                     distinct_um[(ums+1)]:=elv[(2+j)];
+                     inc(ums);
+                 end;
+             end;
+             j:=1;
+             for j:=1 to aoe do begin
                   writeln(xj,'      <Tool N="'+inttostr(el_n)+'">');
-                  writeln(xj,'        <FinitionType>'+inttostr(j)+'</FinitionType>'); // machining pass number
+                  write(xj,'        <FinitionType>'); // current machining pass number
+
+                  if ums=1 then begin
+                     if j=1 then write(xj,'1')
+                     else if ((j=2) and (aoe>=5)) then  write(xj,'2') //el. no. 2 roughing when total number of electrodes is 5 or greater.
+                     else write(xj,'2'); //el no 3 and later always finishing
+                  end
+                  else begin
+                       if elv[(2+j)]=distinct_um[1] then write(xj,'1') //in this case, respect number of roughing/finishing electrodes made by milling
+                       else write(xj,'2');
+                  end;
+
+                  writeln(xj,'</FinitionType>');
                   writeln(xj,'        <Name>'+elv[0]+'_R'+inttostr(j)+'</Name>');
+                  k:=0;
                   for k:=0 to Memo1.Lines.Count-1 do begin
                      relv:=SplitString(',',Memo1.Lines[k]);
                      if relv[1]='U' then begin
                         relv2:=SplitString(';',relv[0]);
                         if relv2[0]=elv[0] then begin
-                           if relv2[1]='R'+inttostr(j) then begin
-
+                           if relv2[1]='R'+inttostr(j) then begin  //get offsets of current electrode
                               oldx:=strtofloat(relv[10]);
-                              //showmessage(floattostr(oldx));
                               oldy:=strtofloat(relv[11]);
                               curz:=relv[12];
                               oldc:=strtofloat(relv[15]);
@@ -1640,22 +1837,34 @@ begin
                         end;
                      end;
                   end;
-                  newc:=roundto(normalize_c(oldc),3);
-                  if oldx=0 then oldx:=0.0001;
+                  newc:=roundto(normalize_c(oldc),4);
+                  if oldx=0 then oldx:=0.0001; // to avoid error causing wrong calculation
                   if oldy=0 then oldy:=0.0001;
-                  newx:=roundto((oldx*cos(degtorad(-newc)))-(oldy*sin(degtorad(-newc))),3);
-                  showmessage('newx: '+floattostr(newx));
-                  newy:=roundto((oldx*sin(degtorad(-newc)))+(oldy*cos(degtorad(-newc))),3);
+                  if CheckBox9.Checked then begin //use offsets as sent, already calculated to rotated coordinate system
+                      newx:=oldx;
+                      newy:=-oldy; //result of chip being on the opposite side of electrode
+                  end
+                  else begin //calculate new X and Y in rotated coordinate system.
+                      newx:=roundto((oldx*cos(degtorad(-newc)))-(oldy*sin(degtorad(-newc))),4);
+                      newy:=-roundto((oldx*sin(degtorad(-newc)))+(oldy*cos(degtorad(-newc))),4);
+                  end;
+                  if ((elv[16]='1') and ((j mod 2)=0)) then begin //if multielectrode and 2,4 or 6
+                      newx:=newx*(-1);
+                      newy:=newy*(-1);
+                      newc:=newc+180;
+                      if newc>=360 then newc:=newc-360;
+                  end;
                   writeln(xj,'        <X>'+floattostr(newx)+'</X>');
                   writeln(xj,'        <Y>'+floattostr(newy)+'</Y>');
                   writeln(xj,'        <Z>'+curz+'</Z>');
                   writeln(xj,'        <C>'+floattostr(newc)+'</C>');
+
                   magpos:='';
-                  for k:=length(elv[(8+j)]) to 3 do magpos:=magpos+'0';
+                  for k:=length(elv[(8+j)]) to 3 do magpos:=magpos+'0'; //fill magpos with appropriate number of zeros at the begining
                   magpos:=magpos+elv[(8+j)];
                   writeln(xj,'        <MagPos>20'+magpos+'</MagPos>');
                   writeln(xj,'        <Inertie>1</Inertie>');
-                  writeln(xj,'        <UnderSize>'+floattostr(strtofloat(elv[(2+j)])/2)+'</UnderSize>');
+                  writeln(xj,'        <UnderSize>'+floattostr(strtofloat(elv[(2+j)])/2)+'</UnderSize>');  //undersize per side
                   writeln(xj,'        <CreationDate>'+fd+'</CreationDate>');
                   writeln(xj,'        <ModificationDate>'+fd+'</ModificationDate>');
                   writeln(xj,'        <Radius></Radius>');
@@ -1708,77 +1917,109 @@ begin
                   writeln(xj,'      </Tool>');
                   inc(el_n);
               end;
-              if CheckBox8.Checked then begin
-                 writeln(xj,'      <Tool N="'+inttostr(el_n)+'">');
-                 writeln(xj,'        <FinitionType>6</FinitionType>'); //finition type 6 means scanner
-                 writeln(xj,'        <Name>SKANER</Name>');
-                 writeln(xj,'        <X>0</X>');
-                 writeln(xj,'        <Y>0</Y>');
-                 writeln(xj,'        <Z>120</Z>');
-                 writeln(xj,'        <C>0</C>');
-                 writeln(xj,'        <MagPos></MagPos>');
-                 writeln(xj,'        <Inertie>1</Inertie>');
-                 writeln(xj,'        <UnderSize>0</UnderSize>');
-                 writeln(xj,'        <CreationDate>'+fd+'</CreationDate>');
-                 writeln(xj,'        <ModificationDate>'+fd+'</ModificationDate>');
-                 writeln(xj,'        <Radius></Radius>');
-                 writeln(xj,'        <ChipID></ChipID>');
-                 writeln(xj,'        <SizeInMagasin>1</SizeInMagasin>');
-                 writeln(xj,'        <Material></Material>');
-                 writeln(xj,'        <ToolDecFamily></ToolDecFamily>');
-                 for j:=1 to 5 do writeln(xj,'        <ToolDecCount'+inttostr(j)+'>100</ToolDecCount'+inttostr(j)+'>');
-                 writeln(xj,'        <ToolDecWear>0</ToolDecWear>');
-                 writeln(xj,'        <UEDMComp>0</UEDMComp>');
-                 writeln(xj,'        <UCavComp>0</UCavComp>');
-                 writeln(xj,'        <FrontalOffset>0</FrontalOffset>');
-                 writeln(xj,'        <ToolDecWearF>0</ToolDecWearF>');
-                 writeln(xj,'        <ToolReals>');
-                 writeln(xj,'          <ToolReal N="'+inttostr(el_n+999)+'">');
-                 writeln(xj,'            <Name></Name>');
-                 writeln(xj,'            <X>0</X>');
-                 writeln(xj,'            <Y>0</Y>');
-                 writeln(xj,'            <Z>0</Z>');
-                 writeln(xj,'            <C>0</C>');
-                 writeln(xj,'            <MagPos></MagPos>');
-                 writeln(xj,'            <UnderSize>0</UnderSize>');
-                 writeln(xj,'            <CreationDate>'+fd+'</CreationDate>');
-                 writeln(xj,'            <ModificationDate>'+fd+'</ModificationDate>');
-                 writeln(xj,'            <Radius></Radius>');
-                 writeln(xj,'            <ChipID></ChipID>');
-                 for j:=1 to 5 do writeln(xj,'            <ToolDecCount'+inttostr(j)+'>100</ToolDecCount'+inttostr(j)+'>');
-                 writeln(xj,'            <initUnderSize>0</initUnderSize>');
-                 for j:=1 to 5 do writeln(xj,'            <initToolDecCount'+inttostr(j)+'>-2</initToolDecCount'+inttostr(j)+'>');
-                 writeln(xj,'            <Inertie>1</Inertie>');
-                 writeln(xj,'            <fragUse>0</fragUse>');
-                 writeln(xj,'            <fragSCode>0</fragSCode>');
-                 writeln(xj,'            <FrontalOffset>0</FrontalOffset>');
-                 writeln(xj,'            <initFrontalOffset>0</initFrontalOffset>');
-                 writeln(xj,'            <initTemplateNum>0</initTemplateNum>');
-                 writeln(xj,'          </ToolReal>');
-                 writeln(xj,'        </ToolReals>');
-                 writeln(xj,'      </Tool>');
-              end;
+             end;
              end;
           end;
+          //add scanner here
+          if CheckBox8.Checked then begin
+             writeln(xj,'      <Tool N="'+inttostr(el_n)+'">');
+             writeln(xj,'        <FinitionType>6</FinitionType>'); //finition type 6 means scanner
+             writeln(xj,'        <Name>SKANER</Name>');
+             writeln(xj,'        <X>0</X>');
+             writeln(xj,'        <Y>0</Y>');
+             writeln(xj,'        <Z>120</Z>');
+             writeln(xj,'        <C>0</C>');
+             writeln(xj,'        <MagPos></MagPos>');
+             writeln(xj,'        <Inertie>1</Inertie>');
+             writeln(xj,'        <UnderSize>0</UnderSize>');
+             writeln(xj,'        <CreationDate>'+fd+'</CreationDate>');
+             writeln(xj,'        <ModificationDate>'+fd+'</ModificationDate>');
+             writeln(xj,'        <Radius></Radius>');
+             writeln(xj,'        <ChipID></ChipID>');
+             writeln(xj,'        <SizeInMagasin>1</SizeInMagasin>');
+             writeln(xj,'        <Material></Material>');
+             writeln(xj,'        <ToolDecFamily></ToolDecFamily>');
+             for j:=1 to 5 do writeln(xj,'        <ToolDecCount'+inttostr(j)+'>100</ToolDecCount'+inttostr(j)+'>');
+             writeln(xj,'        <ToolDecWear>0</ToolDecWear>');
+             writeln(xj,'        <UEDMComp>0</UEDMComp>');
+             writeln(xj,'        <UCavComp>0</UCavComp>');
+             writeln(xj,'        <FrontalOffset>0</FrontalOffset>');
+             writeln(xj,'        <ToolDecWearF>0</ToolDecWearF>');
+             writeln(xj,'        <ToolReals>');
+             writeln(xj,'          <ToolReal N="'+inttostr(el_n+999)+'">');
+             writeln(xj,'            <Name></Name>');
+             writeln(xj,'            <X>0</X>');
+             writeln(xj,'            <Y>0</Y>');
+             writeln(xj,'            <Z>0</Z>');
+             writeln(xj,'            <C>0</C>');
+             writeln(xj,'            <MagPos></MagPos>');
+             writeln(xj,'            <UnderSize>0</UnderSize>');
+             writeln(xj,'            <CreationDate>'+fd+'</CreationDate>');
+             writeln(xj,'            <ModificationDate>'+fd+'</ModificationDate>');
+             writeln(xj,'            <Radius></Radius>');
+             writeln(xj,'            <ChipID></ChipID>');
+             for j:=1 to 5 do writeln(xj,'            <ToolDecCount'+inttostr(j)+'>100</ToolDecCount'+inttostr(j)+'>');
+             writeln(xj,'            <initUnderSize>0</initUnderSize>');
+             for j:=1 to 5 do writeln(xj,'            <initToolDecCount'+inttostr(j)+'>-2</initToolDecCount'+inttostr(j)+'>');
+             writeln(xj,'            <Inertie>1</Inertie>');
+             writeln(xj,'            <fragUse>0</fragUse>');
+             writeln(xj,'            <fragSCode>0</fragSCode>');
+             writeln(xj,'            <FrontalOffset>0</FrontalOffset>');
+             writeln(xj,'            <initFrontalOffset>0</initFrontalOffset>');
+             writeln(xj,'            <initTemplateNum>0</initTemplateNum>');
+             writeln(xj,'          </ToolReal>');
+             writeln(xj,'        </ToolReals>');
+             writeln(xj,'      </Tool>');
+          end;
+
           writeln(xj,'    </Tools>');
           ProgressBar1.Position:=40;
           writeln(xj,'    <Shapes>');
           shape_nr:=0;
-          for i:=0 to ListBox2.Count-1 do begin
+          max_shapes:=200;
+          //new idea - group similar points into one shape
+          for i:=0 to max_shapes do begin  //maximum 200 shapes
+              shape_names[i]:='-';  //mark all as empty
+              shape_points[i]:='-';
+          end;
+
+          for i:=0 to ListBox2.Count-1 do begin //for every point on the list
+              new_sn:=ListBox2.Items[i]+ListBox6.Items[i]; //create potential new name
+              for j:=max_shapes downto 0 do begin
+                  if shape_names[j]='-' then ff_sn:=j;  //search for first empty shape
+              end;
+              found_sn:=False;
+              for j:=0 to max_shapes do begin
+                  if found_sn=False then begin
+                     if shape_names[j]=new_sn then begin  //if name matches to existing one
+                        found_sn:=True;
+                        shape_points[j]:=shape_points[j]+','+inttostr(i+1); //add current point to existing shape
+                     end;
+                  end;
+              end;
+              if found_sn=False then begin
+                 shape_names[ff_sn]:=new_sn; //create new shape
+                 shape_points[ff_sn]:=inttostr(i+1); //add current point as only point to this shape
+              end;
+          end;
+
+          for l:=0 to max_shapes do if shape_names[l]<>'-' then begin //for every shape, if it has set name
+          sh:=SplitString(',',shape_points[l]);
+          rii:=strtoint(sh[0])-1;
              do_this_el:=False;
              for j:=0 to Form2.CheckListBox1.Count-1 do begin
-                if (Form2.CheckListBox1.Items[j]=ListBox2.Items[i]) then begin
+                if (Form2.CheckListBox1.Items[j]=ListBox2.Items[rii]) then begin
                    elv:=SplitString(';',Form2.ListBox1.Items[j]);
-                   if elv[0]=ListBox2.Items[i] then elind:=j;
+                   if elv[0]=ListBox2.Items[rii] then elind:=j; //match current electrode to listbox
                    if Form2.CheckListBox1.Checked[j] then do_this_el:=True;
                 end;
              end;
-             if do_this_el then begin
+             if do_this_el then begin //if current electrode is checked in the list
                 inc(shape_nr);
              writeln(xj,'      <Shape N="'+inttostr(shape_nr)+'">');
              writeln(xj,'        <CreationDate>'+fd+'</CreationDate>');
              writeln(xj,'        <ModificationDate>'+fd+'</ModificationDate>');
-             writeln(xj,'        <Comment>'+ListBox2.Items[i]+'</Comment>');
+             writeln(xj,'        <Comment>'+shape_names[l]+'</Comment>');  //electrode name + EDM depth
              writeln(xj,'        <ElectMaterialCode>'+mat_x400_code(elv[1])+'</ElectMaterialCode>');
              writeln(xj,'        <PieceMaterialCode>1</PieceMaterialCode>'); //steel
              writeln(xj,'        <PrepElectMaterialSymb>'+mat_x400(elv[1])+'</PrepElectMaterialSymb>');
@@ -1787,29 +2028,44 @@ begin
              writeln(xj,'        <PieceMaterialSymb>AC</PieceMaterialSymb>');
              writeln(xj,'        <PrepApplicationType>1</PrepApplicationType>');
              writeln(xj,'        <ApplicationType>1</ApplicationType>');
-             writeln(xj,'        <PrepSurfaceFinishingCH>'+elv[20][4]+elv[20][5]+'</PrepSurfaceFinishingCH>');
+             writeln(xj,'        <PrepSurfaceFinishingCH>'+elv[20][4]+elv[20][5]+'</PrepSurfaceFinishingCH>'); //vdi, number only
              writeln(xj,'        <SurfaceFinishingCH>'+elv[20][4]+elv[20][5]+'</SurfaceFinishingCH>');
-             writeln(xj,'        <PrepDepth>'+floattostr(strtofloat(ListBox6.Items[i])*(-1))+'</PrepDepth>');
-             writeln(xj,'        <EDMDepth>'+floattostr(strtofloat(ListBox6.Items[i])*(-1))+'</EDMDepth>');
-             writeln(xj,'        <AdjDepth>'+floattostr(strtofloat(ListBox6.Items[i])*(-1))+'</AdjDepth>');
-             writeln(xj,'        <ToolLength>'+floattostr(1+strtofloat(ListBox6.Items[i])*(-1))+'</ToolLength>');
-             writeln(xj,'        <PrepToolLength>'+floattostr(1+strtofloat(ListBox6.Items[i])*(-1))+'</PrepToolLength>');
-                                 //elv[19] - 0= Equimode 3D, 1=Vector (napis), 2=Cylinder, 3=Prostokąt
-             writeln(xj,'        <PrepGCycle>4</PrepGCycle>');
-             writeln(xj,'        <GCycle>4</GCycle>');
+             if ListBox9.Items[rii]='Z' then begin //normal down erosion
+                writeln(xj,'        <PrepDepth>'+floattostr(strtofloat(ListBox6.Items[rii])*(-1))+'</PrepDepth>');
+                writeln(xj,'        <EDMDepth>'+floattostr(strtofloat(ListBox6.Items[rii])*(-1))+'</EDMDepth>');
+                writeln(xj,'        <AdjDepth>'+floattostr(strtofloat(ListBox6.Items[rii])*(-1))+'</AdjDepth>');
+             end
+             else begin //side erosion, Depth = undersize per side
+                writeln(xj,'        <PrepDepth>'+floattostr(strtofloat(elv[3])/2)+'</PrepDepth>');
+                writeln(xj,'        <EDMDepth>'+floattostr(strtofloat(elv[3])/2)+'</EDMDepth>');
+                writeln(xj,'        <AdjDepth>'+floattostr(strtofloat(elv[3])/2)+'</AdjDepth>');
+             end;
+             writeln(xj,'        <ToolLength>'+floattostr(1+strtofloat(ListBox6.Items[rii])*(-1))+'</ToolLength>');
+             writeln(xj,'        <PrepToolLength>'+floattostr(1+strtofloat(ListBox6.Items[rii])*(-1))+'</PrepToolLength>');
+             //elv[19] - 0= Equimode 3D, 1=Vector (napis), 2=Cylinder, 3=Prostokąt
+             if elv[19]='0' then gcyc:='4' //isogap
+             else if elv[19]='1' then gcyc:='1' //down
+             else if elv[19]='2' then gcyc:='2' //down/orb
+             else if elv[19]='3' then gcyc:='2' //also changed in parameters in setting table
+             else gcyc:='4';  //isogap is default
+             writeln(xj,'        <PrepGCycle>'+gcyc+'</PrepGCycle>');
+             writeln(xj,'        <GCycle>'+gcyc+'</GCycle>');
              writeln(xj,'        <PrepCavityStyle>1</PrepCavityStyle>');
              writeln(xj,'        <CavityStyle>1</CavityStyle>');
              writeln(xj,'        <PrepCavityAngle>0</PrepCavityAngle>');
              writeln(xj,'        <CavityAngle>0</CavityAngle>');
-             writeln(xj,'        <PrepMaxArea>'+ListBox8.Items[i]+'</PrepMaxArea>');
-             writeln(xj,'        <MaxArea>'+ListBox8.Items[i]+'</MaxArea>');
+             writeln(xj,'        <PrepMaxArea>'+ListBox8.Items[rii]+'</PrepMaxArea>');
+             writeln(xj,'        <MaxArea>'+ListBox8.Items[rii]+'</MaxArea>');
              writeln(xj,'        <PreMilledCavity>0</PreMilledCavity>');
              writeln(xj,'        <LateralExtraThickness>0</LateralExtraThickness>');
              writeln(xj,'        <FrontalExtraThickness>0</FrontalExtraThickness>');
              writeln(xj,'        <PrepPulseType></PrepPulseType>');
              writeln(xj,'        <PulseType></PulseType>');
-             writeln(xj,'        <PrepQCode></PrepQCode>');
-             writeln(xj,'        <QCode></QCode>');
+             if elv[19]='3' then qcode:='2' //all sides square
+             else if elv[19]='2' then qcode:='1' //all sides circle
+             else qcode:='';
+             writeln(xj,'        <PrepQCode>'+qcode+'</PrepQCode>');
+             writeln(xj,'        <QCode>'+qcode+'</QCode>');
              writeln(xj,'        <ProtectionPieceAttack>1</ProtectionPieceAttack>');
              writeln(xj,'        <ProtectionCC>1</ProtectionCC>');
              writeln(xj,'        <ProtectionSpacc>1</ProtectionSpacc>');
@@ -1844,11 +2100,15 @@ begin
               else if elv[4]<>'0' then aoe:=2
               else aoe:=1;
              write(xj,'        <JobReportToolList>');
-             write(xj,einf[elind]);
+             write(xj,einf[elind]); //all electrodes in this family
              writeln(xj,'</JobReportToolList>');
-             writeln(xj,'        <JobReportPieceList>'+LabeledEdit1.Text+'</JobReportPieceList>'); //all pieces
-             writeln(xj,'        <JobReportPointList>'+inttostr(shape_nr)+'</JobReportPointList>'); // same as point list
-             writeln(xj,'        <MachiningPassNbr>'+inttostr(aoe)+'</MachiningPassNbr>'); //no. of electrodes = passes
+             writeln(xj,'        <JobReportPieceList>'+StringReplace(LabeledEdit1.Text,',','.',[rfReplaceAll])+'</JobReportPieceList>'); //all pieces
+             writeln(xj,'        <JobReportPointList>'+StringReplace(shape_points[l],',','.',[rfReplaceAll])+'</JobReportPointList>'); //points with the same electrode and Z coord.
+             //new - either 1 or 2 passes, amount of roughing electrodes depending on total number of electrodes.
+             write(xj,'        <MachiningPassNbr>');
+             if aoe=1 then write(xj,'1')
+             else write(xj,'2');  //almost always 2 is used
+             writeln(xj,'</MachiningPassNbr>');
              writeln(xj,'        <CalculatedArea>0</CalculatedArea>');
              writeln(xj,'        <PrepInvPolarity>0</PrepInvPolarity>');
              writeln(xj,'        <InvPolarity>0</InvPolarity>');
@@ -1930,8 +2190,7 @@ begin
              writeln(xj,'        <WearPartType>0</WearPartType>');
              writeln(xj,'        <WearPartSetting>2</WearPartSetting>');
              mdet:='AC';
-             for j:=1 to 5 do begin
-                //showmessage(inttostr(j));
+             for j:=1 to 5 do begin  //stupid repeating 5 times the same thing - required
                 writeln(xj,'        <PrepPartMatPass'+inttostr(j)+'>'+mdet+'</PrepPartMatPass'+inttostr(j)+'>');
                 writeln(xj,'        <PartMatPass'+inttostr(j)+'>'+mdet+'</PartMatPass'+inttostr(j)+'>');
                 writeln(xj,'        <PrepToolMatPass'+inttostr(j)+'>'+mat_x400(elv[1])+'</PrepToolMatPass'+inttostr(j)+'>');
@@ -1994,10 +2253,12 @@ begin
              end;
              writeln(xj,'        </ShapePieces>');
              writeln(xj,'        <ShapePoints>');
-             writeln(xj,'          <ShapePoint PN="'+inttostr(shape_nr)+'">');
-             writeln(xj,'            <CreationDate>'+fd+'</CreationDate>');
-             writeln(xj,'            <ModificationDate>'+fd+'</ModificationDate>');
-             writeln(Xj,'          </ShapePoint>');
+             for j:=0 to length(sh)-1 do begin
+                 writeln(xj,'          <ShapePoint PN="'+sh[j]+'">');
+                 writeln(xj,'            <CreationDate>'+fd+'</CreationDate>');
+                 writeln(xj,'            <ModificationDate>'+fd+'</ModificationDate>');
+                 writeln(Xj,'          </ShapePoint>');
+             end;
              writeln(xj,'        </ShapePoints>');
              writeln(xj,'        <ShapeTools>');
              for j:=0 to Form2.CheckListBox1.Count-1 do begin
@@ -2011,25 +2272,56 @@ begin
              end;
              writeln(xj,'        </ShapeTools>');
              writeln(xj,'        <SettingTables>');
+
+             //find out how many different undersize types there are for current electrode id
+             ums:=0;
+             feum:=False;
+             for j:=1 to 10 do distinct_um[j]:='_';
+             //first_empty_um=1;
              for j:=1 to aoe do begin
+                 new_um:=True;
+                 for k:=1 to 10 do begin
+                     if distinct_um[k]=elv[(2+j)] then new_um:=False;
+                 end;
+                 if new_um then begin
+                     distinct_um[(ums+1)]:=elv[(2+j)];
+                     inc(ums);
+                 end;
+             end;
+
+             if aoe=1 then passnbr:=1
+             else passnbr:=2;
+             for j:=1 to passnbr do begin
                 writeln(xj,'          <SettingTable FT="'+inttostr(j)+'">');
                 writeln(xj,'            <CreationDate>'+fd+'</CreationDate>');
                 writeln(xj,'            <ModificationDate>'+fd+'</ModificationDate>');
                 writeln(xj,'            <CodeS>0</CodeS>');
-                writeln(xj,'            <PrepUnderSize>'+floattostr(strtofloat(elv[(2+j)])/2)+'</PrepUnderSize>');
-                writeln(xj,'            <UnderSize>'+floattostr(strtofloat(elv[(2+j)])/2)+'</UnderSize>');
+                if ums=1 then begin //if only 1 undersize type, then use first for all passes
+                   writeln(xj,'            <PrepUnderSize>'+floattostr(strtofloat(distinct_um[1])/2)+'</PrepUnderSize>');
+                   writeln(xj,'            <UnderSize>'+floattostr(strtofloat(distinct_um[1])/2)+'</UnderSize>');
+                end
+                else begin  //different undersize types - use as many as there are passes (2)
+                     writeln(xj,'            <PrepUnderSize>'+floattostr(strtofloat(distinct_um[j])/2)+'</PrepUnderSize>');
+                     writeln(xj,'            <UnderSize>'+floattostr(strtofloat(distinct_um[j])/2)+'</UnderSize>');
+                end;
                 writeln(xj,'            <HCorrection></HCorrection>');
                 writeln(xj,'            <WCorrection></WCorrection>');
                 writeln(xj,'            <EStart>0</EStart>');
                 writeln(xj,'            <EEnd>0</EEnd>');
-                writeln(xj,'            <PrepToolLength>'+inttostr(floor((strtofloat(ListBox6.Items[i])*(-1)))+1)+'</PrepToolLength>');
-                writeln(xj,'            <ToolLength>'+inttostr(floor((strtofloat(ListBox6.Items[i])*(-1)))+1)+'</ToolLength>');
-                writeln(xj,'            <ISOGAPStrategy>3</ISOGAPStrategy>');
-                writeln(xj,'            <PrepISOGAPStrategy>3</PrepISOGAPStrategy>');
-                writeln(xj,'            <ISOGAPStep>3</ISOGAPStep>');
-                writeln(xj,'            <PrepISOGAPStep>3</PrepISOGAPStep>');
-                writeln(xj,'            <ISOGAPPendul></ISOGAPPendul>');
-                writeln(xj,'            <PrepISOGAPPendul></PrepISOGAPPendul>');
+                writeln(xj,'            <PrepToolLength>'+inttostr(floor((strtofloat(ListBox6.Items[rii])*(-1)))+1)+'</PrepToolLength>');
+                writeln(xj,'            <ToolLength>'+inttostr(floor((strtofloat(ListBox6.Items[rii])*(-1)))+1)+'</ToolLength>');
+                if ((j=2) and (elv[19]='3')) then isogapstep:='4'
+                else isogapstep:='3';
+                writeln(xj,'            <ISOGAPStrategy>'+isogapstep+'</ISOGAPStrategy>');
+                writeln(xj,'            <PrepISOGAPStrategy>'+isogapstep+'</PrepISOGAPStrategy>');
+                writeln(xj,'            <ISOGAPStep>'+isogapstep+'</ISOGAPStep>');
+                writeln(xj,'            <PrepISOGAPStep>'+isogapstep+'</PrepISOGAPStep>');
+                write(xj,'            <ISOGAPPendul>');
+                if ((j=2) and (elv[19]='0')) then write(xj,'4'); //only for finishing electrode, when Equimode selected
+                writeln(xj,'</ISOGAPPendul>');
+                write(xj,'            <PrepISOGAPPendul>');
+                if ((j=2) and (elv[19]='0')) then write(xj,'4'); //only for finishing electrode, when Equimode selected
+                writeln(xj,'</PrepISOGAPPendul>');
                 writeln(xj,'            <WearPartType>0</WearPartType>');
                 writeln(xj,'            <WearPartSetting>2</WearPartSetting>');
                 writeln(xj,'          </SettingTable>');
@@ -2044,7 +2336,8 @@ begin
              writeln(xj,'        </FuturaSettings>');
              writeln(xj,'      </Shape>');
              end;
-          end;
+          //end;
+          end; //shape_names if
           writeln(xj,'    </Shapes>');
           ProgressBar1.Position:=50;
           writeln(xj,'    <Related_Files>');
@@ -2062,9 +2355,10 @@ begin
           writeln(xj,'</Jobs>');
           CloseFile(xj);
           ProgressBar1.Position:=60;
+          logToFile('Saved program for X400 ('+SaveDialog3.FileName+')','OK');
           Showmessage('Program '+Edit3.Text+'.xmlj zapisany');
           //SysUtils.ExecuteProcess('explorer.exe','/select,'+SaveDialog3.FileName);
-      end;
+
   end
   else ShowMessage('Uzupełnij dane elektrod.');
 end;
@@ -2084,12 +2378,13 @@ end;
 
 procedure TForm1.Button14Click(Sender: TObject);
 var rnumber,rname,str,dir,strat,gnam,z_in_mach,mach_add,z_in_geo,geo_add,geo_add2,iname,iusing,sp_coords,sp_coordsa,drbok,mtd,only_ret,only_vector,pozp,ksp,pline,elmname,phase2,eip2,elno,multi_tf,umode,le,f00f,f00_sk,fold,nap,strange_number,littledot:string;
-pval,eval,pval2,tf_val,pe_val,lb1,prefil,p_elval,p_elam,isoval,chck:TArrayOfString;
+pval,eval,pval2,tf_val,pe_val,lb1,prefil,p_elval,p_elam,isoval,chck,fmel:TArrayOfString;
   min_z,i,j,f2i,f2j,k,ii,iii,using_nr,amount_of_el,f2amount_of_el,kapiel,last_using,bea_nr,check_preset,check_user,jjj,aoe,cvdi9:integer;
-  job,jor,tek,ter,iso,isr,preset,fut,fur,f0r,f00,tempp:TextFile;
+  job,jor,tek,ter,iso,isr,preset,fut,fur,f0r,f00,tempp,fakemes:TextFile;
   ust:TIniFile;
   phase,eip:Array[1..4] of integer;
-  do_this_el,exists_in_list,line_changed:boolean;
+  do_this_el,exists_in_list,line_changed,preset_ok:boolean;
+  oldx,oldy,oldc,newx,newy:real;
 begin
  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
  fold:=ust.ReadString('settings','createFolder','1');
@@ -2098,19 +2393,38 @@ begin
  Form2.ListBox2.Clear;
     ProgressBar1.Position:=(Form2.CheckListBox1.Count-1)*10;
    if Form2.Label13.Caption='done' then begin // save FUT then JOB
-      if OpenDialog3.Execute then begin
+      preset_ok:=False;
+      if Form2.Edit16.Enabled then begin
+      logToFile('using Z values typed by hand','INF');
+         //create .mes file with only Z values from Form2
+         AssignFile(fakemes,Application.Location+'fmes.mes');
+         rewrite(fakemes);
+         for i:=0 to Form2.ListBox1.Count-1 do begin
+             fmel:=SplitString(';',Form2.ListBox1.Items[i]);
+             writeln(fakemes,fmel[0]+';R1,U,,0,,,,,,,0,0,'+fmel[22]+',0.000,0.000,0,0,0,0,,0.000,,,,,,');
+             for j:=0 to 4 do if fmel[(4+j)]<>'0' then writeln(fakemes,fmel[0]+';R'+inttostr(2+j)+',U,,0,,,,,,,0,0,'+fmel[(23+j)]+',0.000,0.000,0,0,0,0,,0.000,,,,,,');
+         end;
+         CloseFile(fakemes);
+         OpenDialog3.FileName:=Application.Location+'fmes.mes'; //actually use generated file.
+         preset_ok:=True;
+      end
+      else if OpenDialog3.Execute then begin
+         preset_ok:=True;
+      end;
+      if preset_ok then begin
            check_preset:=0;
            check_user:=0;
            AssignFile(preset,OpenDialog3.FileName);
-           AssignFile(tempp,Application.Location+'temp.mes');
+           AssignFile(tempp,Application.Location+'temp.mes'); //rewrite mes file for multi electrodes
            reset(preset);
            rewrite(tempp);
            repeat
                 readln(preset,pline);
-                prefil:=SplitString(',',pline);
-                pval2:=SplitString(';',prefil[0]);
-                line_changed:=False;
-                for f2i:=0 to Form2.ListBox1.Count-1 do begin //add multi electrodes to mes file
+                if length(pline)>2 then begin //to prevent errors with 2 empty lines at end
+                   prefil:=SplitString(',',pline);
+                   pval2:=SplitString(';',prefil[0]);
+                   line_changed:=False;
+                   for f2i:=0 to Form2.ListBox1.Count-1 do begin //add multi electrodes to mes file
                     lb1:=SplitString(';',Form2.ListBox1.Items[f2i]);
                     if ((lb1[15]=pval2[0]) and (lb1[16]='1')) then begin  //if is multi electrode and real name matched
                         line_changed:=True;
@@ -2127,12 +2441,14 @@ begin
                           writeln(tempp,pval2[0]+';R6,U,,0,,,,,,,'+floattostr(strtofloat(prefil[10])*(-1))+','+floattostr(strtofloat(prefil[11])*(-1))+','+prefil[12]+',0.000,0.000,'+floattostr(strtofloat(prefil[15])+180)+',0,0,0,,0.000,,,,,,');
                         end;
                     end;
+                   end;
+                   if line_changed=False then writeln(tempp,pline); //save line without changes
+
                 end;
-                if line_changed=False then writeln(tempp,pline);
            until eof(preset);
            CloseFile(preset);
            CloseFile(tempp);
-           AssignFile(preset,Application.Location+'temp.mes');
+           AssignFile(preset,Application.Location+'temp.mes'); //use the possibly modified file for actual offsets
            reset(preset);
            repeat
               readln(preset,pline); //read mes file
@@ -2165,7 +2481,6 @@ begin
                 else dir:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');
            end;
            strat:=ust.ReadString('settings','electrodeStrategy','1');
-
            forcedirectories(dir); //create folders if needed
            if Form2.ListBox1.Count>0 then begin //if any electrodes exist in listbox1
                for f2i:=0 to Form2.ListBox1.Count-1 do begin //for every electrode family
@@ -2300,6 +2615,18 @@ begin
                               else begin
                                    f00_sk:='0.';
                               end;
+
+                              if CheckBox9.Checked then begin //case of misconfigured preset
+                                 oldx:=strtofloat(pe_val[5]);
+                                 oldy:=strtofloat(pe_val[6]);
+                                 oldc:=strtofloat(pe_val[8]);
+                                 newx:=roundto((oldx*cos(degtorad(oldc)))-(oldy*sin(degtorad(oldc))),4);
+                                 newy:=roundto((oldx*sin(degtorad(oldc)))+(oldy*cos(degtorad(oldc))),4);
+                                 pe_val[5]:=floattostr(newx);
+                                 pe_val[6]:=floattostr(newy);
+                              end;
+
+
                               write(fut,'O,V'+elno+','+matforagie(tf_val[1])+','+phase2+','+eip2+','+pe_val[4]+',1,'+umode+',0,1,0,0.,1,'+tf_val[15]+AnsiString(#10));
                               write(fut,'U,R'+elno+',1,2,'+pe_val[9]+',3,'+pe_val[4]+',0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0,$,$,F,T,V'+elno+',1,1,$,'+phase2+','+eip2+',1,'+le+',F,0,0,T,0.,1,'+inttostr(strtoint(tf_val[16])+1)+',V'+elno+','+tf_val[15]+AnsiString(#10));
                               write(f00,'O,'+inttostr((strtoint(elno)*2))+',7166,V'+elno+','+matforagie(tf_val[1])+','+phase2+','+eip2+','+pe_val[4]+',1,'+umode+',0,1,0,'+inttostr((strtoint(elno)*2))+',0.,1,1'+AnsiSTring(#10));                 //'+inttostr((strtoint(elno)*2)+1)+' ??
@@ -2360,7 +2687,7 @@ begin
                       //
                    end;
                    f00_sk:='0.';
-                 write(f00,'_TRON_,AGIEFUT_05.01.0'+AnsiSTring(#10)+'F,1,16678904,'+tf_val[15]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,0,1,0,'+f00f+',2,1,1,0,0'+AnsiString(#10));
+                 write(f00,'_TRON_,AGIEFUT_05.01.0'+AnsiString(#10)+'F,1,16678904,'+tf_val[15]+',2,0,1,2,0.,0.,0.,'+tf_val[2]+',0.,0.,0.,0,'+inttostr(amount_of_el)+',0,0,1,0,'+f00f+',2,1,1,0,0'+AnsiString(#10));
                  if strat='1' then begin
                     elno:='1';
                     phase2:='1';
@@ -2626,7 +2953,7 @@ begin
                     p_elam:=SplitString(';',Form2.ListBox1.Items[j]);
                     if ListBox2.Items[i]=p_elam[0] then begin
                       if p_elam[8]<>'0' then amount_of_el:=6
-                      else if p_elam[7]<>'0' then amount_of_el:=7
+                      else if p_elam[7]<>'0' then amount_of_el:=5
                       else if p_elam[6]<>'0' then amount_of_el:=4
                       else if p_elam[5]<>'0' then amount_of_el:=3
                       else if p_elam[4]<>'0' then amount_of_el:=2
@@ -2828,7 +3155,9 @@ end;
 procedure TForm1.Button2Click(Sender: TObject); //elektrody...
 var j,k:integer;
   el_exists:boolean;
+  eld:TArrayOfString;
 begin
+
  if ListBox2.Count>0 then begin
    for j:=0 to (ListBox2.Count-1) do begin //for each position in table
      el_exists:=False; //mark electrode as not exist
@@ -2856,9 +3185,16 @@ begin
    ProgressBar1.Position:=0; //reset progress bar
    ProgressBar1.Max:=(Form2.ListBox1.Count)*10; //set max as number of electrodes times ten
    if Form2.ShowModal=mrOK then begin //show filled Form2
-      //change electrode material, and fP
+      //change electrode material, and fP in Form1 according to changes made in Form2
       for j:=0 to Form2.ListBox1.Count-1 do begin
-
+        eld:=SplitString(';',Form2.ListBox1.Items[j]);
+        for k:=0 to ListBox2.Count-1 do begin
+            if eld[0]=ListBox2.Items[k] then begin
+              //showmessage(ListBox2.Items[k]+' - '+eld[1]); //debug
+              ListBox7.Items[k]:=eld[1];
+              ListBox8.Items[k]:=eld[2];
+            end;
+        end;
       end;
    end;
  end;
@@ -2879,28 +3215,21 @@ begin
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);
-var di:integer;
+var newx,newy,oldx,oldy,oldc:real;
 begin
-   if ListBox2.ItemIndex>=0 then begin
-      di:=ListBox2.ItemIndex;
-      ListBox2.Items.Delete(di);
-      ListBox3.Items.Delete(di);
-      ListBox4.Items.Delete(di);
-      ListBox5.Items.Delete(di);
-      ListBox6.Items.Delete(di);
-      ListBox7.Items.Delete(di);
-      ListBox8.Items.Delete(di);
-      ListBox9.Items.Delete(di);
-      ListBox11.Items.Delete(di);
-      ListBox12.Items.Delete(di);
-      ListBox2.ItemIndex:=-1;
-   end;
+     oldx:=strtofloat(Edit2.Text);
+     oldy:=strtofloat(Edit4.Text);
+     oldc:=strtofloat(Edit5.Text);
+   newx:=roundto((oldx*cos(degtorad(oldc)))-(oldy*sin(degtorad(oldc))),4);
+   newy:=roundto((oldx*sin(degtorad(oldc)))+(oldy*cos(degtorad(oldc))),4);
+    showmessage('X: '+floattostr(newx)+', Y: '+floattostr(newy));
 end;
 
 procedure TForm1.Button7Click(Sender: TObject);
 var i,xc,yc,j,factor:integer;
-  maxdim:real;
+  maxdim,trsize:real;
   recta:TRect;
+  ust:TIniFile;
 begin
    Form1.WindowState:=wsMaximized;
    Button7.Left:=20;
@@ -2939,6 +3268,7 @@ begin
    BitBtn7.Visible:=False;
    BitBtn8.Visible:=False;
    BitBtn9.Visible:=False;
+   BitBtn10.Visible:=False;
    ProgressBar1.Visible:=False;
    Label1.Visible:=False;
    Label2.Visible:=False;
@@ -2969,15 +3299,12 @@ begin
    Edit4.Visible:=False;
    Edit5.Visible:=False;
    Edit6.Visible:=False;
-   //Edit7.Visible:=False;
    Edit8.Visible:=False;
    Edit9.Visible:=False;
    Edit10.Visible:=False;
    Edit15.Visible:=False;
    Edit16.Visible:=False;
    GroupBox1.Visible:=False;
-   //Button8.Left:=(floor(Panel1.Width/2)-floor(Button8.Width/2));
-   //Button8.Top:=5;
    PaintBox1.Top:=10+Button7.Height;
    PaintBox1.Height:=Form1.Height-Button7.Height-50;
    PaintBox1.Left:=15;
@@ -3004,7 +3331,6 @@ begin
         MoveTo(floor(PaintBox1.Width/2),0);
         Pen.Color:=clRed;
         LineTo(floor(PaintBox1.Width/2),floor(PaintBox1.Height));
-        //LineTo(floor(PaintBox1.Width/2)+60,floor(PaintBox1.Height/2)-10);
         MoveTo(0,floor(PaintBox1.Height/2));
         LineTo(floor(PaintBox1.Width),floor(PaintBox1.Height/2));
         j:=0;
@@ -3023,6 +3349,21 @@ begin
         Font.Height:=48;
         TextOut(PaintBox1.Width-80,(floor(PaintBox1.Height/2))-50,'X');
         TextOut(floor(PaintBox1.Width/2)+20,10,'Y');
+
+        ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+        if ust.ReadString('settings','GCDrawWorkPiece','1')='1' then begin
+          //showmessage('here!');
+           Pen.Color:=clGreen;
+           Pen.Style:=psSolid;
+           Brush.Color:=clGreen;
+           MoveTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn1x','0')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn1y','0')))*floor((PaintBox1.Height/2)/maxdim)*factor));
+           LineTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn1x','0')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn2y','20')))*floor((PaintBox1.Height/2)/maxdim)*factor));
+           LineTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn2x','20')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn2y','20')))*floor((PaintBox1.Height/2)/maxdim)*factor));
+           LineTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn2x','20')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn1y','0')))*floor((PaintBox1.Height/2)/maxdim)*factor));
+           LineTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn1x','0')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn1y','0')))*floor((PaintBox1.Height/2)/maxdim)*factor));
+
+        end;
+        ust.Free;
         repeat
               j:=j+factor;
               Pen.Color:=clRed;       // this has to be
@@ -3048,16 +3389,19 @@ begin
         Font.Color:=clYellow;
         Brush.Style:=bsClear;
         Font.Height:=16;
+        trsize:=20;
         for i:=0 to ListBox2.Count-1 do begin
             xc:=floor((strtofloat(ListBox3.Items[i])*(PaintBox1.Height/2))/maxdim)*factor;
             yc:=floor((strtofloat(ListBox4.Items[i])*(PaintBox1.Height/2))/maxdim)*factor;
             Ellipse(floor(PaintBox1.Width/2)-5+xc,floor(PaintBox1.Height/2)-5-yc,floor(PaintBox1.Width/2)+5+xc,floor(PaintBox1.Height/2)+5-yc);
+            //Arc(floor(PaintBox1.Width/2)-5+xc,floor(PaintBox1.Height/2)-5-yc,floor(PaintBox1.Width/2)+5+xc,floor(PaintBox1.Height/2)+5-yc,floor(PaintBox1.Width/2)+5+xc,yc,xc,floor(PaintBox1.Height/2)+5-yc);
             MoveTo(floor(PaintBox1.Width/2)+xc,floor(PaintBox1.Height/2)-yc);
-            LineTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*20),floor(PaintBox1.Height/2)-yc+round(cos(DegToRad(strtofloat(ListBox5.Items[i])))*20));
-            //litletriangle
-            //MoveTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*6),floor(PaintBox1.Height/2)-yc+round((-1)*cos(DegToRad(strtofloat(ListBox5.Items[i])))*6));
-            //below line is wrong
-            //LineTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*6),floor(PaintBox1.Height/2)-yc+round((-1)*cos(DegToRad(strtofloat(ListBox5.Items[i])))*6));
+            LineTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*trsize),floor(PaintBox1.Height/2)-yc+round(cos(DegToRad(strtofloat(ListBox5.Items[i])))*trsize));
+            //littletriangle
+            MoveTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*(trsize/2)),floor(PaintBox1.Height/2)-yc+round(cos(DegToRad(strtofloat(ListBox5.Items[i])))*(trsize/2)));
+            LineTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*(trsize/2))+round(sin(DegToRad(strtofloat(ListBox5.Items[i])+90))*(trsize/4)),floor(PaintBox1.Height/2)-yc+round(cos(DegToRad(strtofloat(ListBox5.Items[i])))*(trsize/2))+round(cos(DegToRad(strtofloat(ListBox5.Items[i])+90))*(trsize/4)));
+            LineTo(floor(PaintBox1.Width/2)+xc+round(sin(DegToRad(strtofloat(ListBox5.Items[i])))*trsize),floor(PaintBox1.Height/2)-yc+round(cos(DegToRad(strtofloat(ListBox5.Items[i])))*trsize));
+            //electrode name
             TextOut(floor(PaintBox1.Width/2)+10+xc,floor(PaintBox1.Height/2)-yc-10,ListBox2.Items[i]);
 
         end;
@@ -3078,9 +3422,6 @@ begin
    hp:=ust.readString('settings','exportAgieHP','0');
    x400:=ust.readString('settings','exportX400','0');
    certa:=ust.readString('settings','exportCERTA','0');
-   //Button8.Top:=5;
-   //Button8.Left:=Button7.Left+Button7.Width+10;
-   //Button8.Caption:='Koniec';
    ListBox2.Visible:=True;
    ListBox3.Visible:=True;
    ListBox4.Visible:=True;
@@ -3089,10 +3430,8 @@ begin
    ListBox7.Visible:=True;
    ListBox8.Visible:=True;
    ListBox9.Visible:=True;
-   //ListBox10.Visible:=True;
    ListBox11.Visible:=True;
    ListBox12.Visible:=True;
-   //ListBox13.Visible:=True;
    CheckBox1.Visible:=True;
    CheckBox3.Visible:=True;
    CheckBox4.Visible:=True;
@@ -3100,8 +3439,6 @@ begin
    Button2.Visible:=True;
    Button3.Visible:=True;
    Button4.Visible:=True;
-   //Button14.Visible:=True;
-
    BitBtn1.Visible:=True;
    BitBtn2.Visible:=True;
    BitBtn3.Visible:=True;
@@ -3111,6 +3448,7 @@ begin
    BitBtn7.Visible:=True;
    BitBtn8.Visible:=True;
    if x400='1' then BitBtn9.Visible:=True;
+   BitBtn10.Visible:=True;
    ProgressBar1.Visible:=True;
    Label1.Visible:=True;
    Label2.Visible:=True;
@@ -3143,7 +3481,6 @@ begin
    Edit4.Visible:=True;
    Edit5.Visible:=True;
    Edit6.Visible:=True;
-   //Edit7.Visible:=True;
    Edit8.Visible:=True;
    Edit9.Visible:=True;
    Edit10.Visible:=True;
@@ -3222,15 +3559,16 @@ procedure TForm1.FormCreate(Sender: TObject);
 var ust:TIniFile;
 
   i:integer;
-  dms,mcouts,mpouts:string;
+  dms,mcouts,mpouts,lang:string;
   mcurrent,mprev:TDCP_sha256;
   mcout,mpout:array[0..31] of byte;
   sl2:TStringList;
 begin
-    sizeset:=false;
+     //showmessage(DataModule1.getString('PL',0));
+     sizeset:=false;
     Form1.resizemainf(Form1);
     sw_ver:='18';
-    sw_ver_minor:='1';
+    sw_ver_minor:='10';
     ImageList1.AddLazarusResource('open-file');  //0
     ImageList1.AddLazarusResource('new file');   //1
     ImageList1.AddLazarusResource('Help');       //2
@@ -3246,6 +3584,34 @@ begin
     BitBtn2.LoadGlyphFromLazarusResource('Remove');
     BitBtn3.LoadGlyphFromLazarusResource('Edit-validated');
     BitBtn4.LoadGlyphFromLazarusResource('Add');
+
+    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+    //change strings to language selected in settings
+    lang:=ust.ReadString('settings','lang','PL');
+    MenuItem7.Caption:=DataModule1.getString(lang,0); //plik
+    MenuItem1.Caption:=DataModule1.getString(lang,1); //opcje
+    MenuItem2.Caption:=DataModule1.getString(lang,2); //pomoc
+    MenuItem8.Caption:=DataModule1.getString(lang,3); //nowy
+    MenuItem17.Caption:=DataModule1.getString(lang,4); //import
+    MenuItem18.Caption:=DataModule1.getString(lang,5); //export
+    MenuItem10.Caption:=DataModule1.getString(lang,6); //otw edf
+    MenuItem13.Caption:=DataModule1.getString(lang,7); //zapisz
+    MenuItem11.Caption:=DataModule1.getString(lang,8); //zapisz jako
+    MenuItem15.Caption:=DataModule1.getString(lang,9); //druk tabele
+    MenuItem12.Caption:=DataModule1.getString(lang,10); //zakoncz
+    MenuItem5.Caption:=DataModule1.getString(lang,11); //ustawienia
+    MenuItem6.Caption:=DataModule1.getString(lang,12); //log
+    MenuItem3.Caption:=DataModule1.getString(lang,13); //about
+    MenuItem4.Caption:=DataModule1.getString(lang,14); //jak uzywac
+    MenuItem16.Caption:=DataModule1.getString(lang,15); //otw istniejacy
+    MenuItem14.Caption:=DataModule1.getString(lang,16); //import csv
+    MenuItem9.Caption:=DataModule1.getString(lang,17); //import dxf
+    MenuItem19.Caption:=DataModule1.getString(lang,18); //export agievision
+    MenuItem20.Caption:=DataModule1.getString(lang,19); //export hmi
+    MenuItem21.Caption:=DataModule1.getString(lang,20); //export certa
+
+
+
     sl2:=TStringList.Create;
     sl2.Add('Wyślij HP');
     //sl2.Add('Hyperspark');
@@ -3258,7 +3624,7 @@ begin
     plsr12sc:=False;
     tableno:=0; //abount of tables
     errorlevel:=0; //for dxf
-    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+
     SpinEdit1.Value:=strtoint(ust.ReadString('settings','defaultNoOfRows','10'));
     OpenDialog3.InitialDir:=ust.ReadString('settings','pathMES','C:\korekty\AGIEVISION_2');
     OpenDialog1.InitialDir:=ust.ReadString('settings','pathDXF','C:\Intel\LazarusPortable\dxf test');
@@ -3271,6 +3637,9 @@ begin
     Edit10.Text:=ust.ReadString('settings','defaultSideOffset','5');
     Edit13.Text:=ust.ReadString('settings','defaultZOffset','0');
     ComboBox4.ItemIndex:=strtoint(ust.ReadString('settings','defaultPieceMaterial','0'));
+    ComboBox1.ItemIndex:=elmatii_input(ust.ReadString('settings','defaultElectrodeMaterial','Graphite2'));
+    if ust.ReadString('settings','preCalculatedElectrodeData','1')='1' then CheckBox9.Checked:=true
+    else CheckBox9.Checked:=false;
     dms:=ust.ReadString('dms','dms','error');
 
     mcurrent:=TDCP_sha256.Create(Form1);
@@ -3293,7 +3662,7 @@ begin
     if mcouts<>dms then Label13.Visible:=True;
 
     Form1.Width:=1002;
-    Form1.Height:=460; // old356
+    Form1.Height:=460; // old: 356
 
     //export buttons positioning
     if ust.ReadString('settings','exportAgieHP','1')='1' then begin
@@ -3378,10 +3747,9 @@ end;
 procedure TForm1.handleparams(Sender: TObject);
 begin
   if ParamCount>0 then begin
-         //showmessage(ExtractFileExt(ParamStr(1)));
          if ExtractFileExt(ParamStr(1))='.edf' then load_edf(ParamStr(1))
          else if ExtractFileExt(ParamStr(1))='.csv' then load_csv(ParamStr(1))
-         else begin
+         else begin //read as .dxf/.mi (old system)
          OpenDialog1.FileName:=ParamStr(1);
          Button1.Click;
          end;
@@ -3392,6 +3760,11 @@ procedure TForm1.hp2(Sender: TObject; const FileNames: array of String);
 begin
    OpenDialog1.FileName:=FileNames[1];
    Button1.Click;
+end;
+
+procedure TForm1.ListBox11Click(Sender: TObject);
+begin
+
 end;
 
 
@@ -3550,15 +3923,20 @@ function interline:string;
 procedure TForm1.MenuItem15Click(Sender: TObject);
 var i,j,add_sp:integer;
 fil:TextFile;
+ml:boolean;
+ust:TIniFile;
 begin
+    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+    if ust.ReadString('settings','moreInterlines','1')='1' then ml:=true
+    else ml:=false;
     AssignFile(fil,Application.Location+'\tabela.txt');
     Rewrite(fil);
     writeln(fil,'Tabela drążenia '+Edit3.Text+'/'+Edit16.Text+' ('+FormatDateTime('yyyy-mm-dd HH:nn:ss',Now)+')');
     writeln(fil,'┌───────────┬───────────┬───────────┬───────────┬───────────┬──────┬──────────┐');
     writeln(fil,'│ Elektroda │     X     │     Y     │     C     │     Z     │  dir │    Fp    │');
-    //writeln(fil,interline());
+    if not ml then writeln(fil,interline());
     for i:=0 to ListBox2.Count-1 do begin
-         writeln(fil,interline());
+         if ml then writeln(fil,interline());
          write(fil,'│');
          write(fil,ListBox2.Items[i]);
          for j:=length(ListBox2.Items[i]) to 10 do write(fil,' ');
@@ -3606,7 +3984,23 @@ begin
     end;
     writeln(fil,'└───────────┴───────────┴───────────┴───────────┴───────────┴──────┴──────────┘');
     CloseFile(fil);
-    SysUtils.ExecuteProcess('notepad.exe','"'+Application.Location+'\tabela.txt"');
+    SysUtils.ExecuteProcess('notepad.exe','"'+Application.Location+'\tabela.txt"'); //open generated file in notepad
+end;
+
+procedure TForm1.MenuItem16Click(Sender: TObject);
+begin
+  showmessage('Ta funkcja jeszcze nie działa');
+  logToFile('curious user (clicked on not implemeted menu option)','INF');
+end;
+
+procedure TForm1.MenuItem17Click(Sender: TObject);
+begin
+
+end;
+
+procedure TForm1.MenuItem19Click(Sender: TObject);
+begin
+  BitBtn5.Click;
 end;
 
 
@@ -3615,6 +4009,16 @@ begin
   logToFile('opened settings','OK');
    // open new form with settings
    Form3.ShowModal;
+end;
+
+procedure TForm1.MenuItem20Click(Sender: TObject);
+begin
+  BitBtn9.Click;
+end;
+
+procedure TForm1.MenuItem21Click(Sender: TObject);
+begin
+  BitBtn6.Click;
 end;
 
 procedure TForm1.MenuItem3Click(Sender: TObject);
@@ -3663,7 +4067,13 @@ begin
      Form2.ListBox1.Clear;
      Form2.ListBox2.Clear;
      Form2.CheckListBox1.Clear;
-     Form1.Edit3.Text:='';
+     Form1.Memo1.Clear;
+     Form1.Edit3.Text:=''; //program name
+     Form1.LabeledEdit1.Text:='1,2'; //x400 magpos
+     Form1.Edit16.Text:='00'; //ai
+     Form1.CheckBox8.Checked:=True; //dodaj skaner
+     Form1.CheckBox3.Checked:=False; //utwórz grupe
+     logToFile('Created new empty program','OK');
      setChanged(false);
 
 end;

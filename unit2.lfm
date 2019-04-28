@@ -1,12 +1,12 @@
 object Form2: TForm2
-  Left = 1196
+  Left = 1005
   Height = 460
-  Top = 143
-  Width = 391
+  Top = 174
+  Width = 455
   BorderStyle = bsSingle
   Caption = 'Lista Elektrod'
   ClientHeight = 460
-  ClientWidth = 391
+  ClientWidth = 455
   OnClose = formclose
   OnCreate = FormCreate
   Position = poScreenCenter
@@ -470,6 +470,75 @@ object Form2: TForm2
     ModalResult = 1
     TabOrder = 28
     Visible = False
+  end
+  object Button6: TButton
+    Left = 376
+    Height = 25
+    Top = 104
+    Width = 64
+    Caption = 'Z ręcznie'
+    OnClick = Button6Click
+    TabOrder = 29
+  end
+  object Edit16: TEdit
+    Left = 376
+    Height = 23
+    Top = 136
+    Width = 48
+    Enabled = False
+    OnKeyUp = comatodot
+    TabOrder = 30
+    Text = '0'
+  end
+  object Edit17: TEdit
+    Left = 376
+    Height = 23
+    Top = 160
+    Width = 48
+    Enabled = False
+    OnKeyUp = comatodot
+    TabOrder = 31
+    Text = '0'
+  end
+  object Edit18: TEdit
+    Left = 376
+    Height = 23
+    Top = 184
+    Width = 48
+    Enabled = False
+    OnKeyUp = comatodot
+    TabOrder = 32
+    Text = '0'
+  end
+  object Edit19: TEdit
+    Left = 376
+    Height = 23
+    Top = 208
+    Width = 48
+    Enabled = False
+    OnKeyUp = comatodot
+    TabOrder = 33
+    Text = '0'
+  end
+  object Edit20: TEdit
+    Left = 376
+    Height = 23
+    Top = 232
+    Width = 48
+    Enabled = False
+    OnKeyUp = comatodot
+    TabOrder = 34
+    Text = '0'
+  end
+  object Edit21: TEdit
+    Left = 376
+    Height = 23
+    Top = 256
+    Width = 48
+    Enabled = False
+    OnKeyUp = comatodot
+    TabOrder = 35
+    Text = '0'
   end
   object OpenDialog1: TOpenDialog
     Filter = 'Pliku pomiaru|*.mes'

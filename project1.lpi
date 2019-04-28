@@ -19,7 +19,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
-      <BuildNr Value="1170"/>
+      <BuildNr Value="1330"/>
       <Language Value="0415"/>
       <StringTable InternalName="dxf2agiehp" ProductVersion=""/>
     </VersionInfo>
@@ -47,7 +47,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="11">
+    <Units Count="12">
       <Unit0>
         <Filename Value="project1.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -128,6 +128,14 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Unit9"/>
       </Unit10>
+      <Unit11>
+        <Filename Value="unit10.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="DataModule1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="DataModule"/>
+        <UnitName Value="Unit10"/>
+      </Unit11>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

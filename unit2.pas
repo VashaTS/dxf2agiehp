@@ -19,6 +19,7 @@ type
     Button3: TButton;
     Button4: TButton;
     Button5: TButton;
+    Button6: TButton;
     CheckBox1: TCheckBox;
     CheckListBox1: TCheckListBox;
     ComboBox1: TComboBox;
@@ -32,7 +33,13 @@ type
     Edit13: TEdit;
     Edit14: TEdit;
     Edit15: TEdit;
+    Edit16: TEdit;
+    Edit17: TEdit;
+    Edit18: TEdit;
+    Edit19: TEdit;
     Edit2: TEdit;
+    Edit20: TEdit;
+    Edit21: TEdit;
     Edit3: TEdit;
     Edit4: TEdit;
     Edit5: TEdit;
@@ -66,6 +73,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
     procedure chck_l(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure comatodot(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure dbok(Sender: TObject);
@@ -224,6 +232,13 @@ begin
   Edit15.Text:=el_values[14]; // poz6
   Edit10.Text:=el_values[15]; // name for changing in AGIE program //old 11
   Edit11.Text:=el_values[18]; // offset for side eroding  //old 14
+  Edit16.Text:=el_values[22]; // Z1
+  Edit17.Text:=el_values[23]; // Z2
+  Edit18.Text:=el_values[24]; // Z3
+  Edit19.Text:=el_values[25]; // Z4
+  Edit20.Text:=el_values[26]; // Z5
+  Edit21.Text:=el_values[27]; // Z6
+
   Label8.Caption:=inttostr(CheckListBox1.ItemIndex); //number of electrode on the listbox
   if el_values[16]='1' then CheckBox1.Checked:=True //multi //old 12
   else CheckBox1.Checked:=False;
@@ -272,6 +287,30 @@ var ust:TIniFile;
 begin
    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
    OpenDialog1.InitialDir:=ust.ReadString('settings','pathMES','C:\korekty\AGIEVISION_2');
+   if ust.ReadString('settings','tabOrderF2','nowy')='nowy' then begin
+        Form2.Edit6.TabOrder:=3;
+        Form2.Edit3.TabOrder:=4;
+        Form2.Edit7.TabOrder:=5;
+        Form2.Edit4.TabOrder:=6;
+        Form2.Edit8.TabOrder:=7;
+        Form2.Edit5.TabOrder:=8;
+        Form2.Edit9.TabOrder:=9;
+        Form2.Edit12.TabOrder:=10;
+        Form2.Edit13.TabOrder:=11;
+        Form2.Edit14.TabOrder:=12;
+    end
+    else begin //stary
+        Form2.Edit3.TabOrder:=3;
+        Form2.Edit4.TabOrder:=4;
+        Form2.Edit5.TabOrder:=5;
+        Form2.Edit12.TabOrder:=6;
+        Form2.Edit14.TabOrder:=7;
+        Form2.Edit6.TabOrder:=8;
+        Form2.Edit7.TabOrder:=9;
+        Form2.Edit8.TabOrder:=10;
+        Form2.Edit13.TabOrder:=11;
+        Form2.Edit15.TabOrder:=12;
+    end;
    ust.Free;
 end;
 
@@ -309,8 +348,8 @@ begin
   if RadioButton1.Checked then utype:='Z'
   else if RadioButton2.Checked then utype:='X+';
   ListBox1.Items.Delete(strtoint(Label8.Caption));  //temp delete existing entry, then add a new one (next line)
-  //                          0               1                               2             3                 4             5             6              7             8                9               10              11           12             13              14                15           16           17         18                     19                                 20                           21
-  ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit12.Text+';'+Edit14.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit13.Text+';'+Edit15.Text+';'+Edit10.Text+';'+multi_tf+';'+utype+';'+Edit11.Text+';'+inttostr(ComboBox2.ItemIndex)+';'+vdi_ii_to_nr(ComboBox3.ItemIndex)+';'+elmname);
+  //                          0               1                               2             3                 4             5             6              7             8                9               10              11           12             13              14                15           16           17         18                     19                                 20                           21            22              23              24               25             26              27
+  ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit12.Text+';'+Edit14.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit13.Text+';'+Edit15.Text+';'+Edit10.Text+';'+multi_tf+';'+utype+';'+Edit11.Text+';'+inttostr(ComboBox2.ItemIndex)+';'+vdi_ii_to_nr(ComboBox3.ItemIndex)+';'+elmname+';'+Edit16.Text+';'+Edit17.Text+';'+Edit18.Text+';'+Edit19.Text+';'+Edit20.Text+';'+Edit21.Text);
   ListBox1.Items.Move((ListBox1.Count-1),strtoint(Label8.Caption)); //move added antry to previous place
   if (((strtofloat(Edit1.Text)>0) and (strtofloat(Edit2.Text)>0)) or (CheckListBox1.Checked[CheckListBox1.ItemIndex]=False)) then begin  //check if fp and u1 are empty
      ok_for_multi:=true;
@@ -366,6 +405,27 @@ begin
     Button4.Caption:='^';
   end
   Else Form2.Height:=460;
+end;
+
+procedure TForm2.Button6Click(Sender: TObject);
+begin
+  if Edit16.Enabled then begin
+     Edit16.Enabled:=False;
+     Edit17.Enabled:=False;
+     Edit18.Enabled:=False;
+     Edit19.Enabled:=False;
+     Edit20.Enabled:=False;
+     Edit21.Enabled:=False;
+  end
+  else begin
+    Edit16.Enabled:=True;
+    Edit17.Enabled:=True;
+    Edit18.Enabled:=True;
+    Edit19.Enabled:=True;
+    Edit20.Enabled:=True;
+    Edit21.Enabled:=True;
+  end;
+
 end;
 
 procedure TForm2.chck_l(Sender: TObject; var Key: Word; Shift: TShiftState);

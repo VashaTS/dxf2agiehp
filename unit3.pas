@@ -29,14 +29,26 @@ type
     CheckBox3: TCheckBox;
     CheckBox4: TCheckBox;
     CheckBox5: TCheckBox;
+    CheckBox6: TCheckBox;
+    CheckBox7: TCheckBox;
+    CheckBox8: TCheckBox;
     CheckGroup1: TCheckGroup;
     ComboBox1: TComboBox;
+    GroupBox1: TGroupBox;
     Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
     LabeledEdit1: TLabeledEdit;
     LabeledEdit10: TLabeledEdit;
     LabeledEdit11: TLabeledEdit;
     LabeledEdit12: TLabeledEdit;
     LabeledEdit13: TLabeledEdit;
+    LabeledEdit14: TLabeledEdit;
+    LabeledEdit15: TLabeledEdit;
+    LabeledEdit16: TLabeledEdit;
+    LabeledEdit17: TLabeledEdit;
+    LabeledEdit18: TLabeledEdit;
+    LabeledEdit19: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
     LabeledEdit3: TLabeledEdit;
     LabeledEdit4: TLabeledEdit;
@@ -117,10 +129,16 @@ begin
    ust.WriteString('settings','pathCSV',LabeledEdit3.Text);
    ust.WriteString('settings','pathCSVexport',LabeledEdit13.Text);
    ust.WriteString('settings','minPositionInMagazine',LabeledEdit12.Text);
+   ust.WriteSTring('settings','GCn1x',LabeledEdit14.Text);
+   ust.WriteSTring('settings','GCn1y',LabeledEdit15.Text);
+   ust.WriteSTring('settings','GCn2x',LabeledEdit16.Text);
+   ust.WriteSTring('settings','GCn2y',LabeledEdit17.Text);
+   ust.WriteString('settings','GCLineLength',LabeledEdit18.Text);
+   ust.WriteString('settings','lang',LabeledEdit19.Text);
    if RadioButton1.Checked=True then ust.WriteString('settings','electrodeStrategy','1')
    else if RadioButton2.Checked=True then ust.WriteString('settings','electrodeStrategy','2')
    else if RadioButton3.Checked=True then ust.WriteString('settings','electrodeStrategy','3');
-   if RadioButton4.Checked=True then ust.WriteString('settings','tabOrederF2','stary')
+   if RadioButton4.Checked=True then ust.WriteString('settings','tabOrderF2','stary')
    else if RadioButton5.Checked=True then ust.WriteString('settings','tabOrderF2','nowy');
    if CheckBox1.Checked then ust.WriteString('settings','createFolder','1')
    else ust.WriteString('settings','createFolder','0');
@@ -132,6 +150,12 @@ begin
    else ust.WriteString('settings','exportX400','0');
    if CheckBox5.Checked then ust.WriteString('settings','exportCERTA','1')
    else ust.WriteString('settings','exportCERTA','0');
+   if CheckBox6.Checked then ust.WriteString('settings','precalculatedElectrodeData','1')
+   else ust.WriteString('settings','precalculatedElectrodeData','0');
+   if CheckBox7.Checked then ust.WriteString('settings','moreInterlines','1')
+   else ust.WriteString('settings','moreInterlines','0');
+   if CheckBox8.Checked then ust.WriteString('settings','GCDrawWorkpiece','1')
+   else ust.WriteString('settings','GCDrawWorkPiece','0');
    ust.Free;
    logToFile('settings saved');
    Form3.Close;
@@ -206,7 +230,7 @@ end;
 
 procedure TForm3.FormCreate(Sender: TObject);
 var ust:TIniFile;
-rad,fold,nap,agiehp,x400,certa,tabf2:string;
+rad,fold,nap,agiehp,x400,certa,tabf2,calcEle,interlines,drawpiece:string;
 begin
    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
    LabeledEdit1.Text:=ust.ReadString('settings','defaultNoOfRows','10');
@@ -223,13 +247,22 @@ begin
    LabeledEdit3.Text:=ust.ReadString('settings','pathCSV','C:\CSV');
    LabeledEdit13.Text:=ust.ReadString('settings','pathCSVexport','V:\Import\CSV');
    LabeledEdit12.Text:=ust.ReadString('settings','minPositionInMagazine','1');
+   LabeledEdit14.Text:=ust.ReadString('settings','GCn1x','0');
+   LabeledEdit15.Text:=ust.ReadString('settings','GCn1y','0');
+   LabeledEdit16.Text:=ust.ReadString('settings','GCn2x','20');
+   LabeledEdit17.Text:=ust.ReadString('settings','GCn2y','20');
+   LabeledEdit18.Text:=ust.ReadString('settings','GCLineLength','20');
+   LabeledEdit19.Text:=ust.ReadString('settings','lang','PL');
    rad:=ust.ReadString('settings','electrodeStrategy','1');
    fold:=ust.ReadString('settings','createFolder','1');
    nap:=ust.ReadString('settings','naPen','0');
    agiehp:=ust.ReadString('settings','exportAgieHP','1');
    x400:=ust.ReadString('settings','exportX400','1');
    certa:=ust.ReadString('settings','exportCERTA','1');
-   tabf2:=ust.ReadSTring('settings','tabOrderF2','nowy');
+   tabf2:=ust.ReadString('settings','tabOrderF2','nowy');
+   calcEle:=ust.ReadString('settings','precalculatedElectrodeData','1');
+   interlines:=ust.ReadString('settings','moreInterlines','1');
+   drawpiece:=ust.ReadString('settings','GCDrawWorkpiece','0');
    if rad='1' then RadioButton1.Checked:=True
    else if rad='2' then RadioButton2.CHecked:=True
    else RadioButton3.Checked:=True;
@@ -245,6 +278,12 @@ begin
    else Checkbox5.Checked:=False;
    if tabf2='stary' then RadioButton4.Checked:=True
    else if tabf2='nowy' then RadioButton5.Checked:=True;
+   if calcEle='1' then CheckBox6.Checked:=True
+   else CheckBox6.Checked:=False;
+   if interlines='1' then CheckBox7.Checked:=True
+   else CheckBox7.Checked:=False;
+   if drawpiece='1' then CheckBox8.Checked:=True
+   else CheckBox8.Checked:=False;
 
    ust.Free;
 end;

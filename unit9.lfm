@@ -1,0 +1,64 @@
+object Form9: TForm9
+  Left = 736
+  Height = 192
+  Top = 253
+  Width = 288
+  Caption = 'Sukces'
+  ClientHeight = 192
+  ClientWidth = 288
+  LCLVersion = '1.4.5.0'
+  object Button1: TButton
+    Left = 168
+    Height = 40
+    Top = 72
+    Width = 104
+    Caption = 'OK'
+    ModalResult = 11
+    OnClick = Button1Click
+    TabOrder = 0
+  end
+  object Button2: TButton
+    Left = 168
+    Height = 41
+    Top = 128
+    Width = 107
+    Caption = 'Pokaż w folderze'
+    ModalResult = 1
+    OnClick = Button2Click
+    TabOrder = 1
+  end
+  object Label1: TLabel
+    Left = 27
+    Height = 15
+    Top = 20
+    Width = 100
+    Caption = 'Zapisano program '
+    ParentColor = False
+  end
+  object Label2: TLabel
+    Left = 136
+    Height = 15
+    Top = 20
+    Width = 36
+    Caption = 'Label2'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object ListBox1: TListBox
+    Left = 32
+    Height = 80
+    Top = 88
+    Width = 100
+    ItemHeight = 0
+    TabOrder = 2
+  end
+  object Label3: TLabel
+    Left = 56
+    Height = 15
+    Top = 72
+    Width = 49
+    Caption = 'użyte VDI'
+    ParentColor = False
+  end
+end

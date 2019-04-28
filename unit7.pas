@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls;
+  ExtCtrls, StrUtils;
 
 type
 
@@ -20,12 +20,15 @@ type
     LabeledEdit3: TLabeledEdit;
     LabeledEdit4: TLabeledEdit;
     LabeledEdit5: TLabeledEdit;
+    PaintBox1: TPaintBox;
     RadioButton1: TRadioButton;
     RadioButton2: TRadioButton;
     RadioButton3: TRadioButton;
     RadioButton4: TRadioButton;
     RadioGroup1: TRadioGroup;
     procedure Button2Click(Sender: TObject);
+    procedure ctd(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormCreate(Sender: TObject);
     procedure vcir(Sender: TObject);
     procedure vlin(Sender: TObject);
     procedure vmat(Sender: TObject);
@@ -48,6 +51,28 @@ implementation
 procedure TForm7.Button2Click(Sender: TObject);
 begin
 
+end;
+
+procedure TForm7.ctd(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if AnsiContainsStr((Sender as TEdit).Text,',') then begin
+        (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,',','.',[rfReplaceAll]);
+        (Sender as TEdit).SelStart:=high(Integer);
+     end;
+end;
+
+procedure TForm7.FormCreate(Sender: TObject);
+begin
+  with PaintBox1.Canvas do
+  begin
+    //Repaint;
+    //Pen.Style:=psSolid;
+    Brush.Color:=clBlack;
+    //Pen.Color:=clBlack;
+    Brush.Style:=bsDiagCross;
+    Ellipse(10,10,20,20);
+    Refresh;
+  end;
 end;
 
 procedure TForm7.vcir(Sender: TObject);
