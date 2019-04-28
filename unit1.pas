@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ExtCtrls, Comctrls, Spin, Menus, Math, Unit2, Unit3, Unit4, Unit5,
   Unit6, DCPsha256, inifiles, StrUtils, DateUtils, Windows,
-  LResources, Buttons, Unit7,Unit8,Unit9,Unit10,ShellAPI;
+  LResources, Buttons, Unit7,Unit8,Unit9,Unit10,Unit11,Unit12;
 
 type
   TArrayOfString = array of String;
@@ -38,6 +38,7 @@ type
     Button3: TButton;
     Button4: TButton;
     Button5: TButton;
+    Button6: TButton;
     Button7: TButton;
     Button8: TButton;
     CheckBox1: TCheckBox;
@@ -134,6 +135,7 @@ type
     OpenDialog2: TOpenDialog;
     OpenDialog3: TOpenDialog;
     OpenDialog4: TOpenDialog;
+    OpenDialog5: TOpenDialog;
     PaintBox1: TPaintBox;
     ProgressBar1: TProgressBar;
     SaveDialog1: TSaveDialog;
@@ -158,6 +160,7 @@ type
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
     procedure Button9Click(Sender: TObject);
@@ -364,7 +367,9 @@ end;
 function elmatii_input(inp:string):integer;
 begin
  case inp of
+   'Grafit1': result:=0;
    'Graphite1': result:=0;
+   'Grafit2': result:=1;
    'Graphite2': result:=1;
    'Copper': result:=2;
    'Kupfer': result:=2;
@@ -386,9 +391,11 @@ end;
 function mat_x400(inp:string):string;
 begin
  case inp of
+   'Grafit1': result:='GF';
    'Graphite1': result:='GF';
    'Graphite2': result:='GM';
    'Copper': result:='CU';
+   'Kupfer': result:='CU';
    else result:='GM';
  end;
 end;
@@ -396,10 +403,22 @@ end;
 function mat_x400_code(inp:string):string;
 begin
  case inp of
+    'Grafit1': result:='1';
     'Graphite1': result:='1';
     'Graphite2': result:='2';
     'Copper': result:='4';
+    'Kupfer': result:='4';
     else result:='2';
+ end;
+end;
+
+function x400code_to_mat(inp:string):string;
+begin
+ case inp of
+    '1': result:='Graphite1';
+    '2': result:='Graphite2';
+    '4': result:='Copper';
+    else result:='Graphite1';
  end;
 end;
 
@@ -414,6 +433,15 @@ begin
    5: result:='0006'; //coper base alloy
    6: result:='0007'; //nickel base alloy
    7: result:='0008'; //cast iron
+ end;
+end;
+
+function agie_elmat_to_str(inp:string):string;
+begin
+ case inp of
+   '0001': result:='Graphite1';
+   '0002': result:='Graphite2';
+   '0004': result:='Copper';
  end;
 end;
 
@@ -462,7 +490,7 @@ begin
           'VDI16': result:='VDI_16Ra0.65oxxo,1,$,  0.650000';
           else begin
               result:='VDI_26Ra2.0oxxo,1,$,  2.000000'; //to prevent program crashing the machine on bad table input
-              logToFile('wrong VDI number, usinng default','ERR');
+              logToFile('wrong VDI number, usinng default (26)','ERR');
               end;
      end;
 
@@ -1398,25 +1426,43 @@ begin
 end;
 
 procedure TForm1.BitBtn5Click(Sender: TObject);
+var i:integer;
+  needs_sorting:boolean;
 begin
-  Button14Click(Form1);
+     needs_sorting:=False;
+     if ListBox8.Count>1 then begin
+         for i:=0 to ListBox8.Count-2 do begin
+             if strtofloat(ListBox8.Items[i])<strtofloat(ListBox8.Items[(i+1)]) then needs_sorting:=True;
+         end;
+     end;
+     if needs_sorting then if Form11.Showmodal=mrOK then BitBtn8.Click;
+     Button14Click(Form1);
 end;
 
 procedure TForm1.BitBtn6Click(Sender: TObject);
 var i,j,k,ci:integer;
-  orb,rfp,rmulti,rmat,rdir:string;
+  orb,rfp,rmulti,rmat,rdir,fakedir:string;
   elv:TArrayOfString;
   us:Array[1..4] of string;
   usi:Array[1..4] of integer;
   fcsv:TextFile;
   c180:real;
   ust:TIniFile;
+  needs_sorting:boolean;
 begin
  if Form2.Label13.Caption='done' then begin
+    BitBtn7.Click; //sort by AZ
+    BitBtn8.Click; //then sort by Fp
     SaveDialog2.FileName:='erodieren_'+Edit3.Text+'.csv';
     ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
     SaveDialog2.InitialDir:=ust.ReadString('settings','pathCSVexport','C:\Windows');
     ust.Free;
+    //if ListBox8.Count>1 then begin  //ask for sort by fp - done automatically
+    //     for i:=0 to ListBox8.Count-2 do begin
+    //         if strtofloat(ListBox8.Items[i])<strtofloat(ListBox8.Items[(i+1)]) then needs_sorting:=True;
+   //      end;
+   //  end;
+    // if needs_sorting then if Form11.Showmodal=mrOK then BitBtn8.Click;
     if SaveDialog2.Execute then begin //if file selected
        AssignFile(fcsv,SaveDialog2.FileName);
        rewrite(fcsv);
@@ -1439,20 +1485,6 @@ begin
                   rmulti:=elv[16];
                   rmat:=elv[1];
 
-                  {  old method
-                  us[ci]:=elv[3]; // u1 electrode always present
-                  inc(usi[ci]);
-                  for k:=4 to 8 do begin // u2 to u6
-                    if elv[k]<>'0' then begin
-                       if elv[k]=us[ci] then inc(usi[ci]) //increase number if the same undersize
-                       else begin
-                            inc(ci);  //move to new undersize
-                            us[ci]:=elv[k];
-                            inc(usi[ci]);
-                            if ci>4 then logToFile('Too many undersize types! (el '+elv[0],'ERR');
-                       end;
-                    end;
-                  end; }
                   //use magpos as number of electrodes
                   us[1]:=elv[3];
                   us[2]:=elv[4];
@@ -1477,18 +1509,29 @@ begin
                 '-Y': rdir:='-Y';
                 else rdir:='Z';
            end;
+           case ListBox9.Items[i] of
+                'X+': fakedir:='11';
+                '+X': fakedir:='11';
+                'X-': fakedir:='12';
+                '-X': fakedir:='12';
+                'Y+': fakedir:='13';
+                '+Y': fakedir:='13';
+                'Y-': fakedir:='14';
+                '-Y': fakedir:='14';
+                else fakedir:='10';
+           end;
 
            //Save 1 line in CSV
            if CheckBox7.Checked then c180:=strtofloat(ListBox5.Items[i])
            else c180:=roundto(strtofloat(ListBox5.Items[i])+180,4);
            if c180>=360 then c180:=c180-360;
-           writeln(fcsv,ListBox2.Items[i]+';20;10;50;'+ListBox3.Items[i]+';'+ListBox4.Items[i]+';'+floattostr(c180)+';'+rdir+';'+ListBox6.Items[i]+';'+ListBox12.Items[i]+';'+rmat+';'
+           writeln(fcsv,ListBox2.Items[i]+';'+fakedir+';'+ListBox11.Items[i]+';50;'+ListBox3.Items[i]+';'+ListBox4.Items[i]+';'+floattostr(c180)+';Z;'+ListBox6.Items[i]+';'+ListBox12.Items[i]+';'+rmat+';'
                         +rfp+';'+inttostr(usi[1])+';'+us[1]+';'+inttostr(usi[2])+';'+us[2]+';'+inttostr(usi[3])+';'+us[3]+';'+inttostr(usi[4])+';'+us[4]+';'+orb+';0.0000;-;;;;;true;false');
-           if rmulti='1' then begin  //simulate AgieVision's Mult Electrode by adding another sparking position
-              logToFile('added multielectrode for HMI','INF');
+           if rmulti='1' then begin  //simulate AgieVision's Mult Electrode option by adding another sparking position
+              logToFile('added multielectrode for CERTA / HMI','INF');
               c180:=c180+180;
               if c180>=360 then c180:=c180-360;
-              writeln(fcsv,ListBox2.Items[i]+';20;10;50;'+ListBox3.Items[i]+';'+ListBox4.Items[i]+';'+floattostr(c180)+';'+rdir+';'+ListBox6.Items[i]+';'+ListBox12.Items[i]+';'+rmat+';'
+              writeln(fcsv,ListBox2.Items[i]+';'+fakedir+';'+ListBox11.Items[i]+';50;'+ListBox3.Items[i]+';'+ListBox4.Items[i]+';'+floattostr(c180)+';Z;'+ListBox6.Items[i]+';'+ListBox12.Items[i]+';'+rmat+';'
                         +rfp+';'+inttostr(usi[1])+';'+us[1]+';'+inttostr(usi[2])+';'+us[2]+';'+inttostr(usi[3])+';'+us[3]+';'+inttostr(usi[4])+';'+us[4]+';'+orb+';0.0000;-;;;;;true;false');
            end;
        end;
@@ -1562,10 +1605,11 @@ var xj:TextFile;
   distinct_um:Array[0..10] of string;
   chip_id:Array[0..2000] of string;
   chip_nam:Array[0..2000] of string;
-  curz,magpos,mdet,new_sn,isogapstep,qcode:string;
+  curz,magpos,mdet,new_sn,isogapstep,qcode,suwak1,suwak2,suwak2o:string;
   do_this_el,found_sn,feum,new_um:boolean;
   oldx,oldy,oldc,newx,newy,newc,wpc,wpx,wpy,nwpx,nwpy,c180,cus:real;
 begin
+ //todo: read this from certa
  chip_id[0]:='EA7E631101';
  chip_nam[0]:='1';
  chip_id[1]:='B033C31101';
@@ -1586,7 +1630,7 @@ begin
           writeln(xj,'  <Version>9.0.0</Version>');
           writeln(xj,'  <Futura>1</Futura>');
           writeln(xj,'  <Job Name="'+Edit3.Text+'">');
-          writeln(xj,'    <Comment>'+Edit3.Text+'ai'+Edit16.Text+' -  '+Edit15.Text+'</Comment>');
+          writeln(xj,'    <Comment>'+Edit3.Text+'ai'+Edit16.Text+' - '+Edit15.Text+'</Comment>');
           writeln(xj,'    <Type>1</Type>');
           writeln(xj,'    <FlushingOnAtStart>1</FlushingOnAtStart>');
           writeln(xj,'    <TankEmptyingAtEnd>1</TankEmptyingAtEnd>');
@@ -1648,6 +1692,17 @@ begin
               end;
           end;
 
+          if countpp=0 then begin // mes file opened, but no workpiece data, generate it with zeros:
+              for i:=0 to length(pieces)-1 do Memo1.Lines.Add(Edit3.Text+':'+inttostr(i)+',W,,,,,,,,,0.000,0.000,0.000,0.000,0.000,0.000,,,,,,,,,');
+              for i:=0 to Memo1.Lines.Count-1 do begin
+              pval:=SplitString(',',Memo1.Lines[i]);
+              if pval[1]='W' then begin
+                 inc(countpp);
+                 pinf[(countpp-1)]:=pval[10]+';'+pval[11]+';'+pval[12]+';'+pval[15];
+              end;
+          end;
+          end;
+
           ProgressBar1.Position:=10;
           if length(pieces)<>countpp then ShowMessage('Niezgodność danych z preseta - detale ('+inttostr(length(pieces))+' ≠ '+inttostr(countpp)+')');
           for i:=0 to length(pieces)-1 do begin
@@ -1657,13 +1712,14 @@ begin
               wpx:=strtofloat(rval[0]);
               wpy:=strtofloat(rval[1]);
               wpc:=strtofloat(rval[3]);
-              nwpx:=roundto((wpx*cos(degtorad(-(wpc*(-1)))))-(wpy*sin(degtorad(-(wpc*(-1))))),4);
+              nwpx:=roundto((wpx*cos(degtorad(-(wpc*(-1)))))-(wpy*sin(degtorad(-(wpc*(-1))))),4); //calculate back to measured values
               nwpy:=roundto((wpx*sin(degtorad(-(wpc*(-1)))))+(wpy*cos(degtorad(-(wpc*(-1))))),4);
               writeln(xj,'        <X>'+floattostr(nwpx)+'</X>');
               writeln(xj,'        <Y>'+floattostr(nwpy)+'</Y>');
               writeln(xj,'        <Z>'+floattostr(strtofloat(rval[2])-strtofloat(Edit13.Text))+'</Z>');
               writeln(xj,'        <Rot>'+rval[3]+'</Rot>');
-              writeln(xj,'        <HBac>'+inttostr(floor(strtofloat(rval[2]))+70)+'</HBac>'); //dielectric height
+              if floor(strtofloat(rval[2]))=0 then writeln(xj,'        <HBac>0</HBac>') //to avoid sparking without dielectric.
+              else writeln(xj,'        <HBac>'+inttostr(floor(strtofloat(rval[2]))+70)+'</HBac>'); //dielectric height
               writeln(xj,'        <Palette>0</Palette>');
               writeln(xj,'        <MagPos>'+pieces[i]+'</MagPos>');
               writeln(xj,'        <Mandrin>1</Mandrin>'); //chuck number, always 1
@@ -1711,20 +1767,20 @@ begin
 
               for j:=0 to Form2.ListBox1.Count-1 do begin
                    elv_points:=SplitString(';',Form2.ListBox1.Items[j]);
-                   if elv_points[0]=ListBox2.Items[i] then cus:=strtofloat(elv_points[3])/2;
+                   if elv_points[0]=ListBox2.Items[i] then cus:=strtofloat(elv_points[3])/2; //find out indersize per side of current electrode
               end;
 
               if ListBox9.Items[i]='Z' then writeln(xj,'        <Z>'+ListBox11.Items[i]+'</Z>') //startpoint must be equal to FromDistance !!!
               else writeln(xj,'        <Z>'+floattostr(strtofloat(ListBox6.Items[i])+cus)+'</Z>'); //side eroding - startpoint at Z coord minus undersize pre side!
               c180:=strtofloat(ListBox5.Items[i]);
-              c180:=c180+180;  //rotate because chip direction is different on x400 magazine
+              if not CheckBox7.Checked then c180:=c180+180;  //rotate because chip direction is different on x400 magazine, unless opened csv saved for CERTA
               if c180>=360 then c180:=c180-360; //normalize C to 0-360
               writeln(xj,'        <Rot>'+floattostr(roundto(c180,4))+'</Rot>');
-              writeln(xj,'        <FromDistance>'+ListBox11.Items[i]+'</FromDistance>');  //startpoint must be equal to FromDistance !!!
+              writeln(xj,'        <FromDistance>'+ListBox11.Items[i]+'</FromDistance>');  //startpoint must be equal to FromDistance in Z eroding!!!
               writeln(xj,'        <X0>'+ListBox3.Items[i]+'</X0>');
               writeln(xj,'        <Y0>'+ListBox4.Items[i]+'</Y0>');
-              if ListBox9.Items[i]='Z' then writeln(xj,'        <Z0>0</Z0>')
-              else writeln(xj,'        <Z0>'+floattostr(strtofloat(ListBox6.Items[i])+cus)+'</Z0>');
+              if ListBox9.Items[i]='Z' then writeln(xj,'        <Z0>0</Z0>') // normal - Z
+              else writeln(xj,'        <Z0>'+floattostr(strtofloat(ListBox6.Items[i])+cus)+'</Z0>'); //side
               write(xj,'        <AngleX>');
               if ListBox9.Items[i]='Z' then write(xj,'0')
               else begin
@@ -1811,7 +1867,7 @@ begin
                   write(xj,'        <FinitionType>'); // current machining pass number
 
                   if ums=1 then begin
-                     if j=1 then write(xj,'1')
+                     if j=1 then write(xj,'1') //first electrode always roughing
                      else if ((j=2) and (aoe>=5)) then  write(xj,'2') //el. no. 2 roughing when total number of electrodes is 5 or greater.
                      else write(xj,'2'); //el no 3 and later always finishing
                   end
@@ -1863,7 +1919,7 @@ begin
                   for k:=length(elv[(8+j)]) to 3 do magpos:=magpos+'0'; //fill magpos with appropriate number of zeros at the begining
                   magpos:=magpos+elv[(8+j)];
                   writeln(xj,'        <MagPos>20'+magpos+'</MagPos>');
-                  writeln(xj,'        <Inertie>1</Inertie>');
+                  writeln(xj,'        <Inertie>1</Inertie>'); //can be 1, 2 or 3
                   writeln(xj,'        <UnderSize>'+floattostr(strtofloat(elv[(2+j)])/2)+'</UnderSize>');  //undersize per side
                   writeln(xj,'        <CreationDate>'+fd+'</CreationDate>');
                   writeln(xj,'        <ModificationDate>'+fd+'</ModificationDate>');
@@ -1872,11 +1928,7 @@ begin
                   writeln(xj,'        <SizeInMagasin>1</SizeInMagasin>');
                   writeln(xj,'        <Material>'+mat_x400(elv[1])+'</Material>');
                   writeln(xj,'        <ToolDecFamily>'+inttostr(el_n)+'</ToolDecFamily>');
-                  writeln(xj,'        <ToolDecCount1>100</ToolDecCount1>');
-                  writeln(xj,'        <ToolDecCount2>100</ToolDecCount2>');
-                  writeln(xj,'        <ToolDecCount3>100</ToolDecCount3>');
-                  writeln(xj,'        <ToolDecCount4>100</ToolDecCount4>');
-                  writeln(xj,'        <ToolDecCount5>100</ToolDecCount5>');
+                  for k:=1 to 5 do writeln(xj,'        <ToolDecCount'+inttostr(k)+'>100</ToolDecCount'+inttostr(k)+'>');
                   writeln(xj,'        <ToolDecWear>0</ToolDecWear>');
                   writeln(xj,'        <UEDMComp>0</UEDMComp>');
                   writeln(xj,'        <UCavComp>0</UCavComp>');
@@ -1895,17 +1947,9 @@ begin
                   writeln(xj,'            <ModificationDate>'+fd+'</ModificationDate>');
                   writeln(xj,'            <Radius></Radius>');
                   writeln(xj,'            <ChipID></ChipID>');
-                  writeln(xj,'            <ToolDecCount1>100</ToolDecCount1>');
-                  writeln(xj,'            <ToolDecCount2>100</ToolDecCount2>');
-                  writeln(xj,'            <ToolDecCount3>100</ToolDecCount3>');
-                  writeln(xj,'            <ToolDecCount4>100</ToolDecCount4>');
-                  writeln(xj,'            <ToolDecCount5>100</ToolDecCount5>');
+                  for k:=1 to 5 do writeln(xj,'            <ToolDecCount'+inttostr(k)+'>100</ToolDecCount'+inttostr(k)+'>');
                   writeln(xj,'            <initUnderSize>0</initUnderSize>');
-                  writeln(xj,'            <initToolDecCount1>-2</initToolDecCount1>');
-                  writeln(xj,'            <initToolDecCount2>-2</initToolDecCount2>');
-                  writeln(xj,'            <initToolDecCount3>-2</initToolDecCount3>');
-                  writeln(xj,'            <initToolDecCount4>-2</initToolDecCount4>');
-                  writeln(xj,'            <initToolDecCount5>-2</initToolDecCount5>');
+                  for k:=1 to 5 do writeln(xj,'            <initToolDecCount'+inttostr(k)+'>-2</initToolDecCount'+inttostr(k)+'>');
                   writeln(xj,'            <Inertie>1</Inertie>');
                   writeln(xj,'            <fragUse>0</fragUse>');
                   writeln(xj,'            <fragSCode>0</fragSCode>');
@@ -1927,9 +1971,9 @@ begin
              writeln(xj,'        <Name>SKANER</Name>');
              writeln(xj,'        <X>0</X>');
              writeln(xj,'        <Y>0</Y>');
-             writeln(xj,'        <Z>120</Z>');
+             writeln(xj,'        <Z>120</Z>'); //length of scanner declared in documentation
              writeln(xj,'        <C>0</C>');
-             writeln(xj,'        <MagPos></MagPos>');
+             writeln(xj,'        <MagPos></MagPos>'); //for manual loading
              writeln(xj,'        <Inertie>1</Inertie>');
              writeln(xj,'        <UnderSize>0</UnderSize>');
              writeln(xj,'        <CreationDate>'+fd+'</CreationDate>');
@@ -2001,6 +2045,30 @@ begin
                  shape_names[ff_sn]:=new_sn; //create new shape
                  shape_points[ff_sn]:=inttostr(i+1); //add current point as only point to this shape
               end;
+          end;
+
+          if Form10.ShowModal=mrOK then begin //use selected values
+                 case Form10.TrackBar1.Position of
+                     0: suwak1:='1';
+                     1: suwak1:='5';
+                     2: suwak1:='2';
+                     3: suwak1:='4';
+                     4: suwak1:='3';
+                 end;
+                 case Form10.TrackBar2.Position of
+                     0: begin
+                         suwak2:='2';
+                         //suwak2o:='1';
+                     end;
+                     1: begin
+                         suwak2:='1';
+                         //suwak2o:='2';
+                     end;
+                 end;
+          end
+          else begin //use default values
+                 suwak1:='2';
+                 suwak2:='1';
           end;
 
           for l:=0 to max_shapes do if shape_names[l]<>'-' then begin //for every shape, if it has set name
@@ -2179,10 +2247,21 @@ begin
              writeln(xj,'        <GeometryDiameter></GeometryDiameter>');
              writeln(xj,'        <PrepLEDCavityNb>1</PrepLEDCavityNb>');
              writeln(xj,'        <LEDCavityNb></LEDCavityNb>');
-             writeln(xj,'        <PrepCHSpeedPriority>1</PrepCHSpeedPriority>');
-             writeln(xj,'        <CHSpeedPriority>1</CHSpeedPriority>');
-             writeln(xj,'        <PrepWearSpeedPriority>2</PrepWearSpeedPriority>');
-             writeln(xj,'        <WearSpeedPriority>2</WearSpeedPriority>');
+
+             suwak2o:='2';
+             //drugi suwak
+                // w lewo - 2
+                // w prawo - 1
+             writeln(xj,'        <PrepCHSpeedPriority>'+suwak2+'</PrepCHSpeedPriority>');
+             writeln(xj,'        <CHSpeedPriority>'+suwak2+'</CHSpeedPriority>');
+             //pierwszy suwak
+                //srodek - 2
+                //1 w lewo - 5
+                //2 w lewo - 1
+                //1 w prawo
+                //2 w prawo
+             writeln(xj,'        <PrepWearSpeedPriority>'+suwak1+'</PrepWearSpeedPriority>');
+             writeln(xj,'        <WearSpeedPriority>'+suwak1+'</WearSpeedPriority>');
              writeln(xj,'        <PulsBackWithoutVoltage>0</PulsBackWithoutVoltage>');
              writeln(xj,'        <PrepWhiteLayerPriority>0</PrepWhiteLayerPriority>');
              writeln(xj,'        <WhiteLayerPriority>0</WhiteLayerPriority>');
@@ -2197,10 +2276,12 @@ begin
                 writeln(xj,'        <ToolMatPass'+inttostr(j)+'>'+mat_x400(elv[1])+'</ToolMatPass'+inttostr(j)+'>');
              end;
              for j:=1 to 5 do begin
-                writeln(xj,'        <PrepCHSpeedPriority'+inttostr(j)+'>2</PrepCHSpeedPriority'+inttostr(j)+'>');
-                writeln(xj,'        <CHSpeedPriority'+inttostr(j)+'>2</CHSpeedPriority'+inttostr(j)+'>');
-                writeln(xj,'        <PrepLastSettingPriority'+inttostr(j)+'>2</PrepLastSettingPriority'+inttostr(j)+'>');
-                writeln(xj,'        <LastSettingPriority'+inttostr(j)+'>2</LastSettingPriority'+inttostr(j)+'>');
+                //pierwszy suwak
+
+                writeln(xj,'        <PrepCHSpeedPriority'+inttostr(j)+'>'+suwak1+'</PrepCHSpeedPriority'+inttostr(j)+'>');
+                writeln(xj,'        <CHSpeedPriority'+inttostr(j)+'>'+suwak1+'</CHSpeedPriority'+inttostr(j)+'>');
+                writeln(xj,'        <PrepLastSettingPriority'+inttostr(j)+'>'+suwak1+'</PrepLastSettingPriority'+inttostr(j)+'>');
+                writeln(xj,'        <LastSettingPriority'+inttostr(j)+'>'+suwak1+'</LastSettingPriority'+inttostr(j)+'>');
              end;
              for j:=1 to 5 do writeln(xj,'        <LSB'+inttostr(j)+'></LSB'+inttostr(j)+'>');
              for j:=1 to 5 do writeln(xj,'        <FSB'+inttostr(j)+'></FSB'+inttostr(j)+'>');
@@ -2219,8 +2300,9 @@ begin
              writeln(xj,'        <orbExeMode>0</orbExeMode>');
              writeln(Xj,'        <PrepHeaderLimitStartPower>0</PrepHeaderLimitStartPower>');
              writeln(xj,'        <HeaderLimitStartPower>0</HeaderLimitStartPower>');
-             writeln(xj,'        <PrepHeaderPriority>2</PrepHeaderPriority>');
-             writeln(xj,'        <HeaderPriority>2</HeaderPriority>');
+
+             writeln(xj,'        <PrepHeaderPriority>'+suwak2o+'</PrepHeaderPriority>');
+             writeln(xj,'        <HeaderPriority>'+suwak2o+'</HeaderPriority>');
              writeln(xj,'        <PrepHeaderAuto>1</PrepHeaderAuto>');
              writeln(xj,'        <HeaderAuto>1</HeaderAuto>');
              writeln(xj,'        <PrepHLS></PrepHLS>');
@@ -2229,8 +2311,8 @@ begin
              writeln(xj,'        <PreMilledAuto>1</PreMilledAuto>');
              writeln(xj,'        <PrepPreMilledHeaderSecurity></PrepPreMilledHeaderSecurity>');
              writeln(xj,'        <PreMilledHeaderSecurity></PreMilledHeaderSecurity>');
-             writeln(xj,'        <PrepPreMilledHeaderPriority>2</PrepPreMilledHeaderPriority>');
-             writeln(xj,'        <PreMilledHeaderPriority>2</PreMilledHeaderPriority>');
+             writeln(xj,'        <PrepPreMilledHeaderPriority>'+suwak2o+'</PrepPreMilledHeaderPriority>');
+             writeln(xj,'        <PreMilledHeaderPriority>'+suwak2o+'</PreMilledHeaderPriority>');
              writeln(xj,'        <PreMilledRadius>0</PreMilledRadius>');
              writeln(xj,'        <PrepTexturing>0</PrepTexturing>');
              writeln(xj,'        <Texturing></Texturing>');
@@ -2427,8 +2509,11 @@ begin
                    for f2i:=0 to Form2.ListBox1.Count-1 do begin //add multi electrodes to mes file
                     lb1:=SplitString(';',Form2.ListBox1.Items[f2i]);
                     if ((lb1[15]=pval2[0]) and (lb1[16]='1')) then begin  //if is multi electrode and real name matched
+                      // showmessage('multi '+pval2[0]);
                         line_changed:=True;
                         if pval2[1]='R1' then begin
+                           //showmessage('r1x '+prefil[10]);
+                           //showmessage('r2x '+floattostr(strtofloat(prefil[10])*(-1)));
                           writeln(tempp,pline);
                           writeln(tempp,pval2[0]+';R2,U,,0,,,,,,,'+floattostr(strtofloat(prefil[10])*(-1))+','+floattostr(strtofloat(prefil[11])*(-1))+','+prefil[12]+',0.000,0.000,'+floattostr(strtofloat(prefil[15])+180)+',0,0,0,,0.000,,,,,,');
                         end;
@@ -2619,9 +2704,15 @@ begin
                               if CheckBox9.Checked then begin //case of misconfigured preset
                                  oldx:=strtofloat(pe_val[5]);
                                  oldy:=strtofloat(pe_val[6]);
+                                 if oldx=0 then oldx:=0.0001;
+                                 if oldy=0 then oldy:=0.0001;
                                  oldc:=strtofloat(pe_val[8]);
                                  newx:=roundto((oldx*cos(degtorad(oldc)))-(oldy*sin(degtorad(oldc))),4);
                                  newy:=roundto((oldx*sin(degtorad(oldc)))+(oldy*cos(degtorad(oldc))),4);
+                                 if ((tf_val[16]='1') and ((elno='2') or (elno='4'))) then begin
+                                    newx:=-newx;
+                                    newy:=-newy;
+                                 end;
                                  pe_val[5]:=floattostr(newx);
                                  pe_val[6]:=floattostr(newy);
                               end;
@@ -3193,6 +3284,7 @@ begin
               //showmessage(ListBox2.Items[k]+' - '+eld[1]); //debug
               ListBox7.Items[k]:=eld[1];
               ListBox8.Items[k]:=eld[2];
+              ListBox12.Items[k]:=eld[20];
             end;
         end;
       end;
@@ -3215,7 +3307,7 @@ begin
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);
-var newx,newy,oldx,oldy,oldc:real;
+var newx,newy,oldx,oldy,oldc:real;         //debug calculation
 begin
      oldx:=strtofloat(Edit2.Text);
      oldy:=strtofloat(Edit4.Text);
@@ -3225,10 +3317,14 @@ begin
     showmessage('X: '+floattostr(newx)+', Y: '+floattostr(newy));
 end;
 
+procedure TForm1.Button6Click(Sender: TObject);
+begin
+  if Form10.ShowModal=mrOK then showmessage(inttostr(Form10.TrackBar1.Position)+' '+inttostr(Form10.TrackBar2.Position));
+end;
+
 procedure TForm1.Button7Click(Sender: TObject);
 var i,xc,yc,j,factor:integer;
   maxdim,trsize:real;
-  recta:TRect;
   ust:TIniFile;
 begin
    Form1.WindowState:=wsMaximized;
@@ -3356,11 +3452,11 @@ begin
            Pen.Color:=clGreen;
            Pen.Style:=psSolid;
            Brush.Color:=clGreen;
-           MoveTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn1x','0')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn1y','0')))*floor((PaintBox1.Height/2)/maxdim)*factor));
-           LineTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn1x','0')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn2y','20')))*floor((PaintBox1.Height/2)/maxdim)*factor));
-           LineTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn2x','20')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn2y','20')))*floor((PaintBox1.Height/2)/maxdim)*factor));
-           LineTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn2x','20')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn1y','0')))*floor((PaintBox1.Height/2)/maxdim)*factor));
-           LineTo(floor(PaintBox1.Width/2)+(floor(strtofloat(ust.ReadString('settings','GCn1x','0')))*floor((PaintBox1.Height/2)/maxdim)*factor),floor(PaintBox1.Height/2)+(floor(strtofloat(ust.ReadString('settings','GCn1y','0')))*floor((PaintBox1.Height/2)/maxdim)*factor));
+           MoveTo(floor((PaintBox1.Width/2)+((strtofloat(ust.ReadString('settings','GCn1x','0')))*((PaintBox1.Height/2)/maxdim)*factor)),floor((PaintBox1.Height/2)+((strtofloat(ust.ReadString('settings','GCn1y','0'))*(-1))*((PaintBox1.Height/2)/maxdim)*factor)));
+           LineTo(floor((PaintBox1.Width/2)+((strtofloat(ust.ReadString('settings','GCn1x','0')))*((PaintBox1.Height/2)/maxdim)*factor)),floor((PaintBox1.Height/2)+((strtofloat(ust.ReadString('settings','GCn2y','20'))*(-1))*((PaintBox1.Height/2)/maxdim)*factor)));
+           LineTo(floor((PaintBox1.Width/2)+((strtofloat(ust.ReadString('settings','GCn2x','20')))*((PaintBox1.Height/2)/maxdim)*factor)),floor((PaintBox1.Height/2)+((strtofloat(ust.ReadString('settings','GCn2y','20'))*(-1))*((PaintBox1.Height/2)/maxdim)*factor)));
+           LineTo(floor((PaintBox1.Width/2)+((strtofloat(ust.ReadString('settings','GCn2x','20')))*((PaintBox1.Height/2)/maxdim)*factor)),floor((PaintBox1.Height/2)+((strtofloat(ust.ReadString('settings','GCn1y','0'))*(-1))*((PaintBox1.Height/2)/maxdim)*factor)));
+           LineTo(floor((PaintBox1.Width/2)+((strtofloat(ust.ReadString('settings','GCn1x','0')))*((PaintBox1.Height/2)/maxdim)*factor)),floor((PaintBox1.Height/2)+((strtofloat(ust.ReadString('settings','GCn1y','0'))*(-1))*((PaintBox1.Height/2)/maxdim)*factor)));
 
         end;
         ust.Free;
@@ -3568,7 +3664,7 @@ begin
      sizeset:=false;
     Form1.resizemainf(Form1);
     sw_ver:='18';
-    sw_ver_minor:='10';
+    sw_ver_minor:='16';
     ImageList1.AddLazarusResource('open-file');  //0
     ImageList1.AddLazarusResource('new file');   //1
     ImageList1.AddLazarusResource('Help');       //2
@@ -3588,6 +3684,7 @@ begin
     ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
     //change strings to language selected in settings
     lang:=ust.ReadString('settings','lang','PL');
+    //mainmenu
     MenuItem7.Caption:=DataModule1.getString(lang,0); //plik
     MenuItem1.Caption:=DataModule1.getString(lang,1); //opcje
     MenuItem2.Caption:=DataModule1.getString(lang,2); //pomoc
@@ -3609,21 +3706,50 @@ begin
     MenuItem19.Caption:=DataModule1.getString(lang,18); //export agievision
     MenuItem20.Caption:=DataModule1.getString(lang,19); //export hmi
     MenuItem21.Caption:=DataModule1.getString(lang,20); //export certa
-
-
-
+    //form1
+    CheckBox1.Caption:=DataModule1.getString(lang,21); //zastąp material elektrody
+    CheckBox4.Caption:=DataModule1.getString(lang,22); //zastąp jakosc pow
+    Label22.Caption:=DataModule1.getString(lang,23); //mat det
+    Label2.Caption:=DataModule1.getString(lang,24); //nazwa programu
+    CheckBox3.Caption:=DataModule1.getString(lang,25); //utw grupę
+    CheckBox3.Hint:=DataModule1.getString(lang,26)+AnsiSTring(#10)+DataModule1.getString(lang,27); //utw grupę hint
+    Label17.Caption:=DataModule1.getString(lang,28); //już istnieje
+    GroupBox1.Caption:=DataModule1.getString(lang,29); // odleglosc referencje -> punkt pom
+    LabeledEdit1.EditLabel.Caption:=DataModule1.getString(lang,30); //pos detaliw w mag
+    CheckBox8.Caption:=DataModule1.getString(lang,31); //dodaj skaner
+    Button3.Caption:=DataModule1.getString(lang,32); //usun dane el
+    Button2.Caption:=DataModule1.getString(lang,33); //elektrody...
+    Button4.Caption:=DataModule1.getString(lang,34); //szukaj innej tabeli
+    Label3.Caption:=DataModule1.getString(lang,35); //sortuj
+    Label1.Caption:=DataModule1.getString(lang,36); //nazwa
+    ListBox8.Hint:=DataModule1.getString(lang,37)+AnsiSTring(#10)+DataModule1.getString(lang,38); //fp hint
+    Edit8.Hint:=ListBox8.Hint;
+    Label9.Hint:=ListBox8.Hint;
+    OpenDialog3.Title:=DataModule1.getString(lang,39); //open dialog from cmm
+    Button8.Caption:=DataModule1.getString(lang,40);
+    LabeledEdit1.Hint:=DataModule1.getString(lang,41)+AnsiString(#10)+'ITS50: 1,2,3,4,5,6,7,8,9,10,11,12'+AnsiSTring(#10)+'ITS148: 13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48';
+    Edit16.Hint:=DataModule1.getString(lang,42); //ai
+    Label11.Hint:=Edit16.Hint;
+    BitBtn4.Hint:=DataModule1.getString(lang,43); //dodaj linie
+    BitBtn3.Hint:=DataModule1.getString(lang,44); //akceptuj zmiany
+    BitBtn1.Hint:=DataModule1.getString(lang,45); //kopiuj linie
+    BitBtn2.Hint:=DataModule1.getString(lang,46); //usun linie
+    BitBtn10.Hint:=DataModule1.getString(lang,47); //kopiuj wszystkie
     sl2:=TStringList.Create;
-    sl2.Add('Wyślij HP');
+    sl2.Add(DataModule1.getString(lang,48)+' HP');
     //sl2.Add('Hyperspark');
     //SetWindowLong(BitBtn5.Handle, GWL_STYLE, BS_MULTILINE);
-
     BitBtn5.Caption:=sl2.Text;
-    BitBtn6.Caption:='Wyślij CERTA';
+    BitBtn6.Caption:=DataModule1.getString(lang,48)+' CERTA';
+    Edit9.Hint:=DataModule1.getString(lang,90)+'Z'+AnsiString(#10)+'X+'+AnsiString(#10)+'X-'+AnsiString(#10)+'Y+'+AnsiString(#10)+'Y-'+AnsiString(#10)+'-X'+AnsiString(#10)+'+X'+AnsiString(#10)+'-Y'+AnsiString(#10)+'+Y';
+
+    //form2 lang change
+
     Edit15.Text:=formatdatetime('yyyy-mm-dd',Now());
     end_table_line:=0;
     plsr12sc:=False;
     tableno:=0; //abount of tables
-    errorlevel:=0; //for dxf
+    errorlevel:=0; //for dxf, max 4
 
     SpinEdit1.Value:=strtoint(ust.ReadString('settings','defaultNoOfRows','10'));
     OpenDialog3.InitialDir:=ust.ReadString('settings','pathMES','C:\korekty\AGIEVISION_2');
@@ -3749,6 +3875,9 @@ begin
   if ParamCount>0 then begin
          if ExtractFileExt(ParamStr(1))='.edf' then load_edf(ParamStr(1))
          else if ExtractFileExt(ParamStr(1))='.csv' then load_csv(ParamStr(1))
+         else if ExtractFileExt(ParamStr(1))='.xmlj' then begin
+
+         end
          else begin //read as .dxf/.mi (old system)
          OpenDialog1.FileName:=ParamStr(1);
          Button1.Click;
@@ -3911,7 +4040,11 @@ begin
 end;
 
 procedure TForm1.MenuItem14Click(Sender: TObject);
+var ust:TIniFile;
 begin
+  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+  OpenDialog4.InitialDir:=ust.ReadString('settings','pathCSV','C:\');
+  ust.Free;
    if OpenDialog4.Execute then load_csv(OpenDialog4.FileName);
 end;
 
@@ -3988,9 +4121,397 @@ begin
 end;
 
 procedure TForm1.MenuItem16Click(Sender: TObject);
+var fil,jor,fut:TextFile;
+lin:string;
+t0,t1,t2,t3,px,py,pz,pc,pfd,pax,paz,tn,tft,tus,tmp,tx,ty,tz,tc,shape_tools,shape_points,shape_vdi,shape_depth,shape_name,shape_fp,shape_mat,unam,ufil,uele,uemat,bea_nam,bea_vdi,ufp:TArrayOfString;
+date_done,pieces_section,points_section,shapes_section,tools_section:boolean;
+curr_point,curr_tool,curr_shape,i,j,k,ces:integer;
+sp_x,sp_y,sp_z:real;
 begin
-  showmessage('Ta funkcja jeszcze nie działa');
-  logToFile('curious user (clicked on not implemeted menu option)','INF');
+  //showmessage('Ta funkcja jeszcze nie działa');
+  //logToFile('curious user (clicked on not implemeted menu option)','INF');
+  if OpenDialog5.Execute then begin
+     if ExtractFileExt(OpenDialog5.FileName)='.xmlj' then begin
+        //XML prasing libraries tried:
+        // 1. TXMLDocument - doesnt support windows 1250 encoding used by HMI software, confusing way of navigating xml structure
+        // 2. MSXML - not supported by lazarus.
+        // SO prasing this as a txt file
+        AssignFile(fil,OpenDialog5.FileName);
+        reset(fil);
+        date_done:=False;
+        pieces_Section:=False;
+        points_section:=False;
+        shapes_section:=False;
+        tools_section:=False;
+        LabeledEdit1.Text:='';
+        SetLength(px,1);
+        SetLength(py,1);
+        SetLength(pz,1);
+        SetLength(pc,1);
+        SetLength(pax,1); //angle x, for side eroding
+        SetLength(paz,1); //angle z, for side eroding
+        //SetLength(pfd,1);
+        SetLength(tn,1);
+        SetLength(shape_vdi,1);
+        SetLength(shape_points,1);
+        SetLength(shape_tools,1);
+        SetLength(shape_depth,1);
+        SetLength(shape_name,1);
+        SetLength(shape_fp,1);
+        SetLength(shape_mat,1);
+        Edit11.Text:='-0.00';
+        Edit12.Text:='-0.00';
+        Edit13.Text:='-0.00';
+        Edit14.Text:='0';
+        repeat
+           readln(fil,lin);
+           if AnsiContainsStr(lin,'<Job Name=') then begin //program name
+              t0:=SplitString('"',lin);
+              Edit3.Text:=t0[1];
+           end;
+           if AnsiContainsStr(lin,'<CreationDate>') and not date_done then begin //creation date
+              t0:=SplitString('>',lin);
+              t1:=SplitString(' ',t0[1]);
+              Edit15.Text:=t1[0];
+              date_done:=True;
+           end;
+           if AnsiContainsStr(lin,'<Pieces>') then pieces_section:=True;
+           if AnsiContainsStr(lin,'</Pieces>') then pieces_section:=False;
+           if AnsiContainsStr(lin,'<MagPos>') and pieces_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              if LabeledEdit1.Text='' then LabeledEdit1.Text:=t1[0]
+              else LabeledEdit1.Text:=LabeledEdit1.Text+','+t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Points>') then points_section:=True;
+           if AnsiContainsStr(lin,'</Points>') then points_section:=False;
+           if AnsiContainsStr(lin,'<Point N="') and points_section then begin
+              t0:=SplitString('"',lin);
+              curr_point:=strtoint(t0[1]);
+           end;
+           if AnsiContainsStr(lin,'<X>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(px,length(px)+1);
+              px[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Y>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(py,length(px)+1);
+              py[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Z>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(pz,length(px)+1);
+              pz[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Rot>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(pc,length(px)+1);
+              pc[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<AngleX>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(pax,length(pax)+1);
+              pax[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<AngleZ>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(paz,length(paz)+1);
+              paz[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Tools>') then tools_section:=True;
+           if AnsiContainsStr(lin,'</Tools>') then tools_section:=False;
+           if AnsiContainsStr(lin,'<Tool N="') and tools_section then begin
+              t0:=SplitString('"',lin);
+              curr_tool:=strtoint(t0[1]);
+           end;
+           if AnsiContainsStr(lin,'<Name>') and tools_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('_',t0[1]);
+              SetLength(tn,length(tn)+1);
+              tn[curr_tool]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Shapes>') then shapes_section:=True;
+           if AnsiContainsStr(lin,'</Shapes>') then shapes_section:=False;
+           if AnsiContainsStr(lin,'<Shape N="') and shapes_section then begin
+              t0:=SplitString('"',lin);
+              curr_shape:=strtoint(t0[1]);
+           end;
+           if AnsiCOntainsStr(lin,'<EDMDepth>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_depth,length(shape_depth)+1);
+              shape_depth[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<PrepSurfaceFinishingCH>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_vdi,length(shape_vdi)+1);
+              shape_vdi[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<JobReportToolList>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_tools,length(shape_tools)+1);
+              shape_tools[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<JobReportPointList>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_points,length(shape_points)+1);
+              shape_points[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<ElectMaterialCode>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_mat,length(shape_mat)+1);
+              shape_mat[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<PrepMaxArea>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_fp,length(shape_fp)+1);
+              shape_fp[curr_shape]:=t1[0];
+           end;
+
+           if AnsiContainsStr(lin,'<Comment>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_name,length(shape_name)+1);
+              if AnsiContainsStr(t1[0],'-') then begin
+                 t2:=SplitString('-',t1[0]);
+                 shape_name[curr_shape]:=t2[0];
+              end
+              else shape_name[curr_shape]:=t1[0];
+           end;
+        until eof(fil);
+        CloseFile(fil);
+        ListBox2.Clear;
+        ListBox3.Clear;
+        ListBox4.Clear;
+        ListBox5.Clear;
+        ListBox6.Clear;
+        ListBox7.Clear;
+        ListBox8.Clear;
+        ListBox9.Clear;
+        ListBox11.Clear;
+        ListBox12.Clear;
+        for i:=1 to length(px)-1 do begin //add points of electrodes to the table
+
+            ListBox3.Items.Add(px[i]);
+            ListBox4.Items.Add(py[i]);
+            ListBox5.Items.Add(pc[i]);
+            ListBox11.Items.Add(pz[i]); //startpoint
+            if paz[i]='0' then ListBox9.Items.Add('Z')
+            else if paz[i]='90' then begin
+                case pax[i] of
+                    '0': ListBox9.Items.Add('X-');
+                    '90': ListBox9.Items.Add('Y-');
+                    '180': ListBox9.Items.Add('X+');
+                    '270': ListBox9.Items.Add('Y+');
+                    else ListBox9.Items.Add('?');
+                end;
+            end
+            else if paz[i]='-90' then begin //happens when manually changing direction in HMI
+                case pax[i] of
+                    '0': ListBox9.Items.Add('X+');
+                    '90': ListBox9.Items.Add('Y+');
+                    '180': ListBox9.Items.Add('X-');
+                    '270': ListBox9.Items.Add('Y-');
+                    else ListBox9.Items.Add('?');
+                end;
+            end
+            else ListBox9.Items.Add('?');
+            ces:=0;
+            for j:=1 to length(shape_depth)-1 do begin
+                if AnsiContainsStr(shape_points[j],'.') then begin //2 points per shape
+                   t0:=SplitString('.',shape_points[j]);
+                   for k:=0 to length(t0)-1 do if i=strtoint(t0[k]) then ces:=j;
+                end
+                else if AnsiContainsStr(shape_points[j],'-') then begin //multiple points per shape
+                   t0:=SplitString('-',shape_points[j]);
+                   for k:=strtoint(t0[0]) to strtoint(t0[1]) do if i=k then ces:=j;
+                end
+                else begin //simple case - 1 point per shape
+                    if i=strtoint(shape_points[j]) then ces:=j;
+                end;
+            end;
+            if ces=0 then begin
+               logToFile('Error in .xmlj file - no shape points','ERR');
+               showmessage('Error in .xmlj file (no shape points found)');
+            end
+            else begin
+               ListBox2.Items.Add(shape_name[ces]);
+               ListBox6.Items.Add(floattostr(strtofloat(shape_depth[ces])*(-1)));
+               ListBox7.Items.Add(x400code_to_mat(shape_mat[ces]));
+               ListBox8.Items.Add(shape_fp[ces]);
+               ListBox12.Items.Add('VDI'+shape_vdi[ces]);
+
+            end;
+
+        end;
+        //Showmessage('Points: '+inttostr(curr_point)+', Tools: '+inttostr(curr_tool)+', Shapes: '+inttostr(curr_shape));
+        //for i:=1 to length(px)-1 do showmessage(px[i]);
+        logToFile('Loaded file '+OpenDialog5.FileName,'OK');
+     end
+     else if ExtractFileExt(OpenDialog5.FileName)='.JOB' then begin  //Load program for AgieVision
+         //solve USING varribles
+         AssignFile(jor,ChangeFileExt(OpenDialog5.FileName,'.JOR'));
+         reset(jor);
+         SetLength(unam,1);
+         SetLength(ufil,1);
+         SetLength(uele,1);
+         SetLength(uemat,1);
+         SetLength(bea_nam,1);
+         SetLength(bea_vdi,1);
+         SetLength(ufp,1);
+         repeat
+               readln(jor,lin);
+               if AnsiContainsStr(lin,'.FUT') then begin  //look for electrode files
+                  //showmessage(lin);
+                   t0:=SplitString(' ',lin);
+                   //showmessage(t0[0]);
+                   SetLength(unam,length(unam)+1);
+                   unam[length(unam)-1]:=t0[0]; //save usung_x name
+                   SetLength(ufil,length(ufil)+1);
+                   SetLength(t0[3],length(t0[3])-1);
+                   ufil[length(ufil)-1]:=t0[3]; //save filename of fut file
+               end;
+               if AnsiContainsStr(lin,'.BEA_') then begin
+                  t0:=SplitString(' ',lin);
+                  SetLength(bea_nam,length(bea_nam)+1);
+                  bea_nam[length(bea_nam)-1]:=t0[0];
+                  t1:=SplitString('_',t0[3]);
+                  t2:=SplitString('R',t1[1]);
+                  SetLength(bea_vdi,length(bea_vdi)+1);
+                  bea_vdi[length(bea_vdi)-1]:=t2[0];
+               end;
+         until eof(jor);
+         CloseFile(jor);
+         //match electrode name to using_x
+         for i:=1 to length(ufil)-1 do begin
+             //showmessage(ExtractFilePath(OpenDialog5.FileName)+ufil[i]);
+             AssignFile(fut,ExtractFilePath(OpenDialog5.FileName)+ufil[i]);
+             reset(fut);
+             readln(fut,lin);
+             readln(fut,lin);
+             t0:=SplitString(',',lin);
+             if t0[0]='F' then begin
+                SetLength(uele,length(uele)+1);
+                uele[length(uele)-1]:=t0[1];
+                t1:=SplitString(';',t0[26]);
+                //showmessage(t1[11]);
+                SetLength(uemat,length(uemat)+1);
+                uemat[length(uemat)-1]:=t1[11];
+                SetLength(ufp,length(ufp)+1);
+                ufp[length(ufp)-1]:=t0[9];
+             end;
+             CloseFile(fut);
+         end;
+         AssignFile(fil,OpenDialog5.FileName);
+         reset(fil);
+          //Clear listboxes
+          ListBox2.Clear;
+          ListBox3.Clear;
+          ListBox4.Clear;
+          ListBox5.Clear;
+          ListBox6.Clear;
+          ListBox7.Clear;
+          ListBox8.Clear;
+          ListBox9.Clear;
+          ListBox11.Clear;
+          ListBox12.Clear;
+         repeat
+          readln(fil,lin);
+          t0:=SplitString(',',lin);
+          if t0[0]='W' then begin
+             Edit3.Text:=t0[1]; //program name
+             Edit11.Text:=floattostr(strtofloat(t0[17])*(-1)); //ods x
+              Edit12.Text:=floattostr(strtofloat(t0[18])*(-1)); //ods y
+              Edit13.Text:=floattostr(strtofloat(t0[19])*(-1)); //ods z
+              Edit14.Text:=t0[22]; //ods c
+          end;
+
+          //read X Y and C from Machining
+          if t0[0]='A' then begin
+             CheckBox3.Checked:=False; //utw grupe nie
+             ListBox3.Items.Add(t0[2]); //x
+             ListBox4.Items.Add(t0[3]); //y
+             ListBox5.Items.Add(t0[7]); //c
+
+             for i:=1 to length(unam)-1 do begin
+                 if unam[i]=t0[23] then begin
+                    ListBox2.Items.Add(uele[i]);
+                    ListBox7.Items.Add(agie_elmat_to_str(uemat[i]));
+                    ListBox8.Items.Add(ufp[i]);
+                 end;
+             end;
+             for i:=1 to length(bea_nam)-1 do begin
+                 if bea_nam[i]=t0[28] then begin
+                    ListBox12.Items.Add('VDI'+bea_vdi[i]);
+                 end;
+             end;
+          end;
+          if t0[0]='R' then begin
+             CheckBox3.Checked:=True;  //utw grupe tak
+             ListBox3.Items.Add(t0[2]); //x
+             ListBox4.Items.Add(t0[3]); //y
+             ListBox5.Items.Add(t0[7]); //c
+
+             ListBox11.Items.Add(Edit10.Text); //fromdistance
+
+             for i:=1 to length(unam)-1 do begin
+                 if unam[i]=t0[23] then begin
+                    ListBox2.Items.Add(uele[i]);
+                    ListBox7.Items.Add(agie_elmat_to_str(uemat[i]));
+                    ListBox8.Items.Add(ufp[i]);
+                 end;
+             end;
+             for i:=1 to length(bea_nam)-1 do begin
+                 if bea_nam[i]=t0[28] then begin
+                    ListBox12.Items.Add('VDI'+bea_vdi[i]);
+                 end;
+             end;
+          end;
+
+          //read Z from Geo_Mach
+          if t0[0]='E' then begin
+             ListBox6.Items.Add(t0[18]);
+          end;
+
+          //read eroding direction from StartPoint
+          if t0[0]='I' then begin
+              sp_x:=strtofloat(t0[2]);
+              sp_y:=strtofloat(t0[3]);
+              sp_z:=strtofloat(trim(t0[4]));
+              if ((sp_z > abs(sp_x)) and (sp_z > abs(sp_y))) then begin //z
+                  ListBox9.Items.Add('Z');
+                  ListBox11.Items.Add(floattostr(sp_z));
+              end
+              else if abs(sp_x) > abs(sp_y) then begin //x
+                  if sp_x > 0 then ListBox9.Items.Add('X+')
+                  else ListBox9.Items.Add('X-');
+                  ListBox11.Items.Add(floattostr(abs(sp_x)));
+              end
+              else begin //y
+                  if sp_y > 0 then ListBox9.Items.Add('Y+')
+                  else ListBox9.Items.Add('Y-');
+                  ListBox11.Items.Add(floattostr(abs(sp_y)));
+              end;
+          end;
+
+         until eof(fil);
+         CloseFile(fil);
+         logToFile('Loaded file '+OpenDialog5.FileName,'OK');
+     end
+     else ShowMessage('Wrong file type');
+  end;
 end;
 
 procedure TForm1.MenuItem17Click(Sender: TObject);
@@ -4023,12 +4544,18 @@ end;
 
 procedure TForm1.MenuItem3Click(Sender: TObject);
 var dt:TDateTime;
-  str:string;
+  str,lang:string;
+  ust:TIniFile;
 begin
   logToFile('About Form shown','OK');
+  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
   dt:=StrToDateTime(StringReplace({$I %DATE%},'/','-',[rfReplaceAll]) + ' ' + {$I %TIME%}); //save compile time and date
   DateTimeToString(str,'yyyy-mm-dd',dt);
-  Form4.Label1.Caption:='wersja '+sw_ver+'.'+sw_ver_minor+' ('+str+')';
+  lang:=ust.ReadString('settings','lang','PL');
+  Form4.Label1.Caption:=DataModule1.getString(lang,82)+' '+sw_ver+'.'+sw_ver_minor+' ('+str+')';
+  Form4.Label2.Caption:=DataModule1.getString(lang,83);
+  Form4.Caption:=DataModule1.getString(lang,84);
+  ust.Free;
   Form4.ShowModal; //about
 end;
 

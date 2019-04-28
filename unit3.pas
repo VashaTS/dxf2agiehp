@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  StdCtrls,inifiles, ShlObj, Registry, DateUtils;
+  StdCtrls,inifiles, ShlObj, Registry, DateUtils, Unit10;
 
 type
 
@@ -32,6 +32,7 @@ type
     CheckBox6: TCheckBox;
     CheckBox7: TCheckBox;
     CheckBox8: TCheckBox;
+    CheckBox9: TCheckBox;
     CheckGroup1: TCheckGroup;
     ComboBox1: TComboBox;
     GroupBox1: TGroupBox;
@@ -62,8 +63,11 @@ type
     RadioButton3: TRadioButton;
     RadioButton4: TRadioButton;
     RadioButton5: TRadioButton;
+    RadioButton6: TRadioButton;
+    RadioButton7: TRadioButton;
     RadioGroup1: TRadioGroup;
     RadioGroup2: TRadioGroup;
+    RadioGroup3: TRadioGroup;
     SelectDirectoryDialog1: TSelectDirectoryDialog;
     SelectDirectoryDialog2: TSelectDirectoryDialog;
     SelectDirectoryDialog3: TSelectDirectoryDialog;
@@ -81,6 +85,7 @@ type
     procedure Button7Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure LabeledEdit12Change(Sender: TObject);
   private
     { private declarations }
   public
@@ -140,6 +145,8 @@ begin
    else if RadioButton3.Checked=True then ust.WriteString('settings','electrodeStrategy','3');
    if RadioButton4.Checked=True then ust.WriteString('settings','tabOrderF2','stary')
    else if RadioButton5.Checked=True then ust.WriteString('settings','tabOrderF2','nowy');
+   if RadioButton6.Checked=True then ust.WriteString('settings','f2_ellist','magpos')
+   else if RadioButton7.Checked=True then ust.WriteString('settings','f2_ellist','number');
    if CheckBox1.Checked then ust.WriteString('settings','createFolder','1')
    else ust.WriteString('settings','createFolder','0');
    if CheckBox2.Checked then ust.WriteString('settings','naPen','1')
@@ -156,6 +163,8 @@ begin
    else ust.WriteString('settings','moreInterlines','0');
    if CheckBox8.Checked then ust.WriteString('settings','GCDrawWorkpiece','1')
    else ust.WriteString('settings','GCDrawWorkPiece','0');
+   if CheckBox9.Checked then ust.WriteString('settings','allowZeroUndersize','1')
+   else ust.WriteString('settings','allowZeroUndersize','0');
    ust.Free;
    logToFile('settings saved');
    Form3.Close;
@@ -230,7 +239,7 @@ end;
 
 procedure TForm3.FormCreate(Sender: TObject);
 var ust:TIniFile;
-rad,fold,nap,agiehp,x400,certa,tabf2,calcEle,interlines,drawpiece:string;
+rad,fold,nap,agiehp,x400,certa,tabf2,calcEle,interlines,drawpiece,zerous,lang:string;
 begin
    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
    LabeledEdit1.Text:=ust.ReadString('settings','defaultNoOfRows','10');
@@ -263,6 +272,7 @@ begin
    calcEle:=ust.ReadString('settings','precalculatedElectrodeData','1');
    interlines:=ust.ReadString('settings','moreInterlines','1');
    drawpiece:=ust.ReadString('settings','GCDrawWorkpiece','0');
+   zerous:=ust.ReadString('settings','allowZeroUndersize','0');
    if rad='1' then RadioButton1.Checked:=True
    else if rad='2' then RadioButton2.CHecked:=True
    else RadioButton3.Checked:=True;
@@ -284,8 +294,45 @@ begin
    else CheckBox7.Checked:=False;
    if drawpiece='1' then CheckBox8.Checked:=True
    else CheckBox8.Checked:=False;
+   if zerous='1' then CheckBox9.Checked:=True
+   else CheckBox9.Checked:=False;
+   lang:=ust.ReadString('settings','lang','PL');
+   LabeledEdit2.EditLabel.Caption:=DataModule1.getString(lang,60);
+   Label1.Caption:=DataModule1.getString(lang,61);
+   LabeledEdit4.EditLabel.Caption:=DataModule1.getString(lang,62)+' DXF';
+   LabeledEdit5.EditLabel.Caption:=DataModule1.getString(lang,62)+' MES';
+   LabeledEdit6.EditLabel.Caption:=DataModule1.getString(lang,62)+' AGIE';
+   LabeledEdit11.EditLabel.Caption:=DataModule1.getString(lang,62)+' EDF';
+   LabeledEdit3.EditLabel.Caption:=DataModule1.getString(lang,62)+' CSV';
+   LabeledEdit13.EditLabel.Caption:=DataModule1.getString(lang,62)+' Dirstruct';
+   LabeledEdit8.EditLabel.Caption:=DataModule1.getString(lang,63);  //odl dr bok
+   LabeledEdit10.EditLabel.Caption:=DataModule1.getString(lang,64); //offset z
+   CheckBox6.Caption:=DataModule1.getString(lang,65); // obrót el o C
+   CheckBox7.Caption:=DataModule1.getString(lang,66); //interline
+   RadioGroup1.Caption:=DataModule1.getString(lang,67); //strategia tw el
+   RadioButton1.Caption:=DataModule1.getString(lang,68);
+   RadioButton2.Caption:=DataModule1.getString(lang,69);
+   RadioButton3.Caption:=DataModule1.getString(lang,70);
+   CheckBox1.Caption:=DataModule1.getString(lang,71); //utwórz folder
+   CheckBox2.Caption:=DataModule1.getString(lang,72); //wyslij na pen
+   CheckGroup1.Caption:=DataModule1.getString(lang,73); //pokazuj export do
+   RadioGroup2.Caption:=DataModule1.getString(lang,74); //kolejnosc pol
+   CheckBox8.Caption:=DataModule1.getString(lang,75); //rysuj detal
+   Label2.Caption:=DataModule1.getString(lang,76)+' 1';
+   Label3.Caption:=DataModule1.getString(lang,76)+' 2';
+   LabeledEdit18.EditLabel.Caption:=DataModule1.getString(lang,77); //dlugosc linii
+   LabeledEdit19.EditLabel.Caption:=DataModule1.getString(lang,78); //kod jezyka
+   LabeledEdit19.Hint:=DataModule1.getString(lang,79)+' PL, EN, DE';
+   Button2.Caption:=DataModule1.getString(lang,53);
+   Button1.Caption:=DataModule1.getString(lang,80);
+   Form3.Caption:=DataModule1.getString(lang,81);
 
    ust.Free;
+end;
+
+procedure TForm3.LabeledEdit12Change(Sender: TObject);
+begin
+
 end;
 
 end.

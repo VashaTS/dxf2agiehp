@@ -1,0 +1,47 @@
+object Form11: TForm11
+  Left = 662
+  Height = 135
+  Top = 284
+  Width = 377
+  BorderIcons = []
+  BorderStyle = bsSingle
+  Caption = 'Pytanie'
+  ClientHeight = 135
+  ClientWidth = 377
+  OnCreate = FormCreate
+  LCLVersion = '1.4.5.0'
+  object Label1: TLabel
+    Left = 40
+    Height = 39
+    Top = 8
+    Width = 287
+    Caption = 'Sortować według FP ?'
+    Font.CharSet = EASTEUROPE_CHARSET
+    Font.Height = -32
+    Font.Name = 'Calibri'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    ParentColor = False
+    ParentFont = False
+  end
+  object Button1: TButton
+    Left = 32
+    Height = 40
+    Top = 64
+    Width = 107
+    Caption = 'TAK'
+    Default = True
+    ModalResult = 1
+    TabOrder = 0
+  end
+  object Button2: TButton
+    Left = 216
+    Height = 40
+    Top = 64
+    Width = 107
+    Cancel = True
+    Caption = 'NIE'
+    ModalResult = 2
+    TabOrder = 1
+  end
+end

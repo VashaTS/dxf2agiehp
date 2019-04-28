@@ -55,9 +55,9 @@ end;
 
 procedure TForm7.ctd(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-  if AnsiContainsStr((Sender as TEdit).Text,',') then begin
-        (Sender as TEdit).Text:=StringReplace((Sender as TEdit).Text,',','.',[rfReplaceAll]);
-        (Sender as TEdit).SelStart:=high(Integer);
+  if AnsiContainsStr((Sender as TLabeledEdit).Text,',') then begin
+        (Sender as TLabeledEdit).Text:=StringReplace((Sender as TLabeledEdit).Text,',','.',[rfReplaceAll]);
+        (Sender as TLabeledEdit).SelStart:=high(Integer);
      end;
 end;
 

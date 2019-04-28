@@ -475,7 +475,7 @@ object Form2: TForm2
     Left = 376
     Height = 25
     Top = 104
-    Width = 64
+    Width = 72
     Caption = 'Z ręcznie'
     OnClick = Button6Click
     TabOrder = 29

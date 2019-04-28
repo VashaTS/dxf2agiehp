@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, PrintersDlgs, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, CheckLst, ExtCtrls, Menus, inifiles, strutils;
+  StdCtrls, CheckLst, ExtCtrls, Menus, inifiles, strutils, Unit10;
 
 type
    TArrayOfString = array of String;
@@ -206,14 +206,17 @@ end;
 
 procedure TForm2.editel(Sender: TObject);
 var el_values:TArrayOfString;
-  dlet,dsig:string;
+  dlet,dsig,lang:string;
+  ust:TIniFile;
 begin
   el_values:=SplitString(';',ListBox1.Items[ChecklistBox1.ItemIndex]); //read hidden listbox of electrode values
   Label1.Caption:=el_values[0]; //electrode name
   case el_values[1] of //populate combo box
+       'Grafit1': ComboEL1.ItemIndex:=0;
        'Graphite1': ComboEL1.ItemIndex:=0;
        'Graphite2': ComboEL1.ItemIndex:=1;
        'Copper': ComboEL1.ItemIndex:=2;
+       'Kupfer': ComboEL1.ItemIndex:=2;
        else ComboEL1.ItemIndex:=1;  // <- TODO: read settings for default!
   end;
   if ((strtofloat(el_values[2])>0.1) or (strtofloat(el_values[2])=0)) then Edit1.Text:=el_values[2] // fp
@@ -272,8 +275,12 @@ begin
     ComboBox3.ItemIndex:=vdi_nr_to_ii(el_values[20]); // old 16
     if length(el_values[17])=2 then RadioButton2.Checked:=True
     else RadioButton1.Checked:=True;
-  if (CheckListBox1.ItemIndex=(CheckListBox1.Count-1)) then Button1.Caption:='Koniec - zapisz program' //change button to more acurately reflect action taken on pressing it
-  else Button1.Caption:='Kolejna elektroda';
+     ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+    //change strings to language selected in settings
+    lang:=ust.ReadString('settings','lang','PL');
+    ust.Free;
+  if (CheckListBox1.ItemIndex=(CheckListBox1.Count-1)) then Button1.Caption:=DataModule1.getString(lang,55) //change button to more acurately reflect action taken on pressing it
+  else Button1.Caption:=DataModule1.getString(lang,54);
 
 end;
 
@@ -284,6 +291,7 @@ end;
 
 procedure TForm2.FormCreate(Sender: TObject);
 var ust:TIniFile;
+  lang:string;
 begin
    ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
    OpenDialog1.InitialDir:=ust.ReadString('settings','pathMES','C:\korekty\AGIEVISION_2');
@@ -311,6 +319,17 @@ begin
         Form2.Edit13.TabOrder:=11;
         Form2.Edit15.TabOrder:=12;
     end;
+    lang:=ust.ReadString('settings','lang','PL');
+    Label1.Caption:=DataModule1.getString(lang,49); //elektroda
+    Button3.Caption:=DataModule1.getString(lang,50); //odwr zazn
+    Label9.Caption:=DataModule1.getString(lang,51); //podwymiar
+    Button6.Caption:=DataModule1.getString(lang,52); //z ręcznie
+    Button2.Caption:=DataModule1.getString(lang,53); //anuluj
+    Button1.Caption:=DataModule1.getString(lang,54); //kolejna elektroda
+    RadioGroup1.Caption:=DataModule1.getString(lang,56); //typ podwymiaru
+    RadioButton1.Caption:=DataModule1.getString(lang,57); //boczny
+    RadioButton2.Caption:=DataModule1.getString(lang,58); //jednakowo odlegly
+    Form2.Caption:=DataModule1.getString(lang,59); //lista elektrod
    ust.Free;
 end;
 
@@ -332,12 +351,10 @@ begin
 end;
 
 procedure TForm2.Button1Click(Sender: TObject);
-var preset,fut,fur,f0r,f00,tempp:Textfile;
-pval,eval,pval2,tf_val,pe_val,lb1,prefil:TArrayOfString;
-pline,str,elmname,dir,strat,phase,eip,elno,multi_tf,umode,le,f00f,f00_sk,utype:string;
-i,j,ii,iii,amount_of_el:integer;
+var str,elmname,multi_tf,utype:string;
+iii:integer;
 ust:TIniFile;
-line_changed,ok_for_multi:boolean;
+line_changed,ok_for_multi,notcheckingundersize:boolean;
 begin
   randomize;
   str:='0123456789ABCDEFGHIJKLMNOPQRSTUVYZ';
@@ -347,11 +364,15 @@ begin
   else multi_tf:='0';
   if RadioButton1.Checked then utype:='Z'
   else if RadioButton2.Checked then utype:='X+';
+  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+  if ust.ReadString('settings','allowZeroUndersize','0')='1' then notcheckingundersize:=true
+  else notcheckingundersize:=false;
   ListBox1.Items.Delete(strtoint(Label8.Caption));  //temp delete existing entry, then add a new one (next line)
   //                          0               1                               2             3                 4             5             6              7             8                9               10              11           12             13              14                15           16           17         18                     19                                 20                           21            22              23              24               25             26              27
   ListBox1.Items.Add(Label1.Caption+';'+elmattype(ComboEL1.ItemIndex)+';'+Edit1.Text+';'+Edit2.Text+';'+Edit3.Text+';'+Edit4.Text+';'+Edit5.Text+';'+Edit12.Text+';'+Edit14.Text+';'+Edit6.Text+';'+Edit7.Text+';'+Edit8.Text+';'+Edit9.Text+';'+Edit13.Text+';'+Edit15.Text+';'+Edit10.Text+';'+multi_tf+';'+utype+';'+Edit11.Text+';'+inttostr(ComboBox2.ItemIndex)+';'+vdi_ii_to_nr(ComboBox3.ItemIndex)+';'+elmname+';'+Edit16.Text+';'+Edit17.Text+';'+Edit18.Text+';'+Edit19.Text+';'+Edit20.Text+';'+Edit21.Text);
   ListBox1.Items.Move((ListBox1.Count-1),strtoint(Label8.Caption)); //move added antry to previous place
-  if (((strtofloat(Edit1.Text)>0) and (strtofloat(Edit2.Text)>0)) or (CheckListBox1.Checked[CheckListBox1.ItemIndex]=False)) then begin  //check if fp and u1 are empty
+  if (((strtofloat(Edit1.Text)>0)and ((strtofloat(Edit2.Text)>0) or notcheckingundersize)) or (CheckListBox1.Checked[CheckListBox1.ItemIndex]=False)) then begin  //check if fp and u1 are empty
+    //and ((strtofloat(Edit2.Text)>0) or notcheckingundersize)
      ok_for_multi:=true;
      if Edit2.Text<>Edit3.Text then ok_for_multi:=false;
      if Edit4.Text<>Edit5.Text then ok_for_multi:=false;
@@ -375,6 +396,7 @@ begin
      else ShowMessage('Błędne dane Multi elektrody');
   end
   else ShowMessage('Wpisz dane w pola: U1 i Fp');
+  ust.Free;
 
 end;
 
