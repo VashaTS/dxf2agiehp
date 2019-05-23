@@ -1,7 +1,7 @@
 object Form3: TForm3
-  Left = 317
+  Left = 355
   Height = 663
-  Top = 203
+  Top = 180
   Width = 790
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Ustawienia'
@@ -229,17 +229,17 @@ object Form3: TForm3
     TabOrder = 13
   end
   object LabeledEdit8: TLabeledEdit
-    Left = 43
+    Left = 264
     Height = 23
-    Top = 464
+    Top = 544
     Width = 200
     EditLabel.AnchorSideLeft.Control = LabeledEdit8
     EditLabel.AnchorSideRight.Control = LabeledEdit8
     EditLabel.AnchorSideRight.Side = asrBottom
     EditLabel.AnchorSideBottom.Control = LabeledEdit8
-    EditLabel.Left = 43
+    EditLabel.Left = 264
     EditLabel.Height = 15
-    EditLabel.Top = 446
+    EditLabel.Top = 526
     EditLabel.Width = 200
     EditLabel.Caption = 'domyślna odległość drążenia bokiem'
     EditLabel.ParentColor = False
@@ -276,17 +276,17 @@ object Form3: TForm3
     TabOrder = 16
   end
   object LabeledEdit10: TLabeledEdit
-    Left = 43
+    Left = 40
     Height = 23
-    Top = 507
+    Top = 512
     Width = 160
     EditLabel.AnchorSideLeft.Control = LabeledEdit10
     EditLabel.AnchorSideRight.Control = LabeledEdit10
     EditLabel.AnchorSideRight.Side = asrBottom
     EditLabel.AnchorSideBottom.Control = LabeledEdit10
-    EditLabel.Left = 43
+    EditLabel.Left = 40
     EditLabel.Height = 15
-    EditLabel.Top = 489
+    EditLabel.Top = 494
     EditLabel.Width = 160
     EditLabel.Caption = 'domyslne odsuniecie Z'
     EditLabel.ParentColor = False
@@ -370,7 +370,7 @@ object Form3: TForm3
     EditLabel.Height = 15
     EditLabel.Top = 334
     EditLabel.Width = 160
-    EditLabel.Caption = 'Ścieżka folderu CSV'
+    EditLabel.Caption = 'Ścieżka folderu CSV (z SEB)'
     EditLabel.ParentColor = False
     TabOrder = 23
     Text = 'LabeledEdit3'
@@ -526,7 +526,7 @@ object Form3: TForm3
   object CheckBox6: TCheckBox
     Left = 8
     Height = 19
-    Top = 576
+    Top = 589
     Width = 293
     Caption = 'Pomiary X i Y elektrod z preseta są obrócone o kąt C'
     Checked = True
@@ -536,7 +536,7 @@ object Form3: TForm3
   object CheckBox7: TCheckBox
     Left = 8
     Height = 19
-    Top = 601
+    Top = 614
     Width = 235
     Caption = 'interline between every row in Print table'
     Checked = True
@@ -733,6 +733,54 @@ object Form3: TForm3
       TabOrder = 0
     end
   end
+  object LabeledEdit20: TLabeledEdit
+    Left = 45
+    Height = 23
+    Hint = '0 - silent'#13#10'1 - normal'#13#10'2 - verbose'#13#10'3 - debug'
+    Top = 557
+    Width = 153
+    EditLabel.AnchorSideLeft.Control = LabeledEdit20
+    EditLabel.AnchorSideRight.Control = LabeledEdit20
+    EditLabel.AnchorSideRight.Side = asrBottom
+    EditLabel.AnchorSideBottom.Control = LabeledEdit20
+    EditLabel.Left = 45
+    EditLabel.Height = 15
+    EditLabel.Top = 539
+    EditLabel.Width = 153
+    EditLabel.Caption = 'verbose mode'
+    EditLabel.ParentColor = False
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 36
+    Text = '1'
+  end
+  object LabeledEdit21: TLabeledEdit
+    Left = 55
+    Height = 23
+    Top = 464
+    Width = 148
+    EditLabel.AnchorSideLeft.Control = LabeledEdit21
+    EditLabel.AnchorSideRight.Control = LabeledEdit21
+    EditLabel.AnchorSideRight.Side = asrBottom
+    EditLabel.AnchorSideBottom.Control = LabeledEdit21
+    EditLabel.Left = 55
+    EditLabel.Height = 15
+    EditLabel.Top = 446
+    EditLabel.Width = 148
+    EditLabel.Caption = 'Ścieżka folderu XMLJ'
+    EditLabel.ParentColor = False
+    TabOrder = 37
+    Text = 'LabeledEdit21'
+  end
+  object Button12: TButton
+    Left = 203
+    Height = 25
+    Top = 462
+    Width = 29
+    Caption = '...'
+    OnClick = Button12Click
+    TabOrder = 38
+  end
   object SelectDirectoryDialog1: TSelectDirectoryDialog
     left = 27
     top = 160
@@ -755,6 +803,10 @@ object Form3: TForm3
   end
   object SelectDirectoryDialog6: TSelectDirectoryDialog
     left = 27
-    top = 400
+    top = 408
+  end
+  object SelectDirectoryDialog7: TSelectDirectoryDialog
+    left = 27
+    top = 464
   end
 end

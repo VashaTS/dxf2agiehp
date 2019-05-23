@@ -1,11 +1,11 @@
 object Form2: TForm2
   Left = 1005
-  Height = 460
+  Height = 471
   Top = 174
   Width = 455
   BorderStyle = bsSingle
   Caption = 'Lista Elektrod'
-  ClientHeight = 460
+  ClientHeight = 471
   ClientWidth = 455
   OnClose = formclose
   OnCreate = FormCreate
@@ -265,6 +265,7 @@ object Form2: TForm2
     Top = 296
     Width = 69
     Caption = 'Multi 180'
+    OnChange = checkmultiel
     TabOrder = 14
   end
   object Label13: TLabel

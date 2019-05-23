@@ -20,6 +20,7 @@ type
     Label4: TLabel;
     TrackBar1: TTrackBar;
     TrackBar2: TTrackBar;
+    procedure Button2Click(Sender: TObject);
   private
     { private declarations }
   public
@@ -32,6 +33,13 @@ var
 implementation
 
 {$R *.lfm}
+
+{ TForm10 }
+
+procedure TForm10.Button2Click(Sender: TObject);
+begin
+
+end;
 
 end.
 

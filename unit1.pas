@@ -24,6 +24,7 @@ type
   TForm1 = class(TForm)
     BitBtn1: TBitBtn;
     BitBtn10: TBitBtn;
+    BitBtn11: TBitBtn;
     BitBtn2: TBitBtn;
     BitBtn3: TBitBtn;
     BitBtn4: TBitBtn;
@@ -110,6 +111,7 @@ type
     ListBox9: TListBox;
     MainMenu1: TMainMenu;
     Memo1: TMemo;
+    Memo2: TMemo;
     MenuItem1: TMenuItem;
     MenuItem10: TMenuItem;
     MenuItem11: TMenuItem;
@@ -143,6 +145,7 @@ type
     SaveDialog3: TSaveDialog;
     SpinEdit1: TSpinEdit;
     procedure BitBtn10Click(Sender: TObject);
+    procedure BitBtn11Click(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
@@ -212,7 +215,7 @@ type
 
 var
   Form1: TForm1;
-  end_table_line,offset,tableno,errorlevel,gel:integer;
+  end_table_line,offset,tableno,errorlevel,gel,vm:integer;
   plsr12sc,sizeset:boolean;
   sw_ver,sw_ver_minor:string;
 
@@ -265,6 +268,17 @@ begin
  SetLength(result,cnt);
 end;
 
+function strtopchar(inp:string):PAnsiChar;
+var buf:array[0..1000] of Char;
+  i:integer;
+begin
+ for i:=0 to 1000 do buf[i]:= #0;
+ for i:=0 to length(inp) do begin
+   buf[i]:=inp[i+1];
+   strtopchar:=buf;
+ end;
+end;
+
 function isNumber(s:string):boolean;
 var i:integer;
 begin
@@ -313,7 +327,7 @@ begin
     else result:=inp-360;
 end;
 
-Function roundto(FloatNum: Double; NoOfDecPart: integer): Double;
+Function roundto(FloatNum: Double; NoOfDecPart: integer): Double;  // turncate
 Var ls_FloatNumber: String;
 Begin
  ls_FloatNumber := FloatToStr(FloatNum);
@@ -565,12 +579,23 @@ begin
                  Form1.ListBox3.Items.Add(l0[4]); //x
                  Form1.ListBox4.Items.Add(l0[5]); //y
                  Form1.ListBox5.Items.Add(l0[6]); //c
-                 Form1.ListBox9.Items.Add(l0[7]); //dir
+                 if generated then begin //hidden dir as electrode width
+                   case l0[1] of
+                      '10': Form1.ListBox9.Items.Add('Z');
+                      '11': Form1.ListBox9.Items.Add('X+');
+                      '12': Form1.ListBox9.Items.Add('X-');
+                      '13': Form1.ListBox9.Items.Add('Y+');
+                      '14': Form1.ListBox9.Items.Add('Y-');
+                      else Form1.ListBox9.Items.Add('Z');
+                   end;
+                 end
+                 else Form1.ListBox9.Items.Add(l0[7]); //dir
                  Form1.ListBox6.Items.Add(l0[8]); //z
                  Form1.ListBox12.Items.Add(l0[9]); //vdi
                  Form1.ListBox7.Items.Add(l0[10]); //mat el
                  Form1.ListBox8.Items.Add(l0[11]); //fp
-                 Form1.ListBox11.Items.Add(ust.ReadString('settings','defaultSideOffset','5')); // side offset
+                 if generated then Form1.ListBox11.Items.Add(l0[2]) //hidden as el depth
+                 else Form1.ListBox11.Items.Add(ust.ReadString('settings','defaultSideOffset','5')); // side offset
                  if generated then begin
                    j:=(Form1.ListBox2.Count-1);
                    el_exists:=False; //mark electrode as not exist
@@ -633,7 +658,7 @@ begin
         if AnsiContainsStr(line,'DXF2AGIEHPv') then begin
            l1:=SplitString('v',line);
            if l1[1]<>sw_ver then begin
-              ShowMessage('Uwaga! Wczytany plik zostal zapisany w innej wersji programu. Sprawdź poprawnosc danych.'+AnsiString(#13#10)+'Wersja aplikacji: '+sw_ver+AnsiString(#13#10)+'Wersja pliku: '+l1[1]);
+              if vm>=2 then ShowMessage('Uwaga! Wczytany plik zostal zapisany w innej wersji programu. Sprawdź poprawnosc danych.'+AnsiString(#13#10)+'Wersja aplikacji: '+sw_ver+AnsiString(#13#10)+'Wersja pliku: '+l1[1]);
               logToFile('Current version: '+sw_ver+', file version: '+l1[1],'INF');
            end;
            fil_ver:=l1[1];
@@ -685,6 +710,24 @@ begin
                            end;
                       end;
              'lbf22': Form2.ListBox2.Items.Add(l1[1]);
+             'zbyhand': begin
+                  if l1[1]='0' then begin
+                       Form2.Edit16.Enabled:=False;
+                       Form2.Edit17.Enabled:=False;
+                       Form2.Edit18.Enabled:=False;
+                       Form2.Edit19.Enabled:=False;
+                       Form2.Edit20.Enabled:=False;
+                       Form2.Edit21.Enabled:=False;
+                  end
+                  else begin
+                       Form2.Edit16.Enabled:=True;
+                       Form2.Edit17.Enabled:=True;
+                       Form2.Edit18.Enabled:=True;
+                       Form2.Edit19.Enabled:=True;
+                       Form2.Edit20.Enabled:=True;
+                       Form2.Edit21.Enabled:=True;
+                  end;
+             end;
              'eld': Form2.Label13.Caption:=l1[1];
              'clbf2': begin
                Form2.CheckListBox1.Items.Add(l1[1]);
@@ -715,6 +758,248 @@ begin
      Form1.SaveDialog1.FileName:=inp;
      logToFile('Loaded file '+inp+' succesfully','OK');
      setChanged(false);
+end;
+
+procedure load_xmlj(inp:string);
+var fil:TextFile;
+lin:string;
+t0,t1,t2,t3,px,py,pz,pc,pfd,pax,paz,tn,tft,tus,tmp,tx,ty,tz,tc,shape_tools,shape_points,shape_vdi,shape_depth,shape_name,shape_fp,shape_mat,unam,ufil,uele,uemat,bea_nam,bea_vdi,ufp:TArrayOfString;
+date_done,pieces_section,points_section,shapes_section,tools_section:boolean;
+curr_point,curr_tool,curr_shape,i,j,k,ces:integer;
+sp_x,sp_y,sp_z:real;
+begin
+ //XML prasing libraries tried:
+        // 1. TXMLDocument - doesnt support windows 1250 encoding used by HMI software, confusing way of navigating xml structure
+        // 2. MSXML - not supported by lazarus.
+        // SO prasing this as a txt file
+        AssignFile(fil,inp);
+        reset(fil);
+        date_done:=False;
+        pieces_Section:=False;
+        points_section:=False;
+        shapes_section:=False;
+        tools_section:=False;
+        Form1.LabeledEdit1.Text:='';
+        SetLength(px,1);
+        SetLength(py,1);
+        SetLength(pz,1);
+        SetLength(pc,1);
+        SetLength(pax,1); //angle x, for side eroding
+        SetLength(paz,1); //angle z, for side eroding
+        //SetLength(pfd,1);
+        SetLength(tn,1);
+        SetLength(shape_vdi,1);
+        SetLength(shape_points,1);
+        SetLength(shape_tools,1);
+        SetLength(shape_depth,1);
+        SetLength(shape_name,1);
+        SetLength(shape_fp,1);
+        SetLength(shape_mat,1);
+        Form1.Edit11.Text:='-0.00';
+        Form1.Edit12.Text:='-0.00';
+        Form1.Edit13.Text:='-0.00';
+        Form1.Edit14.Text:='0';
+        repeat
+           readln(fil,lin);
+           if AnsiContainsStr(lin,'<Job Name=') then begin //program name
+              t0:=SplitString('"',lin);
+              Form1.Edit3.Text:=t0[1];
+           end;
+           if AnsiContainsStr(lin,'<CreationDate>') and not date_done then begin //creation date
+              t0:=SplitString('>',lin);
+              t1:=SplitString(' ',t0[1]);
+              Form1.Edit15.Text:=t1[0];
+              date_done:=True;
+           end;
+           if AnsiContainsStr(lin,'<Pieces>') then pieces_section:=True;
+           if AnsiContainsStr(lin,'</Pieces>') then pieces_section:=False;
+           if AnsiContainsStr(lin,'<MagPos>') and pieces_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              if Form1.LabeledEdit1.Text='' then Form1.LabeledEdit1.Text:=t1[0]
+              else Form1.LabeledEdit1.Text:=Form1.LabeledEdit1.Text+','+t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Points>') then points_section:=True;
+           if AnsiContainsStr(lin,'</Points>') then points_section:=False;
+           if AnsiContainsStr(lin,'<Point N="') and points_section then begin
+              t0:=SplitString('"',lin);
+              curr_point:=strtoint(t0[1]);
+           end;
+           if AnsiContainsStr(lin,'<X>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(px,length(px)+1);
+              px[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Y>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(py,length(px)+1);
+              py[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Z>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(pz,length(px)+1);
+              pz[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Rot>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(pc,length(px)+1);
+              pc[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<AngleX>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(pax,length(pax)+1);
+              pax[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<AngleZ>') and points_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(paz,length(paz)+1);
+              paz[curr_point]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Tools>') then tools_section:=True;
+           if AnsiContainsStr(lin,'</Tools>') then tools_section:=False;
+           if AnsiContainsStr(lin,'<Tool N="') and tools_section then begin
+              t0:=SplitString('"',lin);
+              curr_tool:=strtoint(t0[1]);
+           end;
+           if AnsiContainsStr(lin,'<Name>') and tools_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('_',t0[1]);
+              SetLength(tn,length(tn)+1);
+              tn[curr_tool]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<Shapes>') then shapes_section:=True;
+           if AnsiContainsStr(lin,'</Shapes>') then shapes_section:=False;
+           if AnsiContainsStr(lin,'<Shape N="') and shapes_section then begin
+              t0:=SplitString('"',lin);
+              curr_shape:=strtoint(t0[1]);
+           end;
+           if AnsiCOntainsStr(lin,'<EDMDepth>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_depth,length(shape_depth)+1);
+              shape_depth[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<PrepSurfaceFinishingCH>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_vdi,length(shape_vdi)+1);
+              shape_vdi[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<JobReportToolList>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_tools,length(shape_tools)+1);
+              shape_tools[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<JobReportPointList>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_points,length(shape_points)+1);
+              shape_points[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<ElectMaterialCode>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_mat,length(shape_mat)+1);
+              shape_mat[curr_shape]:=t1[0];
+           end;
+           if AnsiContainsStr(lin,'<PrepMaxArea>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_fp,length(shape_fp)+1);
+              shape_fp[curr_shape]:=t1[0];
+           end;
+
+           if AnsiContainsStr(lin,'<Comment>') and shapes_section then begin
+              t0:=SplitString('>',lin);
+              t1:=SplitString('<',t0[1]);
+              SetLength(shape_name,length(shape_name)+1);
+              if AnsiContainsStr(t1[0],'-') then begin
+                 t2:=SplitString('-',t1[0]);
+                 shape_name[curr_shape]:=t2[0];
+              end
+              else shape_name[curr_shape]:=t1[0];
+           end;
+        until eof(fil);
+        CloseFile(fil);
+        Form1.ListBox2.Clear;
+        Form1.ListBox3.Clear;
+        Form1.ListBox4.Clear;
+        Form1.ListBox5.Clear;
+        Form1.ListBox6.Clear;
+        Form1.ListBox7.Clear;
+        Form1.ListBox8.Clear;
+        Form1.ListBox9.Clear;
+        Form1.ListBox11.Clear;
+        Form1.ListBox12.Clear;
+        for i:=1 to length(px)-1 do begin //add points of electrodes to the table
+
+            Form1.ListBox3.Items.Add(px[i]);
+            Form1.ListBox4.Items.Add(py[i]);
+            Form1.ListBox5.Items.Add(pc[i]);
+            Form1.ListBox11.Items.Add(pz[i]); //startpoint
+            if paz[i]='0' then Form1.ListBox9.Items.Add('Z')
+            else if paz[i]='90' then begin
+                case pax[i] of
+                    '0': Form1.ListBox9.Items.Add('X-');
+                    '90': Form1.ListBox9.Items.Add('Y-');
+                    '180': Form1.ListBox9.Items.Add('X+');
+                    '270': Form1.ListBox9.Items.Add('Y+');
+                    else Form1.ListBox9.Items.Add('?');
+                end;
+            end
+            else if paz[i]='-90' then begin //happens when manually changing direction in HMI
+                case pax[i] of
+                    '0': Form1.ListBox9.Items.Add('X+');
+                    '90': Form1.ListBox9.Items.Add('Y+');
+                    '180': Form1.ListBox9.Items.Add('X-');
+                    '270': Form1.ListBox9.Items.Add('Y-');
+                    else Form1.ListBox9.Items.Add('?');
+                end;
+            end
+            else Form1.ListBox9.Items.Add('?');
+            ces:=0;
+            for j:=1 to length(shape_depth)-1 do begin
+                if AnsiContainsStr(shape_points[j],'.') then begin //2 points per shape
+                   t0:=SplitString('.',shape_points[j]);
+                   for k:=0 to length(t0)-1 do if i=strtoint(t0[k]) then ces:=j;
+                end
+                else if AnsiContainsStr(shape_points[j],'-') then begin //multiple points per shape
+                   t0:=SplitString('-',shape_points[j]);
+                   for k:=strtoint(t0[0]) to strtoint(t0[1]) do if i=k then ces:=j;
+                end
+                else begin //simple case - 1 point per shape
+                    if i=strtoint(shape_points[j]) then ces:=j;
+                end;
+            end;
+            if ces=0 then begin
+               logToFile('Error in .xmlj file - no shape points','ERR');
+               if vm>=1 then showmessage('Error in .xmlj file (no shape points found)');
+            end
+            else begin
+               Form1.ListBox2.Items.Add(shape_name[ces]);
+               Form1.ListBox6.Items.Add(floattostr(strtofloat(shape_depth[ces])*(-1)));
+               Form1.ListBox7.Items.Add(x400code_to_mat(shape_mat[ces]));
+               Form1.ListBox8.Items.Add(shape_fp[ces]);
+               Form1.ListBox12.Items.Add('VDI'+shape_vdi[ces]);
+
+            end;
+
+        end;
+        //Showmessage('Points: '+inttostr(curr_point)+', Tools: '+inttostr(curr_tool)+', Shapes: '+inttostr(curr_shape));
+        //for i:=1 to length(px)-1 do showmessage(px[i]);
+        logToFile('Loaded file '+inp,'OK');
+end;
+
+procedure load_agievision(inp:string);
+begin
+
 end;
 
 function matforagie(inp:string):string;
@@ -760,12 +1045,11 @@ begin
 end;
 
 
-
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TForm1.Button1Click(Sender: TObject); //load DXF or mi
 var fil:Textfile;
   sl,newsl:TStringList;
   acceptable_list:Array[1..41] of string;
-  line,savedline,str,path,fold,lineminus1,lineminus2,lineminus3:string; // single line of a dxf file
+  line,savedline,str,path,fold,lineminus1,lineminus2,lineminus3:string;
   res,fileext:TArrayOfString; //used for SplitString function output
   org_cur_line,new_current_line,norm_line,current_line,start_line,text_per_item,i,j,k,col_id,col_x,col_y,col_c,col_z,col_mat,col_fp,col_dir,col_diro,col_vdi,min_in_col,si,old_count,start_pos,maxtables,maxline:integer;
   start_defined,assign_columns_done,table_done,col_count_found,is_acceptable,alternate_method,nextlineid,plkp20z:boolean;
@@ -792,7 +1076,7 @@ begin
      AssignFile(fil,OpenDialog1.FileName); //dxf file choosen by user
     reset(fil);
     repeat //find out number of eroding tables in file
-    lineminus3:=lineminus2;
+    lineminus3:=lineminus2;  //remember 3 previous lines
     lineminus2:=lineminus1;
     lineminus1:=line;
     readln(fil,line);
@@ -854,7 +1138,7 @@ begin
     col_count_found:=False;  //reset this to allow tables of different column amount in the same dxf
     if LowerCase(fileext[(length(fileext)-1)])='dxf' then text_per_item:=30 // TODO: possibly change this to be readed from dxf file itself, it may vary
     else if LowerCase(fileext[(length(fileext)-1)])='mi' then text_per_item:=34
-    else ShowMessage('FileType Error!');
+    else if vm>=1 then ShowMessage('FileType Error!');
     ProgressBar1.Position:=10;
     repeat
       if length(line)=7 then savedline:=line;
@@ -1342,6 +1626,30 @@ begin
   end;
 end;
 
+procedure TForm1.BitBtn11Click(Sender: TObject);
+var i,j:integer;
+begin
+   if ListBox6.Items.Count>1 then begin
+     logToFile('depth sort','INF');
+     for i:=1 to ListBox6.Items.Count-1 do begin
+        for j:=0 to i-1 do begin
+           if strtofloat(ListBox6.Items[i])<strtofloat(ListBox6.Items[j]) then begin
+               ListBox2.Items.Move(i,j);
+               ListBox3.Items.Move(i,j);
+               ListBox4.Items.Move(i,j);
+               ListBox5.Items.Move(i,j);
+               ListBox6.Items.Move(i,j);
+               ListBox7.Items.Move(i,j);
+               ListBox8.Items.Move(i,j);
+               ListBox9.Items.Move(i,j);
+               ListBox11.Items.Move(i,j);
+               ListBox12.Items.Move(i,j);
+           end;
+        end;
+     end;
+  end;
+end;
+
 procedure TForm1.BitBtn2Click(Sender: TObject);
 var di:integer;
 begin
@@ -1435,8 +1743,12 @@ begin
              if strtofloat(ListBox8.Items[i])<strtofloat(ListBox8.Items[(i+1)]) then needs_sorting:=True;
          end;
      end;
-     if needs_sorting then if Form11.Showmodal=mrOK then BitBtn8.Click;
-     Button14Click(Form1);
+     if needs_sorting then if Form11.Showmodal=mrOK then begin
+        BitBtn8.Click; //sort by fp
+        logToFile('Clicked OK when asked to sort by fp','INF');
+     end
+     else logToFile('Clicked Cancel when asked to sort by fp','INF');
+     Button14Click(Form1); //old wyslij
 end;
 
 procedure TForm1.BitBtn6Click(Sender: TObject);
@@ -1451,27 +1763,22 @@ var i,j,k,ci:integer;
   needs_sorting:boolean;
 begin
  if Form2.Label13.Caption='done' then begin
-    BitBtn7.Click; //sort by AZ
-    BitBtn8.Click; //then sort by Fp
+    BitBtn11.Click; // 1. sort by eroding depth
+    BitBtn7.Click; //  2. sort by AZ
+    BitBtn8.Click; //  3. then sort by Fp
     SaveDialog2.FileName:='erodieren_'+Edit3.Text+'.csv';
     ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
     SaveDialog2.InitialDir:=ust.ReadString('settings','pathCSVexport','C:\Windows');
     ust.Free;
-    //if ListBox8.Count>1 then begin  //ask for sort by fp - done automatically
-    //     for i:=0 to ListBox8.Count-2 do begin
-    //         if strtofloat(ListBox8.Items[i])<strtofloat(ListBox8.Items[(i+1)]) then needs_sorting:=True;
-   //      end;
-   //  end;
-    // if needs_sorting then if Form11.Showmodal=mrOK then BitBtn8.Click;
     if SaveDialog2.Execute then begin //if file selected
        AssignFile(fcsv,SaveDialog2.FileName);
        rewrite(fcsv);
        writeln(fcsv,'Beschreibung Werkstueck');
        writeln(fcsv,'NAME; PIECE_WIDTH; PIECE_LENGTH; PIECE_HEIGHT; MATR; X; Y');
        writeln(fcsv,Edit3.Text+';51.700000000000003;6.2300000000000004;33.0;'+ComboBox4.Items[ComboBox4.ItemIndex]);
-       writeln(fcsv,'generated;dxf2agiehp');
+       writeln(fcsv,'generated;dxf2agiehp'); //this line doesn't change anything in Certa
        writeln(fcsv,'Beschreibung Elektrode');
-       writeln(fcsv,'NAME;');
+       writeln(fcsv,'NAME;DIR_CODE;FD;EL_HEIGHT;X;Y;C;DIR;Z;VDI;EL_MAT;FP;AMOUNT_U1;U1;AMOUNT_U2;U2;'); // SEB seems to be missing part of this line
        for i:=0 to ListBox2.Count-1 do begin //for every electrode position
            for j:=1 to 4 do us[j]:='0';
            for j:=1 to 4 do usi[j]:=0;
@@ -1497,7 +1804,7 @@ begin
                end;
             //else ShowMessage(elv[0]+' - '+Form1.ListBox2.Items[i]);
            end;
-
+           //normalize directions
            case ListBox9.Items[i] of
                 'X+': rdir:='+X';
                 '+X': rdir:='+X';
@@ -1509,6 +1816,7 @@ begin
                 '-Y': rdir:='-Y';
                 else rdir:='Z';
            end;
+           // use electrode width in csv as a way to get direction inside without changing csv format
            case ListBox9.Items[i] of
                 'X+': fakedir:='11';
                 '+X': fakedir:='11';
@@ -1525,23 +1833,24 @@ begin
            if CheckBox7.Checked then c180:=strtofloat(ListBox5.Items[i])
            else c180:=roundto(strtofloat(ListBox5.Items[i])+180,4);
            if c180>=360 then c180:=c180-360;
-           writeln(fcsv,ListBox2.Items[i]+';'+fakedir+';'+ListBox11.Items[i]+';50;'+ListBox3.Items[i]+';'+ListBox4.Items[i]+';'+floattostr(c180)+';Z;'+ListBox6.Items[i]+';'+ListBox12.Items[i]+';'+rmat+';'
+           writeln(fcsv,ListBox2.Items[i]+';'+fakedir+';'+ListBox11.Items[i]+';50;'+ListBox3.Items[i]+';'+ListBox4.Items[i]+';'+floattostr(c180)+';Z;'+floattostr(round(strtofloat(ListBox6.Items[i])*1000)/1000)+';'+ListBox12.Items[i]+';'+rmat+';' //z rounded to 3 decimal places, because certa does it as well
                         +rfp+';'+inttostr(usi[1])+';'+us[1]+';'+inttostr(usi[2])+';'+us[2]+';'+inttostr(usi[3])+';'+us[3]+';'+inttostr(usi[4])+';'+us[4]+';'+orb+';0.0000;-;;;;;true;false');
            if rmulti='1' then begin  //simulate AgieVision's Mult Electrode option by adding another sparking position
               logToFile('added multielectrode for CERTA / HMI','INF');
+              if vm>=3 then showmessage('Adding multielectrode for CERTA'+AnsiString(#13#10)+ListBox2.Items[i]);
               c180:=c180+180;
               if c180>=360 then c180:=c180-360;
-              writeln(fcsv,ListBox2.Items[i]+';'+fakedir+';'+ListBox11.Items[i]+';50;'+ListBox3.Items[i]+';'+ListBox4.Items[i]+';'+floattostr(c180)+';Z;'+ListBox6.Items[i]+';'+ListBox12.Items[i]+';'+rmat+';'
+              writeln(fcsv,ListBox2.Items[i]+';'+fakedir+';'+ListBox11.Items[i]+';50;'+ListBox3.Items[i]+';'+ListBox4.Items[i]+';'+floattostr(c180)+';Z;'+floattostr(round(strtofloat(ListBox6.Items[i])*1000)/1000)+';'+ListBox12.Items[i]+';'+rmat+';'
                         +rfp+';'+inttostr(usi[1])+';'+us[1]+';'+inttostr(usi[2])+';'+us[2]+';'+inttostr(usi[3])+';'+us[3]+';'+inttostr(usi[4])+';'+us[4]+';'+orb+';0.0000;-;;;;;true;false');
            end;
        end;
        CloseFile(fcsv);
        logToFile('Saved CSV '+SaveDialog2.FileName,'OK');
-       ShowMessage('Poprawnie zapisano '+SaveDialog2.FileName);
+       if vm>=2 then ShowMessage('Poprawnie zapisano '+SaveDialog2.FileName);
     end
-    else ShowMessage('nie zapisano csv!');
+    else if vm>=1 then ShowMessage('nie zapisano csv!');
  end
- else ShowMessage('Uzupełnij dane elektrod!');
+ else if vm>=1 then ShowMessage('Uzupełnij dane elektrod!');
 end;
 
 procedure TForm1.BitBtn7Click(Sender: TObject);
@@ -1614,6 +1923,7 @@ begin
  chip_nam[0]:='1';
  chip_id[1]:='B033C31101';
  chip_nam[1]:='10';
+
  global_aoe:=0;
   if Form2.Label13.Caption='done' then begin
      SaveDialog3.FileName:=Edit3.Text;
@@ -2254,12 +2564,12 @@ begin
                 // w prawo - 1
              writeln(xj,'        <PrepCHSpeedPriority>'+suwak2+'</PrepCHSpeedPriority>');
              writeln(xj,'        <CHSpeedPriority>'+suwak2+'</CHSpeedPriority>');
-             //pierwszy suwak
-                //srodek - 2
-                //1 w lewo - 5
-                //2 w lewo - 1
-                //1 w prawo
-                //2 w prawo
+             //pierwszy suwak     |-----|
+                //srodek - 2       ..^..
+                //1 w lewo - 5     .^...
+                //2 w lewo - 1     ^....
+                //1 w prawo        ...^.
+                //2 w prawo        ....^
              writeln(xj,'        <PrepWearSpeedPriority>'+suwak1+'</PrepWearSpeedPriority>');
              writeln(xj,'        <WearSpeedPriority>'+suwak1+'</WearSpeedPriority>');
              writeln(xj,'        <PulsBackWithoutVoltage>0</PulsBackWithoutVoltage>');
@@ -2438,11 +2748,11 @@ begin
           CloseFile(xj);
           ProgressBar1.Position:=60;
           logToFile('Saved program for X400 ('+SaveDialog3.FileName+')','OK');
-          Showmessage('Program '+Edit3.Text+'.xmlj zapisany');
+          if vm>=1 then Showmessage('Program '+Edit3.Text+'.xmlj zapisany');
           //SysUtils.ExecuteProcess('explorer.exe','/select,'+SaveDialog3.FileName);
 
   end
-  else ShowMessage('Uzupełnij dane elektrod.');
+  else if vm>=1 then ShowMessage('Uzupełnij dane elektrod.');
 end;
 
 procedure TForm1.Button11Click(Sender: TObject);
@@ -2459,18 +2769,26 @@ begin
 end;
 
 procedure TForm1.Button14Click(Sender: TObject);
-var rnumber,rname,str,dir,strat,gnam,z_in_mach,mach_add,z_in_geo,geo_add,geo_add2,iname,iusing,sp_coords,sp_coordsa,drbok,mtd,only_ret,only_vector,pozp,ksp,pline,elmname,phase2,eip2,elno,multi_tf,umode,le,f00f,f00_sk,fold,nap,strange_number,littledot:string;
-pval,eval,pval2,tf_val,pe_val,lb1,prefil,p_elval,p_elam,isoval,chck,fmel:TArrayOfString;
-  min_z,i,j,f2i,f2j,k,ii,iii,using_nr,amount_of_el,f2amount_of_el,kapiel,last_using,bea_nr,check_preset,check_user,jjj,aoe,cvdi9:integer;
+var rnumber,rname,str,dir,strat,gnam,z_in_mach,mach_add,z_in_geo,geo_add,geo_add2,iname,iusing,sp_coords,sp_coordsa,drbok,mtd,only_ret,only_vector,pozp,ksp,pline,elmname,phase2,eip2,elno,multi_tf,umode,le,f00f,f00_sk,fold,nap,strange_number,littledot,elnamem,tmpstr:string;
+pval,eval,pval2,tf_val,pe_val,lb1,prefil,p_elval,p_elam,isoval,chck,fmel,elv,memv:TArrayOfString;
+  min_z,i,j,f2i,f2j,k,ii,using_nr,amount_of_el,f2amount_of_el,kapiel,last_using,bea_nr,check_preset,check_user,jjj,aoe,cvdi9,elnon,lino,wpcount:integer;
   job,jor,tek,ter,iso,isr,preset,fut,fur,f0r,f00,tempp,fakemes:TextFile;
   ust:TIniFile;
   phase,eip:Array[1..4] of integer;
   do_this_el,exists_in_list,line_changed,preset_ok:boolean;
-  oldx,oldy,oldc,newx,newy:real;
+  oldx,oldy,oldc,newx,oldz,newy,pp1,pp2:real;
 begin
  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
  fold:=ust.ReadString('settings','createFolder','1');
  nap:=ust.ReadString('settings','naPen','0');
+ if fold='1' then begin
+    if nap='1' then dir:=extractfiledir(OpenDialog3.FileName)+'\'+Form1.Edit3.Text
+    else dir:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output')+'\'+Form1.Edit3.Text;
+ end
+ else begin
+      if nap='1' then dir:=extractfiledir(OpenDialog3.FileName)
+      else dir:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');
+ end;
  ListBox10.Clear;
  Form2.ListBox2.Clear;
     ProgressBar1.Position:=(Form2.CheckListBox1.Count-1)*10;
@@ -2478,22 +2796,105 @@ begin
       preset_ok:=False;
       if Form2.Edit16.Enabled then begin
       logToFile('using Z values typed by hand','INF');
-         //create .mes file with only Z values from Form2
+         //create fake .mes file with only Z values from Form2
          AssignFile(fakemes,Application.Location+'fmes.mes');
          rewrite(fakemes);
          for i:=0 to Form2.ListBox1.Count-1 do begin
              fmel:=SplitString(';',Form2.ListBox1.Items[i]);
              writeln(fakemes,fmel[0]+';R1,U,,0,,,,,,,0,0,'+fmel[22]+',0.000,0.000,0,0,0,0,,0.000,,,,,,');
-             for j:=0 to 4 do if fmel[(4+j)]<>'0' then writeln(fakemes,fmel[0]+';R'+inttostr(2+j)+',U,,0,,,,,,,0,0,'+fmel[(23+j)]+',0.000,0.000,0,0,0,0,,0.000,,,,,,');
+             for j:=0 to 4 do if fmel[(4+j)]<>'0' then begin
+                if ((fmel[16]='1') and (((2+j) mod 2)=0)) then writeln(fakemes,fmel[0]+';R'+inttostr(2+j)+',U,,0,,,,,,,0,0,'+fmel[(23+j)]+',0.000,0.000,180,0,0,0,,0.000,,,,,,') //multi electrode
+                else writeln(fakemes,fmel[0]+';R'+inttostr(2+j)+',U,,0,,,,,,,0,0,'+fmel[(23+j)]+',0.000,0.000,0,0,0,0,,0.000,,,,,,'); //non multi electrode
+
+             end;
          end;
          CloseFile(fakemes);
          OpenDialog3.FileName:=Application.Location+'fmes.mes'; //actually use generated file.
          preset_ok:=True;
       end
-      else if OpenDialog3.Execute then begin
+      else if OpenDialog3.Execute then begin //real .mes from preset
          preset_ok:=True;
       end;
-      if preset_ok then begin
+      if preset_ok then begin //any valid .mes file
+           if ExtractFileExt(OpenDialog3.FileName)='.CMD' then begin
+                 logToFile('Loaded .CMD file from Zeiss CMM','INF');
+                 Memo2.Lines.LoadFromFile(OpenDialog3.FileName);
+                 AssignFile(fakemes,'fmes.mes');
+                 rewrite(fakemes);
+                 elnon:=0;
+                 lino:=0;
+                 wpcount:=0;
+                 for i:=0 to Memo2.Lines.Count-1 do begin
+                    if Memo2.Lines[i][1]='M' then begin
+                         inc(wpcount);
+                         memv:=SplitString(',',Memo2.Lines[i]);
+                         tmpstr:=memv[1];
+                         delete(tmpstr,1,1);
+                         oldx:=strtofloat(tmpstr);
+                         tmpstr:=memv[2];
+                         delete(tmpstr,1,1);
+                         oldy:=strtofloat(tmpstr);
+                         tmpstr:=memv[4];
+                         delete(tmpstr,1,1);
+                         oldc:=strtofloat(tmpstr);
+                         tmpstr:=memv[3];
+                         delete(tmpstr,1,1);
+                         oldz:=strtofloat(tmpstr);
+                         if oldx=0 then oldx:=0.0001;
+                         if oldy=0 then oldy:=0.0001;
+                         newx:=roundto((oldx*cos(degtorad(-oldc)))-(oldy*sin(degtorad(-oldc))),4);
+                         newy:=roundto((oldx*sin(degtorad(-oldc)))+(oldy*cos(degtorad(-oldc))),4);
+                         write(fakemes,Edit3.Text);
+                         if wpcount<>1 then write(fakemes,':'+inttostr(wpcount));
+                         writeln(fakemes,',W,,,,,,,,,'+floattostr(newx)+','+floattostr(newy)+','+floattostr(oldz)+',0.000,0.000,'+floattostr(oldc)+',,,,,,,,,');
+                    end;
+                    if Memo2.Lines[i][1]='T' then begin
+                        elv:=SplitString(';',Form2.ListBox1.Items[lino]);
+                        //showmessage(elv[(4+elnon)]);
+                        if elv[(3+elnon)]<>'0' then begin
+                           elnamem:=elv[0];
+                           inc(elnon);
+                        end
+                        else begin
+                           //showmessage('ok1');
+                           elnon:=0;
+                           inc(lino);
+                           //showmessage(elv[0]);
+                           if lino<Form2.ListBox1.Count then begin
+                              elv:=SplitString(';',Form2.ListBox1.Items[lino]);
+                              elnamem:=elv[0];
+                              inc(elnon);
+                           end;
+                        end;
+
+                        memv:=SplitString(',',Memo2.Lines[i]);
+                         tmpstr:=memv[1];
+                         delete(tmpstr,1,1);
+                         oldx:=strtofloat(tmpstr);
+                         tmpstr:=memv[2];
+                         delete(tmpstr,1,1);
+                         oldy:=strtofloat(tmpstr);
+                         tmpstr:=memv[4];
+                         delete(tmpstr,1,1);
+                         oldc:=strtofloat(tmpstr);
+                         tmpstr:=memv[3];
+                         delete(tmpstr,1,1);
+                         oldz:=strtofloat(tmpstr);
+                         if oldx=0 then oldx:=0.0001;
+                         if oldy=0 then oldy:=0.0001;
+                         newx:=roundto((oldx*cos(degtorad(-oldc)))-(oldy*sin(degtorad(-oldc))),4);
+                         newy:=roundto((oldx*sin(degtorad(-oldc)))+(oldy*cos(degtorad(-oldc))),4);
+                         //showmessage(elnamem+AnsiString(#13#10)+inttostr(elnon));
+                         //showmessage(floattostr(oldx)+' --> '+floattostr(newx)+AnsiString(#13#10)+floattostr(oldy)+' --> '+floattostr(newy)+AnsiString(#13#10)+floattostr(oldc));
+                        writeln(fakemes,elnamem+';R'+inttostr(elnon)+',U,,0,,,,,,,'+floattostr(newx)+','+floattostr(newy)+','+floattostr(oldz)+',0.000,0.000,'+floattostr(oldc)+',0,0,0,,0.000,,,,,,');
+                    end;
+                 end;
+                 CloseFile(fakemes);
+                 //showmessage(PAnsichar(Application.Location+'fmes.mes')+AnsiString(#13#10)+PAnsichar(dir+'\pomiar.mes'));
+                 forcedirectories(dir);
+                 CopyFile(PAnsichar(Application.Location+'fmes.mes'),PAnsichar(dir+'\pomiar.mes'),false);
+                 OpenDialog3.FileName:=Application.Location+'fmes.mes';
+           end;
            check_preset:=0;
            check_user:=0;
            AssignFile(preset,OpenDialog3.FileName);
@@ -2508,7 +2909,8 @@ begin
                    line_changed:=False;
                    for f2i:=0 to Form2.ListBox1.Count-1 do begin //add multi electrodes to mes file
                     lb1:=SplitString(';',Form2.ListBox1.Items[f2i]);
-                    if ((lb1[15]=pval2[0]) and (lb1[16]='1')) then begin  //if is multi electrode and real name matched
+                    //showmessage(lb1[0]+' '+lb1[22]+' '+inttostr(length(lb1[22])));
+                    if (((lb1[15]=pval2[0]) and (lb1[16]='1')) and (length(lb1[22])=0)) then begin  //if is multi electrode and real name matched, ano not fakemes, as it generates multi electrodes already
                       // showmessage('multi '+pval2[0]);
                         line_changed:=True;
                         if pval2[1]='R1' then begin
@@ -2524,6 +2926,11 @@ begin
                         if pval2[1]='R3' then begin
                           writeln(tempp,pval2[0]+';R5,U,,0,,,,,,,'+prefil[10]+','+prefil[11]+','+prefil[12]+',0.000,0.000,'+prefil[15]+',0,0,0,,0.000,,,,,,');
                           writeln(tempp,pval2[0]+';R6,U,,0,,,,,,,'+floattostr(strtofloat(prefil[10])*(-1))+','+floattostr(strtofloat(prefil[11])*(-1))+','+prefil[12]+',0.000,0.000,'+floattostr(strtofloat(prefil[15])+180)+',0,0,0,,0.000,,,,,,');
+                        end;
+                        if pval2[1]='R4' then begin
+                          writeln(tempp,pval2[0]+';R7,U,,0,,,,,,,'+prefil[10]+','+prefil[11]+','+prefil[12]+',0.000,0.000,'+prefil[15]+',0,0,0,,0.000,,,,,,');
+                          writeln(tempp,pval2[0]+';R8,U,,0,,,,,,,'+floattostr(strtofloat(prefil[10])*(-1))+','+floattostr(strtofloat(prefil[11])*(-1))+','+prefil[12]+',0.000,0.000,'+floattostr(strtofloat(prefil[15])+180)+',0,0,0,,0.000,,,,,,');
+
                         end;
                     end;
                    end;
@@ -2557,14 +2964,7 @@ begin
            until eof(preset);
            CloseFile(preset);
            //save FUT files
-           if fold='1' then begin
-              if nap='1' then dir:=extractfiledir(OpenDialog3.FileName)+'\'+Form1.Edit3.Text
-              else dir:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output')+'\'+Form1.Edit3.Text;
-           end
-           else begin
-                if nap='1' then dir:=extractfiledir(OpenDialog3.FileName)
-                else dir:=ust.ReadString('settings','pathOutput','C:\Intel\LazarusPortable\dxf test\output');
-           end;
+
            strat:=ust.ReadString('settings','electrodeStrategy','1');
            forcedirectories(dir); //create folders if needed
            if Form2.ListBox1.Count>0 then begin //if any electrodes exist in listbox1
@@ -2709,7 +3109,7 @@ begin
                                  oldc:=strtofloat(pe_val[8]);
                                  newx:=roundto((oldx*cos(degtorad(oldc)))-(oldy*sin(degtorad(oldc))),4);
                                  newy:=roundto((oldx*sin(degtorad(oldc)))+(oldy*cos(degtorad(oldc))),4);
-                                 if ((tf_val[16]='1') and ((elno='2') or (elno='4'))) then begin
+                                 if ((tf_val[16]='1') and ((elno='2') or (elno='4') or (elno='6'))) then begin //multi
                                     newx:=-newx;
                                     newy:=-newy;
                                  end;
@@ -2939,7 +3339,7 @@ begin
                      end;
                  end //strat 2
                  else if strat='3' then begin
-                    ShowMessage('Strategia nieobslugiwana! (3)');
+                    if vm>=2 then ShowMessage('Strategia nieobslugiwana! (3)');
                  end; //strat 3
                  CloseFile(fut);
                  CloseFile(f00);
@@ -2947,7 +3347,7 @@ begin
              end;
         end;
 
-     if check_preset<>check_user then ShowMessage('Uwaga! Możliwa niezgodność w danych z preseta! ('+inttostr(check_preset)+' ≠ '+inttostr(check_user)+')');
+     if ((check_preset<>check_user) and (vm>=2)) then ShowMessage('Uwaga! Możliwa niezgodność w danych z preseta! ('+inttostr(check_preset)+' ≠ '+inttostr(check_user)+')');
      ProgressBar1.max:=40;
      ProgressBar1.Position:=0;
      randomize;
@@ -3365,6 +3765,7 @@ begin
    BitBtn8.Visible:=False;
    BitBtn9.Visible:=False;
    BitBtn10.Visible:=False;
+   BitBtn11.Visible:=False;
    ProgressBar1.Visible:=False;
    Label1.Visible:=False;
    Label2.Visible:=False;
@@ -3447,8 +3848,7 @@ begin
         TextOut(floor(PaintBox1.Width/2)+20,10,'Y');
 
         ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
-        if ust.ReadString('settings','GCDrawWorkPiece','1')='1' then begin
-          //showmessage('here!');
+        if ust.ReadString('settings','GCDrawWorkPiece','1')='1' then begin //draw workpiece rectangle defined in settings
            Pen.Color:=clGreen;
            Pen.Style:=psSolid;
            Brush.Color:=clGreen;
@@ -3464,7 +3864,7 @@ begin
               j:=j+factor;
               Pen.Color:=clRed;       // this has to be
               Brush.Color:=clRed;     // inside the loop
-              Font.Color:=clRed;      // otherwise full rectangles are drawn
+              Font.Color:=clRed;      // otherwise filled rectangles are drawn
               Brush.Style:=bsClear;   // instead of text
               Font.Height:=16;        // its werid, ik
               MoveTo(floor(PaintBox1.Width/2)+floor((j*factor*(PaintBox1.Height/2))/maxdim),floor(PaintBox1.Height/2)+5);
@@ -3545,6 +3945,7 @@ begin
    BitBtn8.Visible:=True;
    if x400='1' then BitBtn9.Visible:=True;
    BitBtn10.Visible:=True;
+   BitBtn11.Visible:=True;
    ProgressBar1.Visible:=True;
    Label1.Visible:=True;
    Label2.Visible:=True;
@@ -3664,7 +4065,7 @@ begin
      sizeset:=false;
     Form1.resizemainf(Form1);
     sw_ver:='18';
-    sw_ver_minor:='16';
+    sw_ver_minor:='23';
     ImageList1.AddLazarusResource('open-file');  //0
     ImageList1.AddLazarusResource('new file');   //1
     ImageList1.AddLazarusResource('Help');       //2
@@ -3684,6 +4085,7 @@ begin
     ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
     //change strings to language selected in settings
     lang:=ust.ReadString('settings','lang','PL');
+    vm:=strtoint(ust.ReadString('settings','verboseMode','1'));
     //mainmenu
     MenuItem7.Caption:=DataModule1.getString(lang,0); //plik
     MenuItem1.Caption:=DataModule1.getString(lang,1); //opcje
@@ -3741,9 +4143,7 @@ begin
     //SetWindowLong(BitBtn5.Handle, GWL_STYLE, BS_MULTILINE);
     BitBtn5.Caption:=sl2.Text;
     BitBtn6.Caption:=DataModule1.getString(lang,48)+' CERTA';
-    Edit9.Hint:=DataModule1.getString(lang,90)+'Z'+AnsiString(#10)+'X+'+AnsiString(#10)+'X-'+AnsiString(#10)+'Y+'+AnsiString(#10)+'Y-'+AnsiString(#10)+'-X'+AnsiString(#10)+'+X'+AnsiString(#10)+'-Y'+AnsiString(#10)+'+Y';
-
-    //form2 lang change
+    Edit9.Hint:=DataModule1.getString(lang,90)+AnsiString(#10)+'Z'+AnsiString(#10)+'X+'+AnsiString(#10)+'X-'+AnsiString(#10)+'Y+'+AnsiString(#10)+'Y-'+AnsiString(#10)+'-X'+AnsiString(#10)+'+X'+AnsiString(#10)+'-Y'+AnsiString(#10)+'+Y';
 
     Edit15.Text:=formatdatetime('yyyy-mm-dd',Now());
     end_table_line:=0;
@@ -3783,6 +4183,7 @@ begin
     for i:=0 to 31 do mpouts:=mpouts+inttostr(mpout[i]);
     if ((mcouts<>dms) and (mpouts<>dms)) then begin
        logToFile('bad license','ERR');
+       if vm>=3 then showmessage('Incorrect license key!');
        Application.Terminate;
     end;
     if mcouts<>dms then Label13.Visible:=True;
@@ -3875,9 +4276,8 @@ begin
   if ParamCount>0 then begin
          if ExtractFileExt(ParamStr(1))='.edf' then load_edf(ParamStr(1))
          else if ExtractFileExt(ParamStr(1))='.csv' then load_csv(ParamStr(1))
-         else if ExtractFileExt(ParamStr(1))='.xmlj' then begin
-
-         end
+         else if ExtractFileExt(ParamStr(1))='.xmlj' then load_xmlj(ParamStr(1))
+         else if ExtractFileExt(ParamStr(1))='.JOB' then load_agievision(ParamStr(1))
          else begin //read as .dxf/.mi (old system)
          OpenDialog1.FileName:=ParamStr(1);
          Button1.Click;
@@ -4032,6 +4432,8 @@ begin
         else chc:='0';
         writeln(pvdm,'clbf2:'+Form2.CheckListBox1.Items[i]+':'+chc);
      end;
+     if Form2.Edit16.Enabled then writeln(pvdm,'zbyhand:1')
+     else writeln(pvdm,'zbyhand:0');
      logToFile('Saved EDF '+SaveDialog1.FileName,'OK');
      CloseFile(pvdm);
      setChanged(false);
@@ -4123,242 +4525,13 @@ end;
 procedure TForm1.MenuItem16Click(Sender: TObject);
 var fil,jor,fut:TextFile;
 lin:string;
-t0,t1,t2,t3,px,py,pz,pc,pfd,pax,paz,tn,tft,tus,tmp,tx,ty,tz,tc,shape_tools,shape_points,shape_vdi,shape_depth,shape_name,shape_fp,shape_mat,unam,ufil,uele,uemat,bea_nam,bea_vdi,ufp:TArrayOfString;
-date_done,pieces_section,points_section,shapes_section,tools_section:boolean;
-curr_point,curr_tool,curr_shape,i,j,k,ces:integer;
+t0,t1,t2,unam,ufil,uele,uemat,bea_nam,bea_vdi,ufp:TArrayOfString;
+i:integer;
 sp_x,sp_y,sp_z:real;
 begin
-  //showmessage('Ta funkcja jeszcze nie działa');
-  //logToFile('curious user (clicked on not implemeted menu option)','INF');
   if OpenDialog5.Execute then begin
      if ExtractFileExt(OpenDialog5.FileName)='.xmlj' then begin
-        //XML prasing libraries tried:
-        // 1. TXMLDocument - doesnt support windows 1250 encoding used by HMI software, confusing way of navigating xml structure
-        // 2. MSXML - not supported by lazarus.
-        // SO prasing this as a txt file
-        AssignFile(fil,OpenDialog5.FileName);
-        reset(fil);
-        date_done:=False;
-        pieces_Section:=False;
-        points_section:=False;
-        shapes_section:=False;
-        tools_section:=False;
-        LabeledEdit1.Text:='';
-        SetLength(px,1);
-        SetLength(py,1);
-        SetLength(pz,1);
-        SetLength(pc,1);
-        SetLength(pax,1); //angle x, for side eroding
-        SetLength(paz,1); //angle z, for side eroding
-        //SetLength(pfd,1);
-        SetLength(tn,1);
-        SetLength(shape_vdi,1);
-        SetLength(shape_points,1);
-        SetLength(shape_tools,1);
-        SetLength(shape_depth,1);
-        SetLength(shape_name,1);
-        SetLength(shape_fp,1);
-        SetLength(shape_mat,1);
-        Edit11.Text:='-0.00';
-        Edit12.Text:='-0.00';
-        Edit13.Text:='-0.00';
-        Edit14.Text:='0';
-        repeat
-           readln(fil,lin);
-           if AnsiContainsStr(lin,'<Job Name=') then begin //program name
-              t0:=SplitString('"',lin);
-              Edit3.Text:=t0[1];
-           end;
-           if AnsiContainsStr(lin,'<CreationDate>') and not date_done then begin //creation date
-              t0:=SplitString('>',lin);
-              t1:=SplitString(' ',t0[1]);
-              Edit15.Text:=t1[0];
-              date_done:=True;
-           end;
-           if AnsiContainsStr(lin,'<Pieces>') then pieces_section:=True;
-           if AnsiContainsStr(lin,'</Pieces>') then pieces_section:=False;
-           if AnsiContainsStr(lin,'<MagPos>') and pieces_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              if LabeledEdit1.Text='' then LabeledEdit1.Text:=t1[0]
-              else LabeledEdit1.Text:=LabeledEdit1.Text+','+t1[0];
-           end;
-           if AnsiContainsStr(lin,'<Points>') then points_section:=True;
-           if AnsiContainsStr(lin,'</Points>') then points_section:=False;
-           if AnsiContainsStr(lin,'<Point N="') and points_section then begin
-              t0:=SplitString('"',lin);
-              curr_point:=strtoint(t0[1]);
-           end;
-           if AnsiContainsStr(lin,'<X>') and points_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(px,length(px)+1);
-              px[curr_point]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<Y>') and points_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(py,length(px)+1);
-              py[curr_point]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<Z>') and points_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(pz,length(px)+1);
-              pz[curr_point]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<Rot>') and points_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(pc,length(px)+1);
-              pc[curr_point]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<AngleX>') and points_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(pax,length(pax)+1);
-              pax[curr_point]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<AngleZ>') and points_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(paz,length(paz)+1);
-              paz[curr_point]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<Tools>') then tools_section:=True;
-           if AnsiContainsStr(lin,'</Tools>') then tools_section:=False;
-           if AnsiContainsStr(lin,'<Tool N="') and tools_section then begin
-              t0:=SplitString('"',lin);
-              curr_tool:=strtoint(t0[1]);
-           end;
-           if AnsiContainsStr(lin,'<Name>') and tools_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('_',t0[1]);
-              SetLength(tn,length(tn)+1);
-              tn[curr_tool]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<Shapes>') then shapes_section:=True;
-           if AnsiContainsStr(lin,'</Shapes>') then shapes_section:=False;
-           if AnsiContainsStr(lin,'<Shape N="') and shapes_section then begin
-              t0:=SplitString('"',lin);
-              curr_shape:=strtoint(t0[1]);
-           end;
-           if AnsiCOntainsStr(lin,'<EDMDepth>') and shapes_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(shape_depth,length(shape_depth)+1);
-              shape_depth[curr_shape]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<PrepSurfaceFinishingCH>') and shapes_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(shape_vdi,length(shape_vdi)+1);
-              shape_vdi[curr_shape]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<JobReportToolList>') and shapes_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(shape_tools,length(shape_tools)+1);
-              shape_tools[curr_shape]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<JobReportPointList>') and shapes_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(shape_points,length(shape_points)+1);
-              shape_points[curr_shape]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<ElectMaterialCode>') and shapes_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(shape_mat,length(shape_mat)+1);
-              shape_mat[curr_shape]:=t1[0];
-           end;
-           if AnsiContainsStr(lin,'<PrepMaxArea>') and shapes_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(shape_fp,length(shape_fp)+1);
-              shape_fp[curr_shape]:=t1[0];
-           end;
-
-           if AnsiContainsStr(lin,'<Comment>') and shapes_section then begin
-              t0:=SplitString('>',lin);
-              t1:=SplitString('<',t0[1]);
-              SetLength(shape_name,length(shape_name)+1);
-              if AnsiContainsStr(t1[0],'-') then begin
-                 t2:=SplitString('-',t1[0]);
-                 shape_name[curr_shape]:=t2[0];
-              end
-              else shape_name[curr_shape]:=t1[0];
-           end;
-        until eof(fil);
-        CloseFile(fil);
-        ListBox2.Clear;
-        ListBox3.Clear;
-        ListBox4.Clear;
-        ListBox5.Clear;
-        ListBox6.Clear;
-        ListBox7.Clear;
-        ListBox8.Clear;
-        ListBox9.Clear;
-        ListBox11.Clear;
-        ListBox12.Clear;
-        for i:=1 to length(px)-1 do begin //add points of electrodes to the table
-
-            ListBox3.Items.Add(px[i]);
-            ListBox4.Items.Add(py[i]);
-            ListBox5.Items.Add(pc[i]);
-            ListBox11.Items.Add(pz[i]); //startpoint
-            if paz[i]='0' then ListBox9.Items.Add('Z')
-            else if paz[i]='90' then begin
-                case pax[i] of
-                    '0': ListBox9.Items.Add('X-');
-                    '90': ListBox9.Items.Add('Y-');
-                    '180': ListBox9.Items.Add('X+');
-                    '270': ListBox9.Items.Add('Y+');
-                    else ListBox9.Items.Add('?');
-                end;
-            end
-            else if paz[i]='-90' then begin //happens when manually changing direction in HMI
-                case pax[i] of
-                    '0': ListBox9.Items.Add('X+');
-                    '90': ListBox9.Items.Add('Y+');
-                    '180': ListBox9.Items.Add('X-');
-                    '270': ListBox9.Items.Add('Y-');
-                    else ListBox9.Items.Add('?');
-                end;
-            end
-            else ListBox9.Items.Add('?');
-            ces:=0;
-            for j:=1 to length(shape_depth)-1 do begin
-                if AnsiContainsStr(shape_points[j],'.') then begin //2 points per shape
-                   t0:=SplitString('.',shape_points[j]);
-                   for k:=0 to length(t0)-1 do if i=strtoint(t0[k]) then ces:=j;
-                end
-                else if AnsiContainsStr(shape_points[j],'-') then begin //multiple points per shape
-                   t0:=SplitString('-',shape_points[j]);
-                   for k:=strtoint(t0[0]) to strtoint(t0[1]) do if i=k then ces:=j;
-                end
-                else begin //simple case - 1 point per shape
-                    if i=strtoint(shape_points[j]) then ces:=j;
-                end;
-            end;
-            if ces=0 then begin
-               logToFile('Error in .xmlj file - no shape points','ERR');
-               showmessage('Error in .xmlj file (no shape points found)');
-            end
-            else begin
-               ListBox2.Items.Add(shape_name[ces]);
-               ListBox6.Items.Add(floattostr(strtofloat(shape_depth[ces])*(-1)));
-               ListBox7.Items.Add(x400code_to_mat(shape_mat[ces]));
-               ListBox8.Items.Add(shape_fp[ces]);
-               ListBox12.Items.Add('VDI'+shape_vdi[ces]);
-
-            end;
-
-        end;
-        //Showmessage('Points: '+inttostr(curr_point)+', Tools: '+inttostr(curr_tool)+', Shapes: '+inttostr(curr_shape));
-        //for i:=1 to length(px)-1 do showmessage(px[i]);
-        logToFile('Loaded file '+OpenDialog5.FileName,'OK');
+        load_xmlj(OpenDialog5.FileName);
      end
      else if ExtractFileExt(OpenDialog5.FileName)='.JOB' then begin  //Load program for AgieVision
          //solve USING varribles
@@ -4563,7 +4736,6 @@ procedure TForm1.MenuItem4Click(Sender: TObject);
 begin
   logToFile('Help Form shown','OK');
    //modal form - user manual
-
   Form5.ShowModal;
 end;
 

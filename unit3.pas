@@ -16,6 +16,7 @@ type
     Button1: TButton;
     Button10: TButton;
     Button11: TButton;
+    Button12: TButton;
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
@@ -51,6 +52,8 @@ type
     LabeledEdit18: TLabeledEdit;
     LabeledEdit19: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
+    LabeledEdit20: TLabeledEdit;
+    LabeledEdit21: TLabeledEdit;
     LabeledEdit3: TLabeledEdit;
     LabeledEdit4: TLabeledEdit;
     LabeledEdit5: TLabeledEdit;
@@ -74,8 +77,10 @@ type
     SelectDirectoryDialog4: TSelectDirectoryDialog;
     SelectDirectoryDialog5: TSelectDirectoryDialog;
     SelectDirectoryDialog6: TSelectDirectoryDialog;
+    SelectDirectoryDialog7: TSelectDirectoryDialog;
     procedure Button10Click(Sender: TObject);
     procedure Button11Click(Sender: TObject);
+    procedure Button12Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -99,7 +104,7 @@ implementation
 
 {$R *.lfm}
 
-procedure logToFile(inp:string);
+procedure logToFile(inp,typ:string);
 var lf:TextFile;
   fd:string;
 begin
@@ -110,7 +115,7 @@ begin
      writeln(lf,fd+' Log started');
      end
    else Append(lf);
-   writeln(lf,fd+' '+inp);
+   writeln(lf,fd+' '+typ+' '+inp);
    CloseFile(lf);
 end;
 
@@ -165,19 +170,35 @@ begin
    else ust.WriteString('settings','GCDrawWorkPiece','0');
    if CheckBox9.Checked then ust.WriteString('settings','allowZeroUndersize','1')
    else ust.WriteString('settings','allowZeroUndersize','0');
+   ust.WriteString('settings','verboseMode',LabeledEdit20.Text);
+   ust.WriteString('settings','pathXMLJ',LabeledEdit21.Text);
    ust.Free;
-   logToFile('settings saved');
+   logToFile('settings saved','INF');
    Form3.Close;
 end;
 
 procedure TForm3.Button10Click(Sender: TObject);
 begin
-  if SelectDirectoryDialog5.Execute then LabeledEdit3.Text:=SelectDirectoryDialog5.FileName;
+  if SelectDirectoryDialog5.Execute then begin
+    LabeledEdit3.Text:=SelectDirectoryDialog5.FileName;
+    logToFile('Changed CSV Import folder','INF');
+  end;
 end;
 
 procedure TForm3.Button11Click(Sender: TObject);
 begin
-  if SelectDirectoryDialog6.Execute then LabeledEdit13.Text:=SelectDirectoryDialog6.FileName;
+  if SelectDirectoryDialog6.Execute then begin
+    LabeledEdit13.Text:=SelectDirectoryDialog6.FileName;
+    logToFile('Changed CSV Export folder','INF');
+  end;
+end;
+
+procedure TForm3.Button12Click(Sender: TObject);
+begin
+  if SelectDirectoryDialog7.Execute then begin
+    LabeledEdit21.Text:=SelectDirectoryDialog7.FileName;
+    logToFile('Changed XMLJ folder','INF');
+  end;
 end;
 
 procedure TForm3.Button2Click(Sender: TObject);
@@ -187,17 +208,26 @@ end;
 
 procedure TForm3.Button3Click(Sender: TObject);
 begin
-  if SelectDirectoryDialog1.Execute then LabeledEdit4.Text:=SelectDirectoryDialog1.FileName;
+  if SelectDirectoryDialog1.Execute then begin
+    LabeledEdit4.Text:=SelectDirectoryDialog1.FileName;
+    logToFile('Changed DXF folder','INF');
+  end;
 end;
 
 procedure TForm3.Button4Click(Sender: TObject);
 begin
-  if SelectDirectoryDialog2.Execute then LabeledEdit5.Text:=SelectDirectoryDialog2.FileName;
+  if SelectDirectoryDialog2.Execute then begin
+    LabeledEdit5.Text:=SelectDirectoryDialog2.FileName;
+    logToFile('Changed MES folder','INF');
+  end;
 end;
 
 procedure TForm3.Button5Click(Sender: TObject);
 begin
-  if SelectDirectoryDialog3.Execute then LabeledEdit6.Text:=SelectDirectoryDialog3.FileName;
+  if SelectDirectoryDialog3.Execute then begin
+    LabeledEdit6.Text:=SelectDirectoryDialog3.FileName;
+    logToFile('Changed AgieVision Export folder','INF');
+  end;
 end;
 
 procedure TForm3.Button6Click(Sender: TObject);
@@ -215,6 +245,7 @@ begin
       Free;
     end;
   SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil);
+  logToFile('Attempted adding EDF file to registry','INF');
 end;
 
 procedure TForm3.Button7Click(Sender: TObject);
@@ -230,11 +261,15 @@ begin
       Free;
     end;
   SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil);
+  logToFile('Attempted adding MI file to registry','INF');
 end;
 
 procedure TForm3.Button8Click(Sender: TObject);
 begin
-  if SelectDirectoryDialog4.Execute then LabeledEdit11.Text:=SelectDirectoryDialog4.FileName;
+  if SelectDirectoryDialog4.Execute then begin
+    LabeledEdit11.Text:=SelectDirectoryDialog4.FileName;
+    logToFile('Changed EDF folder','INF');
+  end;
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
@@ -262,6 +297,8 @@ begin
    LabeledEdit17.Text:=ust.ReadString('settings','GCn2y','20');
    LabeledEdit18.Text:=ust.ReadString('settings','GCLineLength','20');
    LabeledEdit19.Text:=ust.ReadString('settings','lang','PL');
+   LabeledEdit20.Text:=ust.ReadString('settings','verbseMode','1');
+   LabeledEdit21.Text:=ust.ReadString('settings','pathXMLJ','C:\XMLJ');
    rad:=ust.ReadString('settings','electrodeStrategy','1');
    fold:=ust.ReadString('settings','createFolder','1');
    nap:=ust.ReadString('settings','naPen','0');

@@ -182,10 +182,10 @@ object Form7: TForm7
     Visible = False
     OnKeyUp = ctd
   end
-  object PaintBox1: TPaintBox
-    Left = 224
-    Height = 200
-    Top = 24
-    Width = 200
+  object Image1: TImage
+    Left = 280
+    Height = 90
+    Top = 80
+    Width = 90
   end
 end

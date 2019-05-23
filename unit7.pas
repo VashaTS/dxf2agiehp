@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, StrUtils;
+  ExtCtrls, StrUtils, IniFiles, Unit10;
 
 type
 
@@ -15,12 +15,12 @@ type
   TForm7 = class(TForm)
     Button1: TButton;
     Button2: TButton;
+    Image1: TImage;
     LabeledEdit1: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
     LabeledEdit3: TLabeledEdit;
     LabeledEdit4: TLabeledEdit;
     LabeledEdit5: TLabeledEdit;
-    PaintBox1: TPaintBox;
     RadioButton1: TRadioButton;
     RadioButton2: TRadioButton;
     RadioButton3: TRadioButton;
@@ -62,74 +62,99 @@ begin
 end;
 
 procedure TForm7.FormCreate(Sender: TObject);
+var ust:TIniFile;
+  lang:string;
 begin
-  with PaintBox1.Canvas do
-  begin
-    //Repaint;
-    //Pen.Style:=psSolid;
-    Brush.Color:=clBlack;
-    //Pen.Color:=clBlack;
-    Brush.Style:=bsDiagCross;
-    Ellipse(10,10,20,20);
-    Refresh;
-  end;
+     ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+     lang:=ust.ReadString('settings','lang','PL');
+     ust.Free;
+     Image1.Picture.LoadFromLazarusResource('agievision_copy1');
+     Form7.Caption:=DataModule1.getString(lang,85)+'...'; //form title
+     Button2.Caption:=DataModule1.getString(lang,53); //cancel button
+     RadioGroup1.Caption:=DataModule1.getString(lang,91); //funkcje kopiwania
 end;
 
 procedure TForm7.vcir(Sender: TObject);
+var ust:TIniFile;
+  lang:string;
 begin
-   LabeledEdit1.EditLabel.Caption:='Środek X';
+  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+  lang:=ust.ReadString('settings','lang','PL');
+  ust.Free;
+  if RadioButton4.Checked then begin
+   Image1.Picture.LoadFromLazarusResource('agievision_copy4');
+   LabeledEdit1.EditLabel.Caption:=DataModule1.getString(lang,86);
    LabeledEdit1.Text:='0.0';
-   LabeledEdit2.EditLabel.Caption:='Środek Y';
+   LabeledEdit2.EditLabel.Caption:=DataModule1.getString(lang,87);
    LabeledEdit2.Text:='0.0';
-   LabeledEdit3.EditLabel.Caption:='Kąt obrotu';
+   LabeledEdit3.EditLabel.Caption:=DataModule1.getString(lang,88);
    LabeledEdit3.Text:='0.0';
-   LabeledEdit4.EditLabel.Caption:='Rotacja kopii';
+   LabeledEdit4.EditLabel.Caption:=DataModule1.getString(lang,89);
    LabeledEdit4.Text:='0.0';
-   LabeledEdit5.EditLabel.Caption:='Ilość kopii';
+   LabeledEdit5.EditLabel.Caption:=DataModule1.getString(lang,90);
    LabeledEdit5.Text:='1';
    LabeledEdit5.Visible:=True;
+  end;
 end;
 
 procedure TForm7.vlin(Sender: TObject);
+var ust:TIniFile;
+  lang:string;
 begin
+  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+  lang:=ust.ReadString('settings','lang','PL');
+  ust.Free;
   if RadioButton2.Checked then begin
-    LabeledEdit1.EditLabel.Caption:='Zwiększenie X';
+    Image1.Picture.LoadFromLazarusResource('agievision_copy2');
+    LabeledEdit1.EditLabel.Caption:=DataModule1.getString(lang,92)+' X';
     LabeledEdit1.Text:='0.0';
-    LabeledEdit2.EditLabel.Caption:='Zwiększenie Y';
+    LabeledEdit2.EditLabel.Caption:=DataModule1.getString(lang,92)+' Y';
     LabeledEdit2.Text:='0.0';
-    LabeledEdit4.EditLabel.Caption:='Ilość kopii';
+    LabeledEdit4.EditLabel.Caption:=DataModule1.getString(lang,90);
     LabeledEdit4.Text:='2';
-    LabeledEdit3.EditLabel.Caption:='Zwiększenie Z';
+    LabeledEdit3.EditLabel.Caption:=DataModule1.getString(lang,92)+' Z';
     LabeledEdit3.Text:='0.0';
     LabeledEdit5.Visible:=False;
   end;
 end;
 
 procedure TForm7.vmat(Sender: TObject);
+var ust:TIniFile;
+  lang:string;
 begin
+  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+  lang:=ust.ReadString('settings','lang','PL');
+  ust.Free;
   if RadioButton3.Checked then begin
-    LabeledEdit1.EditLabel.Caption:='Zwiększenie X';
+    Image1.Picture.LoadFromLazarusResource('agievision_copy3');
+    LabeledEdit1.EditLabel.Caption:=DataModule1.getString(lang,92)+' X';
     LabeledEdit1.Text:='0.0';
-    LabeledEdit2.EditLabel.Caption:='Zwiększenie Y';
+    LabeledEdit2.EditLabel.Caption:=DataModule1.getString(lang,92)+' Y';
     LabeledEdit2.Text:='0.0';
-    LabeledEdit4.EditLabel.Caption:='Ilość kolumn';
+    LabeledEdit4.EditLabel.Caption:=DataModule1.getString(lang,93);
     LabeledEdit4.Text:='2';
-    LabeledEdit3.EditLabel.Caption:='Ilość wierszy';
+    LabeledEdit3.EditLabel.Caption:=DataModule1.getString(lang,94);
     LabeledEdit3.Text:='2';
     LabeledEdit5.Visible:=False;
   end;
 end;
 
 procedure TForm7.vpoj(Sender: TObject);
+var ust:TIniFile;
+  lang:string;
 begin
+  ust:=TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+  lang:=ust.ReadString('settings','lang','PL');
+  ust.Free;
   If RadioButton1.Checked then begin
-    LabeledEdit1.EditLabel.Caption:='Zwiększenie X';
+    Image1.Picture.LoadFromLazarusResource('agievision_copy1');
+    LabeledEdit1.EditLabel.Caption:=DataModule1.getString(lang,92)+' X';
     LabeledEdit1.Text:='0.0';
-    LabeledEdit2.EditLabel.Caption:='Zwiększenie Y';
+    LabeledEdit2.EditLabel.Caption:=DataModule1.getString(lang,92)+' Y';
     LabeledEdit2.Text:='0.0';
-    LabeledEdit4.EditLabel.Caption:='Zwiększenie C';
+    LabeledEdit4.EditLabel.Caption:=DataModule1.getString(lang,92)+' C';
     LabeledEdit4.Text:='0.0';
-    LabeledEdit3.EditLabel.Caption:='Zwiększenie Z';
+    LabeledEdit3.EditLabel.Caption:=DataModule1.getString(lang,92)+' Z';
     LabeledEdit3.Text:='0.0';
     LabeledEdit5.Visible:=False;
   end;

@@ -131,12 +131,17 @@ begin
     str[0,82]:='wersja';
     str[0,83]:='Autor programu';
     str[0,84]:='O Programie';
-    //PL manual
-    str[0,85]:='Jak używać';
-    str[0,86]:='Procedura tworzenia programu an drążarkę wgłębną';
-    str[0,87]:='Otwórz stary program .edf z folderu Q:\Narzedziownia\WSPOLNY\HP i przejdź do pkt 3';
-    str[0,88]:='Jeżeli nie ma starego programu, załaduj rysunek 2D do Creo i zapisz jako plik typu "Sheet MI"';
-    str[0,89]:='';
+    //PL copying
+    str[0,85]:='Kopiowanie';
+    str[0,86]:='Środek X';
+    str[0,87]:='Środek Y';
+    str[0,88]:='Kąt obrotu';
+    str[0,89]:='Rotacja kopii';
+    str[0,90]:='Ilość kopii';
+    str[0,91]:='funkcje kopiowania';
+    str[0,92]:='Zwiększenie';
+    str[0,93]:='Ilość kolumn';
+    str[0,94]:='Ilość wierszy';
 
     //EN Main menu
     str[1,0]:='File';
@@ -229,6 +234,17 @@ begin
     str[1,82]:='version';
     str[1,83]:='Program author';
     str[1,84]:='About';
+    //EN copying
+    str[1,85]:='Copying';
+    str[1,86]:='Center X';
+    str[1,87]:='Center Y';
+    str[1,88]:='Rotation angle';
+    str[1,89]:='Angle of copy';
+    str[1,90]:='Amount of copies';
+    str[1,91]:='copying functions';
+    str[1,92]:='Increase';
+    str[1,93]:='Collumns amount';
+    str[1,94]:='Rows amount';
 
     //DE Main menu
     str[2,0]:='Datei';
@@ -321,6 +337,17 @@ begin
     str[2,82]:='Ausführung';
     str[2,83]:='Autor';
     str[2,84]:='Uber'; //+umlaut
+    //DE copying
+    str[2,85]:='Kopiowanie';
+    str[2,86]:='Środek X';
+    str[2,87]:='Środek Y';
+    str[2,88]:='Kąt obrotu';
+    str[2,89]:='Rotacja kopii';
+    str[2,90]:='Ilość kopii';
+    str[2,91]:='funkcje kopiowania';
+    str[2,92]:='Zwiększenie';
+    str[2,93]:='Ilość kolumn';
+    str[2,94]:='Ilość wierszy';
 
     result:=str[ln,num];
 end;

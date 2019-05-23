@@ -75,6 +75,7 @@ type
     procedure Button4Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure chck_l(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure checkmultiel(Sender: TObject);
     procedure comatodot(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure dbok(Sender: TObject);
     procedure editel(Sender: TObject);
@@ -356,6 +357,16 @@ iii:integer;
 ust:TIniFile;
 line_changed,ok_for_multi,notcheckingundersize:boolean;
 begin
+  if length(Edit3.Text)=0 then Edit3.Text:='0';
+  if length(Edit4.Text)=0 then Edit3.Text:='0';
+  if length(Edit5.Text)=0 then Edit3.Text:='0';
+  if length(Edit12.Text)=0 then Edit3.Text:='0';
+  if length(Edit14.Text)=0 then Edit3.Text:='0';
+  if length(Edit7.Text)=0 then Edit3.Text:='0';
+  if length(Edit8.Text)=0 then Edit3.Text:='0';
+  if length(Edit9.Text)=0 then Edit3.Text:='0';
+  if length(Edit13.Text)=0 then Edit3.Text:='0';
+  if length(Edit15.Text)=0 then Edit3.Text:='0';
   randomize;
   str:='0123456789ABCDEFGHIJKLMNOPQRSTUVYZ';
   elmname:='FUT';
@@ -455,6 +466,28 @@ begin
   if length(Edit10.Text)>19 then begin
     Edit10.Text:=LeftStr(Edit10.Text,19);  //max length of electrode name in agievision
     Edit10.SelStart:=high(Integer);
+  end;
+end;
+
+procedure TForm2.checkmultiel(Sender: TObject);
+begin
+ if CheckBox1.Checked then begin
+    if Edit2.Text<>Edit3.Text then begin //u1 and u2
+      Edit2.Color:=clRed;
+      Edit3.Color:=clRed;
+    end
+    else begin
+      Edit2.Color:=clDefault;
+      Edit3.Color:=clDefault;
+    end;
+    if Edit4.Text<>Edit5.Text then begin //u3 and u4
+      Edit4.Color:=clRed;
+      Edit5.Color:=clRed;
+    end
+    else begin
+      Edit4.Color:=clDefault;
+      Edit5.Color:=clDefault;
+    end;
   end;
 end;
 
